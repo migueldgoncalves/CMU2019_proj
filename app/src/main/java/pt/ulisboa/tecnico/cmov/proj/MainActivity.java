@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.cmov.proj;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -17,14 +18,14 @@ public class MainActivity extends AppCompatActivity {
         final Button signIn_button = findViewById(R.id.sign_in);
         signIn_button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                //Code for New Activity of Signing Up
+                startActivity(new Intent(MainActivity.this, SignIn.class));
             }
         });
 
         final Button signUp_button = findViewById(R.id.sign_up);
         signUp_button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                //Code for New Activity of Signing Up
+                startActivity(new Intent(MainActivity.this, SignUp.class));
             }
         });
     }
