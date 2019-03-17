@@ -7,4 +7,6 @@
     <string name="username">Username</string>
     <string name="password">Password</string>
     <string name="password_hint">Insert Password</string>
+    <string name="my_albums">My Albums</string>
+    <string name="placeholder_albumname">Album Name</string>
 </resources>
