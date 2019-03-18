@@ -9,4 +9,8 @@
     <string name="password_hint">Insert Password</string>
     <string name="my_albums">My Albums</string>
     <string name="placeholder_albumname">Album Name</string>
+    <string name="create_new_album">Create New Album</string>
+    <string name="new_album_placeholder_name">My Album</string>
+    <string name="create_album_button">Create</string>
+    <string name="add_album_text">+</string>
 </resources>

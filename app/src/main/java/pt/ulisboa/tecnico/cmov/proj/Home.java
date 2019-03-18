@@ -34,5 +34,12 @@ public class Home extends AppCompatActivity {
         //albumTable.setAdapter(taskAdapter);
 
         albumAdapter.notifyDataSetChanged();
+
+        final Button addAlbumButton = findViewById(R.id.add_album_button);
+        addAlbumButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                startActivity(new Intent(Home.this, NewAlbum.class));
+            }
+        });
     }
 }
