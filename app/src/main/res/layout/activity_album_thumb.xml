@@ -6,15 +6,15 @@
     android:layout_height="match_parent">
 
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/album_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
     <TextView
-        android:id="@+id/textView3"
+        android:id="@+id/album_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/placeholder_albumname"
         android:layout_gravity="center"
-        android:lines="1" />
+        android:lines="1"
+        android:text="@string/placeholder_albumname" />
 </FrameLayout>
