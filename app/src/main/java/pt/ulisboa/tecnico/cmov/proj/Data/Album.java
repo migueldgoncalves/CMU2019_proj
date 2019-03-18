@@ -1,11 +1,14 @@
 package pt.ulisboa.tecnico.cmov.proj.Data;
 
+import android.media.Image;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
 public class Album {
 
     private String albumName;
+    private Image thumbnail = null;
     private ArrayList<User> users = new ArrayList<User>();
 
     public Album(String albumName) {

@@ -8,7 +8,8 @@
     <ImageView
         android:id="@+id/album_image"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        app:srcCompat="@drawable/empty_thumbnail" />
 
     <TextView
         android:id="@+id/album_name"
@@ -16,5 +17,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:lines="1"
-        android:text="@string/placeholder_albumname" />
+        android:text="@string/placeholder_albumname"
+        android:textSize="24sp" />
 </FrameLayout>
