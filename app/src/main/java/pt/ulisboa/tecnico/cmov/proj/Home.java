@@ -39,8 +39,6 @@ public class Home extends AppCompatActivity {
 
         albumTable.setAdapter(albumAdapter);
 
-        //albumAdapter.notifyDataSetChanged();
-
         final Button addAlbumButton = findViewById(R.id.add_album_button);
         addAlbumButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {

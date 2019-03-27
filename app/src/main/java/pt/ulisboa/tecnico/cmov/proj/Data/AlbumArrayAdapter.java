@@ -35,8 +35,10 @@ public class AlbumArrayAdapter extends ArrayAdapter<Album> {
         return super.getCount();
     }
 
+    @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
+        View view = convertView;
         //get the property we are displaying
         Album album = albums.get(position);
         albumName = album.getAlbumName();
@@ -44,7 +46,7 @@ public class AlbumArrayAdapter extends ArrayAdapter<Album> {
 
         //get the inflater and inflate the XML layout for each item
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
-        View view = inflater.inflate(R.layout.activity_album_thumb, null);
+        if (view == null) view = inflater.inflate(R.layout.activity_album_thumb, null);
 
         TextView albumNameText = view.findViewById(R.id.album_name);
         albumNameText.setText(albumName);
