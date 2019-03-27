@@ -1,8 +1,11 @@
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Test;
 
 import java.io.File;
+import java.io.PrintWriter;
 
 public class OperationsGetStateTest {
 
@@ -24,7 +27,7 @@ public class OperationsGetStateTest {
         }
     }
 
-    /*@Test
+    @Test
     public void validNotEmptyStateBackupFileTest() {
         try {
             new File(Operations.STATE_BACKUP_PATH);
@@ -134,18 +137,12 @@ public class OperationsGetStateTest {
             e.printStackTrace();
             Assert.fail();
         }
-    }*/
+    }
 
     @After
     public void tearDown() {
-        //If the test created a test backup file, it is deleted
-        if (original.exists() && !original.isDirectory()) {
-            try {
-                original.delete();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        Operations.cleanServer(); //Also deletes server backup file
+        operations = null;
         //If there was already a backup file, it is moved back to the backup directory
         if (temporary.exists() && !temporary.isDirectory()) {
             try {
@@ -154,7 +151,5 @@ public class OperationsGetStateTest {
                 e.printStackTrace();
             }
         }
-        Operations.cleanServer();
-        operations = null;
     }
 }

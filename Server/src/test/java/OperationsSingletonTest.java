@@ -1,6 +1,8 @@
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Test;
 
 import java.io.File;
 
@@ -24,7 +26,7 @@ public class OperationsSingletonTest {
         }
     }
 
-    /*@Test
+    @Test
     public void singletonGetEmptyServerTest() {
         operations = Operations.getServer();
         Assert.assertEquals(0, operations.getAlbumsLength());
@@ -56,9 +58,9 @@ public class OperationsSingletonTest {
         operations.addAlbum(album);
         operations.addSession(session1);
         operations.addSession(session2);
-        operations.addUsers(user1);
-        operations.addUsers(user2);
-        operations.addUsers(user3);
+        operations.addUser(user1);
+        operations.addUser(user2);
+        operations.addUser(user3);
 
         operations = null;
         operations = Operations.getServer();
@@ -75,18 +77,12 @@ public class OperationsSingletonTest {
         Assert.assertEquals(0, operations.getAlbumsLength());
         Assert.assertEquals(0, operations.getSessionsLength());
         Assert.assertEquals(0, operations.getUsersLength());
-    }*/
+    }
 
     @After
     public void tearDown() {
-        //If the test created a test backup file, it is deleted
-        if (original.exists() && !original.isDirectory()) {
-            try {
-                original.delete();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        Operations.cleanServer(); //Also deletes server backup file
+        operations = null;
         //If there was already a backup file, it is moved back to the backup directory
         if (temporary.exists() && !temporary.isDirectory()) {
             try {
@@ -95,7 +91,5 @@ public class OperationsSingletonTest {
                 e.printStackTrace();
             }
         }
-        Operations.cleanServer();
-        operations = null;
     }
 }
