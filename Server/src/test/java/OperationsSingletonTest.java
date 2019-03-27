@@ -58,9 +58,9 @@ public class OperationsSingletonTest {
         operations.addAlbum(album);
         operations.addSession(session1);
         operations.addSession(session2);
-        operations.addUsers(user1);
-        operations.addUsers(user2);
-        operations.addUsers(user3);
+        operations.addUser(user1);
+        operations.addUser(user2);
+        operations.addUser(user3);
 
         operations = null;
         operations = Operations.getServer();

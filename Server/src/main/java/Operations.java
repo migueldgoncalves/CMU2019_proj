@@ -38,30 +38,39 @@ public class Operations {
     // Server state setters
 
     protected String addAlbum(Album album) {
-        if (!isAlbumCreated(album.getId())) {
-            albums.put(album.getId(), album);
-            Operations.writeServerState();
-            return "Album successfully added";
+        if (album != null) {
+            if (!isAlbumCreated(album.getId())) {
+                albums.put(album.getId(), album);
+                Operations.writeServerState();
+                return "Album successfully added";
+            }
+            return "Album already exists";
         }
-        return "Album already exists";
+        return "Album cannot be null";
     }
 
-    protected String addUsers(User user) {
-        if (!isUserCreated(user.getUsername())) {
-            users.put(user.getUsername(), user);
-            Operations.writeServerState();
-            return "User successfully added";
+    protected String addUser(User user) {
+        if (user != null) {
+            if (!isUserCreated(user.getUsername())) {
+                users.put(user.getUsername(), user);
+                Operations.writeServerState();
+                return "User successfully added";
+            }
+            return "User already exists";
         }
-        return "User already exists";
+        return "User cannot be null";
     }
 
     protected String addSession(Session session) {
-        if (!isSessionCreated(session.getSessionId())) {
-            sessions.put(session.getSessionId(), session);
-            Operations.writeServerState();
-            return "Session successfully added";
+        if (session != null) {
+            if (!isSessionCreated(session.getSessionId())) {
+                sessions.put(session.getSessionId(), session);
+                Operations.writeServerState();
+                return "Session successfully added";
+            }
+            return "Session already exists";
         }
-        return "Session already exists";
+        return "Session cannot be null";
     }
 
     // Server state getters
