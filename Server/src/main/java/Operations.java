@@ -11,6 +11,11 @@ import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
 
 public class Operations {
 
+    public static final int MIN_USERNAME_LENGTH = 3;
+    public static final int MAX_USERNAME_LENGTH = 25;
+    public static final int MIN_PASSWORD_LENGTH = 8;
+    public static final int MAX_PASSWORD_LENGTH = 30;
+
     protected static final String TEMPORARY_BACKUP_NAME = "backups/ServerState.new";
     protected static final String STATE_BACKUP_NAME = "ServerState.old";
     protected static final String STATE_BACKUP_PATH = "backups/" + STATE_BACKUP_NAME;
@@ -33,6 +38,26 @@ public class Operations {
         Operations.operations = new Operations();
         Operations.readServerState();
         return Operations.operations;
+    }
+
+    // Business logic methods
+
+    public String signUp(String username, String password, byte[] publicKey) {
+        return null;
+    }
+
+    private String isUsernameValid(String username) {
+        if (username.length() == 0 || username.trim().length() == 0)
+            return "Username cannot be empty";
+        return null;
+    }
+
+    private String isPasswordValid(String password) {
+        return null;
+    }
+
+    private String isPrivateKeyValid(byte[] publicKey) {
+        return null;
     }
 
     // Server state setters
