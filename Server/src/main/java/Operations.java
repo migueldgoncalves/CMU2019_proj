@@ -37,61 +37,6 @@ public class Operations {
 
     // Server state setters
 
-    private static void readServerState() {
-        if (isBackupFileCreatedAndNotEmpty()) {
-            try {
-                Gson gson = new Gson();
-                String jsonString = FileUtils.readFileToString(new File(STATE_BACKUP_PATH), "UTF-8");
-                jsonString = jsonString.replace("\n", "").replace("\r", "");
-                Operations.operations = gson.fromJson(jsonString, Operations.class);
-                System.out.println("Recovered Server State");
-            } catch (Exception e) {
-                System.out.println("Backup file found is unreadable - Creating a new one");
-                Operations.writeServerState();
-            }
-        } else {
-            System.out.println("No written backup file found - Creating a new one");
-            Operations.writeServerState();
-        }
-    }
-
-    private static boolean isBackupFileCreatedAndNotEmpty() {
-        File f = new File(STATE_BACKUP_PATH);
-        if (f.exists() && !f.isDirectory()) {
-            try {
-                String jsonString = FileUtils.readFileToString(new File(STATE_BACKUP_PATH), "UTF-8");
-                jsonString = jsonString.replace("\n", "").replace("\r", "");
-                jsonString = jsonString.trim();
-                if (jsonString.length() > 0)
-                    return true;
-                System.out.println("Backup file is empty");
-                return false;
-            } catch (Exception e) {
-                System.out.println("Failed to assert if backup file is not empty");
-                return false;
-            }
-        }
-        System.out.println("Backup file not found");
-        return false;
-
-    }
-
-    protected static void cleanServer() {
-        Operations.operations = null;
-        File backup = new File(Operations.STATE_BACKUP_PATH);
-        // Deletes backup file
-        if (backup.exists() && !backup.isDirectory()) {
-            try {
-                backup.delete();
-                System.out.println("Server backup file deleted");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    // Server state getters
-
     protected String addAlbum(Album album) {
         if (!isAlbumCreated(album.getId())) {
             albums.put(album.getId(), album);
@@ -118,6 +63,8 @@ public class Operations {
         }
         return "Session already exists";
     }
+
+    // Server state getters
 
     protected HashMap<Integer, Album> getAlbums() {
         return albums;
@@ -159,12 +106,58 @@ public class Operations {
         return users;
     }
 
-    // Server state backup methods
-
     protected User getUserByUsername(String username) {
         if (isUserCreated(username))
             return users.get(username);
         return null;
+    }
+
+    private boolean isUserCreated(String username) {
+        return users.containsKey(username);
+    }
+
+    protected int getUsersLength() {
+        return users.size();
+    }
+
+    // Server state backup methods
+
+    private static void readServerState() {
+        if (isBackupFileCreatedAndNotEmpty()) {
+            try {
+                Gson gson = new Gson();
+                String jsonString = FileUtils.readFileToString(new File(STATE_BACKUP_PATH), "UTF-8");
+                jsonString = jsonString.replace("\n", "").replace("\r", "");
+                Operations.operations = gson.fromJson(jsonString, Operations.class);
+                System.out.println("Recovered Server State");
+            } catch (Exception e) {
+                System.out.println("Backup file found is unreadable - Creating a new one");
+                Operations.writeServerState();
+            }
+        } else {
+            System.out.println("No written backup file found - Creating a new one");
+            Operations.writeServerState();
+        }
+    }
+
+    private static boolean isBackupFileCreatedAndNotEmpty() {
+        File f = new File(STATE_BACKUP_PATH);
+        if (f.exists() && !f.isDirectory()) {
+            try {
+                String jsonString = FileUtils.readFileToString(new File(STATE_BACKUP_PATH), "UTF-8");
+                jsonString = jsonString.replace("\n", "").replace("\r", "");
+                jsonString = jsonString.trim();
+                if (jsonString.length() > 0)
+                    return true;
+                System.out.println("Backup file is empty");
+                return false;
+            } catch (Exception e) {
+                System.out.println("Failed to assert if backup file is not empty");
+                return false;
+            }
+        }
+        System.out.println("Backup file not found");
+        return false;
     }
 
     private static void writeServerState() {
@@ -181,13 +174,19 @@ public class Operations {
         }
     }
 
-    private boolean isUserCreated(String username) {
-        return users.containsKey(username);
-    }
-
     // Server cleaner
 
-    protected int getUsersLength() {
-        return users.size();
+    protected static void cleanServer() {
+        Operations.operations = null;
+        File backup = new File(Operations.STATE_BACKUP_PATH);
+        // Deletes backup file
+        if (backup.exists() && !backup.isDirectory()) {
+            try {
+                backup.delete();
+                System.out.println("Server backup file deleted");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

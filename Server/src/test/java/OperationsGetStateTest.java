@@ -1,11 +1,8 @@
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
 
 import java.io.File;
-import java.io.PrintWriter;
 
 public class OperationsGetStateTest {
 
@@ -27,7 +24,7 @@ public class OperationsGetStateTest {
         }
     }
 
-    @Test
+    /*@Test
     public void validNotEmptyStateBackupFileTest() {
         try {
             new File(Operations.STATE_BACKUP_PATH);
@@ -137,7 +134,7 @@ public class OperationsGetStateTest {
             e.printStackTrace();
             Assert.fail();
         }
-    }
+    }*/
 
     @After
     public void tearDown() {

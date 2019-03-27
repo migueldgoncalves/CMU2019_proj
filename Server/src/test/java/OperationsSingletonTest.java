@@ -1,8 +1,6 @@
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
 
 import java.io.File;
 
@@ -26,7 +24,7 @@ public class OperationsSingletonTest {
         }
     }
 
-    @Test
+    /*@Test
     public void singletonGetEmptyServerTest() {
         operations = Operations.getServer();
         Assert.assertEquals(0, operations.getAlbumsLength());
@@ -77,7 +75,7 @@ public class OperationsSingletonTest {
         Assert.assertEquals(0, operations.getAlbumsLength());
         Assert.assertEquals(0, operations.getSessionsLength());
         Assert.assertEquals(0, operations.getUsersLength());
-    }
+    }*/
 
     @After
     public void tearDown() {
