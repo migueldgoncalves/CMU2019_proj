@@ -25,6 +25,8 @@ public class Operations {
 
     }
 
+    // Singleton
+
     public static Operations getServer() {
         if (Operations.operations != null)
             return Operations.operations;
@@ -33,8 +35,10 @@ public class Operations {
         return Operations.operations;
     }
 
+    // Server state setters
+
     private static void readServerState() {
-        if (isBackupFileCreated()) {
+        if (isBackupFileCreatedAndNotEmpty()) {
             try {
                 Gson gson = new Gson();
                 String jsonString = FileUtils.readFileToString(new File(STATE_BACKUP_PATH), "UTF-8");
@@ -46,9 +50,121 @@ public class Operations {
                 Operations.writeServerState();
             }
         } else {
-            System.out.println("No backup file found - Creating a new one");
+            System.out.println("No written backup file found - Creating a new one");
             Operations.writeServerState();
         }
+    }
+
+    private static boolean isBackupFileCreatedAndNotEmpty() {
+        File f = new File(STATE_BACKUP_PATH);
+        if (f.exists() && !f.isDirectory()) {
+            try {
+                String jsonString = FileUtils.readFileToString(new File(STATE_BACKUP_PATH), "UTF-8");
+                jsonString = jsonString.replace("\n", "").replace("\r", "");
+                jsonString = jsonString.trim();
+                if (jsonString.length() > 0)
+                    return true;
+                System.out.println("Backup file is empty");
+                return false;
+            } catch (Exception e) {
+                System.out.println("Failed to assert if backup file is not empty");
+                return false;
+            }
+        }
+        System.out.println("Backup file not found");
+        return false;
+
+    }
+
+    protected static void cleanServer() {
+        Operations.operations = null;
+        File backup = new File(Operations.STATE_BACKUP_PATH);
+        // Deletes backup file
+        if (backup.exists() && !backup.isDirectory()) {
+            try {
+                backup.delete();
+                System.out.println("Server backup file deleted");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    // Server state getters
+
+    protected String addAlbum(Album album) {
+        if (!isAlbumCreated(album.getId())) {
+            albums.put(album.getId(), album);
+            Operations.writeServerState();
+            return "Album successfully added";
+        }
+        return "Album already exists";
+    }
+
+    protected String addUsers(User user) {
+        if (!isUserCreated(user.getUsername())) {
+            users.put(user.getUsername(), user);
+            Operations.writeServerState();
+            return "User successfully added";
+        }
+        return "User already exists";
+    }
+
+    protected String addSession(Session session) {
+        if (!isSessionCreated(session.getSessionId())) {
+            sessions.put(session.getSessionId(), session);
+            Operations.writeServerState();
+            return "Session successfully added";
+        }
+        return "Session already exists";
+    }
+
+    protected HashMap<Integer, Album> getAlbums() {
+        return albums;
+    }
+
+    protected Album getAlbumById(int albumId) {
+        if (isAlbumCreated(albumId))
+            return albums.get(albumId);
+        return null;
+    }
+
+    private boolean isAlbumCreated(int albumId) {
+        return albums.containsKey(albumId);
+    }
+
+    protected int getAlbumsLength() {
+        return albums.size();
+    }
+
+    protected HashMap<Integer, Session> getSessions() {
+        return sessions;
+    }
+
+    protected Session getSessionById(int sessionId) {
+        if (isSessionCreated(sessionId))
+            return sessions.get(sessionId);
+        return null;
+    }
+
+    private boolean isSessionCreated(int sessionId) {
+        return sessions.containsKey(sessionId);
+    }
+
+    protected int getSessionsLength() {
+        return sessions.size();
+    }
+
+    protected HashMap<String, User> getUsers() {
+        return users;
+    }
+
+    // Server state backup methods
+
+    protected User getUserByUsername(String username) {
+        if (isUserCreated(username))
+            return users.get(username);
+        return null;
     }
 
     private static void writeServerState() {
@@ -65,42 +181,13 @@ public class Operations {
         }
     }
 
-    private static boolean isBackupFileCreated() {
-        File f = new File(STATE_BACKUP_PATH);
-        return (f.exists() && !f.isDirectory());
+    private boolean isUserCreated(String username) {
+        return users.containsKey(username);
     }
 
-    public static void cleanServer() {
-        Operations.operations = null;
-    }
+    // Server cleaner
 
-    public HashMap<Integer, Album> getAlbums() {
-        return albums;
-    }
-
-    public Album getAlbumById(int albumId) {
-        if (albums.containsKey(albumId))
-            return albums.get(albumId);
-        return null;
-    }
-
-    public HashMap<String, User> getUsers() {
-        return users;
-    }
-
-    public User getUserByUsername(String username) {
-        if (users.containsKey(username))
-            return users.get(username);
-        return null;
-    }
-
-    public HashMap<Integer, Session> getSessions() {
-        return sessions;
-    }
-
-    public Session getSessionById(int sessionId) {
-        if (sessions.containsKey(sessionId))
-            return sessions.get(sessionId);
-        return null;
+    protected int getUsersLength() {
+        return users.size();
     }
 }

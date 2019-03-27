@@ -28,14 +28,64 @@ public class OperationsGetStateTest {
     }
 
     @Test
-    public void validBackupFileTest() {
+    public void validNotEmptyStateBackupFileTest() {
+        try {
+            new File(Operations.STATE_BACKUP_PATH);
+            PrintWriter writer = new PrintWriter(Operations.STATE_BACKUP_PATH);
+            writer.println("{\"albums\":{\"1\":{\"id\":1,\"slices\":{},\"name\":\"album\"}},\"users\":{\"user1\":{\"username\":\"user1\",\"password\":\"password1\",\"publicKey\":[0,0,0,0,0],\"albums\":[]},\"user2\":{\"username\":\"user2\",\"password\":\"password2\",\"publicKey\":[0,0,0,0,0,0,0,0,0,0],\"albums\":[]},\"user3\":{\"username\":\"user3\",\"password\":\"password3\",\"publicKey\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"albums\":[]}},\"sessions\":{\"1713868246\":{\"userId\":1,\"sessionId\":1713868246,\"loginTime\":\"Mar 27, 2019 5:53:33 PM\",\"sessionDuration\":5},\"182718366\":{\"userId\":2,\"sessionId\":182718366,\"loginTime\":\"Mar 27, 2019 5:53:33 PM\",\"sessionDuration\":10}}}");
+            writer.close();
+            Assert.assertEquals("{\"albums\":{\"1\":{\"id\":1,\"slices\":{},\"name\":\"album\"}},\"users\":{\"user1\":{\"username\":\"user1\",\"password\":\"password1\",\"publicKey\":[0,0,0,0,0],\"albums\":[]},\"user2\":{\"username\":\"user2\",\"password\":\"password2\",\"publicKey\":[0,0,0,0,0,0,0,0,0,0],\"albums\":[]},\"user3\":{\"username\":\"user3\",\"password\":\"password3\",\"publicKey\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"albums\":[]}},\"sessions\":{\"1713868246\":{\"userId\":1,\"sessionId\":1713868246,\"loginTime\":\"Mar 27, 2019 5:53:33 PM\",\"sessionDuration\":5},\"182718366\":{\"userId\":2,\"sessionId\":182718366,\"loginTime\":\"Mar 27, 2019 5:53:33 PM\",\"sessionDuration\":10}}}", FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8").
+                    replace("\n", "").replace("\r", ""));
 
+            operations = Operations.getServer();
+            Assert.assertEquals(1, operations.getAlbums().size());
+            Assert.assertEquals(2, operations.getSessions().size());
+            Assert.assertEquals(3, operations.getUsers().size());
+            Assert.assertEquals("{\"albums\":{\"1\":{\"id\":1,\"slices\":{},\"name\":\"album\"}},\"users\":{\"user1\":{\"username\":\"user1\",\"password\":\"password1\",\"publicKey\":[0,0,0,0,0],\"albums\":[]},\"user2\":{\"username\":\"user2\",\"password\":\"password2\",\"publicKey\":[0,0,0,0,0,0,0,0,0,0],\"albums\":[]},\"user3\":{\"username\":\"user3\",\"password\":\"password3\",\"publicKey\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"albums\":[]}},\"sessions\":{\"1713868246\":{\"userId\":1,\"sessionId\":1713868246,\"loginTime\":\"Mar 27, 2019 5:53:33 PM\",\"sessionDuration\":5},\"182718366\":{\"userId\":2,\"sessionId\":182718366,\"loginTime\":\"Mar 27, 2019 5:53:33 PM\",\"sessionDuration\":10}}}",
+                    FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8").
+                            replace("\n", "").replace("\r", ""));
+            Assert.assertEquals("album", operations.getAlbumById(1).getName());
+            Assert.assertEquals(10, operations.getSessionById(182718366).getSessionDuration());
+            Assert.assertEquals(20, operations.getUserByUsername("user3").getPublicKey().length);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
     }
 
     @Test
-    public void noBackupFileTest() {
+    public void validEmptyStateBackupFileTest() {
         try {
-            Assert.assertFalse(original.exists());
+            new File(Operations.STATE_BACKUP_PATH);
+            PrintWriter writer = new PrintWriter(Operations.STATE_BACKUP_PATH);
+            writer.println("{\"albums\":{},\"users\":{},\"sessions\":{}}");
+            writer.close();
+            Assert.assertEquals("{\"albums\":{},\"users\":{},\"sessions\":{}}", FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8").
+                    replace("\n", "").replace("\r", ""));
+
+            operations = Operations.getServer();
+            Assert.assertEquals(0, operations.getAlbums().size());
+            Assert.assertEquals(0, operations.getSessions().size());
+            Assert.assertEquals(0, operations.getUsers().size());
+            Assert.assertEquals("{\"albums\":{},\"users\":{},\"sessions\":{}}",
+                    FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8").
+                            replace("\n", "").replace("\r", ""));
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
+    }
+
+    @Test
+    public void emptyBackupFileTest() {
+        try {
+            new File(Operations.STATE_BACKUP_PATH);
+            PrintWriter writer = new PrintWriter(Operations.STATE_BACKUP_PATH);
+            writer.println("");
+            writer.close();
+            Assert.assertEquals("", FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8").
+                    replace("\n", "").replace("\r", ""));
+
             operations = Operations.getServer();
             Assert.assertEquals(0, operations.getAlbums().size());
             Assert.assertEquals(0, operations.getSessions().size());
@@ -72,15 +122,33 @@ public class OperationsGetStateTest {
         }
     }
 
+    @Test
+    public void noBackupFileTest() {
+        try {
+            Assert.assertFalse(original.exists());
+            operations = Operations.getServer();
+            Assert.assertEquals(0, operations.getAlbums().size());
+            Assert.assertEquals(0, operations.getSessions().size());
+            Assert.assertEquals(0, operations.getUsers().size());
+            Assert.assertEquals("{\"albums\":{},\"users\":{},\"sessions\":{}}",
+                    FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8").
+                            replace("\n", "").replace("\r", ""));
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
+    }
+
     @After
     public void tearDown() {
         //If the test created a test backup file, it is deleted
-        if (original.exists() && !original.isDirectory())
+        if (original.exists() && !original.isDirectory()) {
             try {
                 original.delete();
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
         //If there was already a backup file, it is moved back to the backup directory
         if (temporary.exists() && !temporary.isDirectory()) {
             try {
