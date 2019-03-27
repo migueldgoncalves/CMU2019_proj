@@ -5,7 +5,9 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
 
 import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
 
@@ -18,7 +20,9 @@ public class Operations {
     private static Operations operations;
 
     private HashMap<Integer, Album> albums = new HashMap<>();
+    //Username as KEY and USER value
     private HashMap<String, User> users = new HashMap<>();
+    //Session ID as Key, SESSION object as value
     private HashMap<Integer, Session> sessions = new HashMap<>();
 
     private Operations() {
@@ -44,6 +48,62 @@ public class Operations {
             return "Album successfully added";
         }
         return "Album already exists";
+    }
+
+    protected String addUserToAlbum(String username, int albumId, String SliceURL){
+        Album temp = albums.get(albumId);
+        if(!temp.isUserInAlbum(username)){
+            temp.addUserToAlbum(username, SliceURL);
+            albums.replace(albumId, temp);
+            return "User Successfully Added To Album";
+        }else{
+            return "The user was already in The Album";
+        }
+    }
+
+    protected boolean createAlbum(String albumName){
+        try{
+            int newAlbumId = new Random().nextInt();
+            while(albums.containsKey(newAlbumId)){
+                newAlbumId = new Random().nextInt();
+            }
+            albums.put(newAlbumId, new Album(albumName, newAlbumId));
+            return true;
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    protected ArrayList<String> getSystemUsers(){
+        return new ArrayList<>(users.keySet());
+    }
+
+    protected String logIn(String username, String password){
+        if(!users.containsKey(username)){
+            return "The Inserted Credentials are incorrect!";
+        }
+        if(users.get(username).getPassword().equals(password)){
+            return "Username and Password Valid: Loged In";
+        }
+        else{
+            return "Invalid Password! Please Try Again";
+        }
+    }
+
+    //Users must update the current member of an album and get their photographs as new ones are added to these albums;
+    //TODO: Implement timed updates issued by the client in order to keep updating the albums they are in
+    //TODO: In client create this method
+
+    protected ArrayList<Album> listAlbum(String username){
+        ArrayList<Album> result = new ArrayList<Album>();
+        for(Album i : albums.values()){
+            if(i.isUserInAlbum(username)){
+                result.add(i);
+            }
+        }
+        //Verifacar no cliente se o tamanho do array é maior que zero, caso seja 0 nao apresentar nenhum album
+        return result;
     }
 
     protected String addUsers(User user) {
