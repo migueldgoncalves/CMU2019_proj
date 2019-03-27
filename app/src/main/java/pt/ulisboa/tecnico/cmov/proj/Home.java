@@ -31,7 +31,12 @@ public class Home extends AppCompatActivity {
 
         albums = new ArrayList<>(Arrays.asList(
                 new Album("Fotos 2019", R.drawable.empty_thumbnail),
-                new Album("Fotos 2018", R.drawable.empty_thumbnail)
+                new Album("Fotos 2018", R.drawable.empty_thumbnail),
+                new Album("Fotos 2017", R.drawable.empty_thumbnail),
+                new Album("Fotos 2016", R.drawable.empty_thumbnail),
+                new Album("Fotos 2015", R.drawable.empty_thumbnail),
+                new Album("Fotos 2014", R.drawable.empty_thumbnail),
+                new Album("Fotos 2013", R.drawable.empty_thumbnail)
         ));
 
         albumAdapter = new AlbumArrayAdapter(this, 0, albums);
