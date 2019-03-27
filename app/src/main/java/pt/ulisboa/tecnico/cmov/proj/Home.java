@@ -7,11 +7,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.TableLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import pt.ulisboa.tecnico.cmov.proj.Data.Album;
 import pt.ulisboa.tecnico.cmov.proj.Data.AlbumArrayAdapter;
@@ -27,13 +29,17 @@ public class Home extends AppCompatActivity {
         setContentView(R.layout.activity_home);
         getWindow().getDecorView().setBackgroundColor(Color.WHITE);
 
+        albums = new ArrayList<>(Arrays.asList(
+                new Album("Fotos 2019", R.drawable.empty_thumbnail),
+                new Album("Fotos 2018", R.drawable.empty_thumbnail)
+        ));
+
         albumAdapter = new AlbumArrayAdapter(this, 0, albums);
-        TableLayout albumTable = findViewById(R.id.album_table);
+        GridView albumTable = findViewById(R.id.album_grid);
 
-        //NOT POSSIBLE
-        //albumTable.setAdapter(taskAdapter);
+        albumTable.setAdapter(albumAdapter);
 
-        albumAdapter.notifyDataSetChanged();
+        //albumAdapter.notifyDataSetChanged();
 
         final Button addAlbumButton = findViewById(R.id.add_album_button);
         addAlbumButton.setOnClickListener(new View.OnClickListener() {
