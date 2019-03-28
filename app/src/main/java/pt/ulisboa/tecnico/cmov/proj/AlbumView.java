@@ -35,5 +35,8 @@ public class AlbumView extends Activity implements PopupMenu.OnMenuItemClickList
                 //startActivity(new Intent(AlbumView.this, AddUser.class));
                 break;
         }
+
+        return true;
+
     }
 }
