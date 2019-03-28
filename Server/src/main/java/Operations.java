@@ -18,6 +18,8 @@ public class Operations {
     public static final int MIN_PASSWORD_LENGTH = 8;
     public static final int MAX_PASSWORD_LENGTH = 30;
 
+    public static final int RSA_KEY_BYTE_LENGTH = 256;
+
     protected static final String TEMPORARY_BACKUP_NAME = "backups/ServerState.new";
     protected static final String STATE_BACKUP_NAME = "ServerState.old";
     protected static final String STATE_BACKUP_PATH = "backups/" + STATE_BACKUP_NAME;
@@ -47,21 +49,56 @@ public class Operations {
     // Business logic methods
 
     public String signUp(String username, String password, byte[] publicKey) {
-        return null;
+        String usernameEvaluation = isUsernameValid(username);
+        if(!usernameEvaluation.equals("Username valid"))
+            return usernameEvaluation;
+        String passwordEvaluation = isPasswordValid(password);
+        if(!passwordEvaluation.equals("Password valid"))
+            return passwordEvaluation;
+        String publicKeyEvaluation = isPublicKeyValid(publicKey);
+        if(!publicKeyEvaluation.equals("Public key valid"))
+            return publicKeyEvaluation;
+
+        addUser(new User(username, password, publicKey));
+        return "User created successfully";
     }
 
-    private String isUsernameValid(String username) {
+    protected String isUsernameValid(String username) {
+        if (username == null)
+            return "Username cannot be null";
         if (username.length() == 0 || username.trim().length() == 0)
             return "Username cannot be empty";
-        return null;
+        for (int i=0; i<username.length(); i++)
+            if(!Character.isDigit(username.charAt(i)) && !Character.isLetter(username.charAt(i)))
+                return "Username must only contain digits and letters";
+        if (username.length() < MIN_USERNAME_LENGTH)
+            return "Username must have at least " + MIN_USERNAME_LENGTH + " characters";
+        if (username.length() > MAX_USERNAME_LENGTH)
+            return "Username must have at most " + MAX_USERNAME_LENGTH + " characters";
+        username = username.toLowerCase();
+        if (isUserCreated(username))
+            return "Username already exists";
+        return "Username valid";
     }
 
-    private String isPasswordValid(String password) {
-        return null;
+    protected String isPasswordValid(String password) {
+        if (password == null)
+            return "Password cannot be null";
+        if (password.length() == 0 || password.trim().length() == 0)
+            return "Password cannot be empty";
+        if (password.length() < MIN_PASSWORD_LENGTH)
+            return "Password must have at least " + MIN_PASSWORD_LENGTH + " characters";
+        if (password.length() > MAX_PASSWORD_LENGTH)
+            return "Password must have at most " + MAX_PASSWORD_LENGTH + " characters";
+        return "Password valid";
     }
 
-    private String isPrivateKeyValid(byte[] publicKey) {
-        return null;
+    protected String isPublicKeyValid(byte[] publicKey) {
+        if (publicKey == null)
+            return "Public key cannot be null";
+        if (publicKey.length != 256)
+            return "Public key must have " + RSA_KEY_BYTE_LENGTH * 8 + " bits";
+        return "Public key valid";
     }
 
     // Server state setters
