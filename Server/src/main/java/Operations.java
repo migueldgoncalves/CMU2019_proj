@@ -20,6 +20,8 @@ public class Operations {
 
     public static final int RSA_KEY_BYTE_LENGTH = 256;
 
+    public static final int SESSION_DURATION = 5; //Minutes
+
     protected static final String TEMPORARY_BACKUP_NAME = "backups/ServerState.new";
     protected static final String STATE_BACKUP_NAME = "ServerState.old";
     protected static final String STATE_BACKUP_PATH = "backups/" + STATE_BACKUP_NAME;
@@ -46,7 +48,7 @@ public class Operations {
         return Operations.operations;
     }
 
-    // Business logic methods
+    // Business logic main methods
 
     public String signUp(String username, String password, byte[] publicKey) {
         String usernameEvaluation = isUsernameValid(username);
@@ -62,6 +64,24 @@ public class Operations {
         addUser(new User(username, password, publicKey));
         return "User created successfully";
     }
+
+    public String logIn(String username, String password){
+        if(!isUserCreated(username)){
+            return "The Inserted Username is Incorrect!";
+        }
+        if(!getUserByUsername(username).isPasswordCorrect(password)){
+            return "Invalid Password! Please Try Again";
+        }
+        if(getUserByUsername(username).getSessionId() > 0)
+            return String.valueOf(getUserByUsername(username).getSessionId());
+        Session session = new Session(username, SESSION_DURATION);
+        String sessionAddResult = addSession(session);
+        if(!sessionAddResult.equals("Session successfully added"))
+            return "Could not create session - Please try to log in again";
+        return String.valueOf(session.getSessionId());
+    }
+
+    // Business logic auxiliary methods
 
     protected String isUsernameValid(String username) {
         if (username == null)
@@ -144,18 +164,6 @@ public class Operations {
         return new ArrayList<>(users.keySet());
     }
 
-    protected String logIn(String username, String password){
-        if(!users.containsKey(username)){
-            return "The Inserted Credentials are incorrect!";
-        }
-        if(users.get(username).getPassword().equals(password)){
-            return "Username and Password Valid: Loged In";
-        }
-        else{
-            return "Invalid Password! Please Try Again";
-        }
-    }
-
     //Users must update the current member of an album and get their photographs as new ones are added to these albums;
     //TODO: Implement timed updates issued by the client in order to keep updating the albums they are in
     //TODO: In client create this method
@@ -186,9 +194,16 @@ public class Operations {
     protected String addSession(Session session) {
         if (session != null) {
             if (!isSessionCreated(session.getSessionId())) {
-                sessions.put(session.getSessionId(), session);
-                Operations.writeServerState();
-                return "Session successfully added";
+                if(isUserCreated(session.getUsername())) {
+                    if (getUserByUsername(session.getUsername()).getSessionId() == 0) {
+                        sessions.put(session.getSessionId(), session);
+                        getUserByUsername(session.getUsername()).setSessionId(session.getSessionId());
+                        Operations.writeServerState();
+                        return "Session successfully added";
+                    }
+                    return "User already has a session";
+                }
+                return "User does not exist";
             }
             return "Session already exists";
         }

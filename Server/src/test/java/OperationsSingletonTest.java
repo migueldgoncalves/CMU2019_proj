@@ -48,19 +48,19 @@ public class OperationsSingletonTest {
     @Test
     public void singletonGetNonEmptyServerTest() {
         Album album = new Album("album", 1);
-        Session session1 = new Session(1, 5);
-        Session session2 = new Session(2, 10);
+        Session session1 = new Session("user1", 5);
+        Session session2 = new Session("user2", 10);
         User user1 = new User("user1", "password1", new byte[5]);
         User user2 = new User("user2", "password2", new byte[10]);
         User user3 = new User("user3", "password3", new byte[20]);
 
         operations = Operations.getServer();
         operations.addAlbum(album);
-        operations.addSession(session1);
-        operations.addSession(session2);
         operations.addUser(user1);
         operations.addUser(user2);
         operations.addUser(user3);
+        operations.addSession(session1);
+        operations.addSession(session2);
 
         operations = null;
         operations = Operations.getServer();

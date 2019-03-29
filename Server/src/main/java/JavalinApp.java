@@ -31,14 +31,19 @@ public class JavalinApp {
         // Requests to the root path will return the JSON { "status" : "OK" }
         app.get("/", ctx -> ctx.json(hash));
 
-        // POST requests to path /signup will invoke method signup with required parameters
+        // POST requests to path /signup will invoke method signup with required parameters and receive its response
         app.post("/signup", ctx -> {
             AppRequest request = ctx.bodyAsClass(AppRequest.class);
-            operations.signUp(request.getUsername(), request.getPassword(), request.getPublicKey());
+            ctx.json(operations.signUp(request.getUsername(), request.getPassword(), request.getPublicKey()));
+            ctx.status(201);
+        });
+
+        app.post("/login", ctx -> {
+            AppRequest request = ctx.bodyAsClass(AppRequest.class);
+            ctx.json(operations.logIn(request.getUsername(), request.getPassword()));
             ctx.status(201);
         });
 
         return app;
     }
-
 }

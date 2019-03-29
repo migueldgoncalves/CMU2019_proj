@@ -33,6 +33,21 @@ public class UserTest {
         Assert.assertFalse(user.isUserInAlbum(1));
     }
 
+    @Test
+    public void correctPasswordVerifierTest() {
+        Assert.assertTrue(user.isPasswordCorrect("password"));
+    }
+
+    @Test
+    public void nullPasswordVerifierTest() {
+        Assert.assertFalse(user.isPasswordCorrect(null));
+    }
+
+    @Test
+    public void incorrectPasswordVerifierTest() {
+        Assert.assertFalse(user.isPasswordCorrect("incorrectPassword"));
+    }
+
     @After
     public void tearDown() {
         user = null;
