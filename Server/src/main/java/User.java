@@ -6,6 +6,7 @@ public class User {
     private String password;
     private byte[] publicKey;
     private ArrayList<Integer> albums = new ArrayList<>();
+    private int sessionId;
 
     public User(String username, String password, byte[] publicKey) {
         this.username = username;
@@ -55,5 +56,19 @@ public class User {
 
     public void addAlbumUserIsIn(int albumId) {
         albums.add(albumId);
+    }
+
+    public int getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(int sessionId) {
+        this.sessionId = sessionId;
+    }
+
+    public boolean isPasswordCorrect(String password) {
+        if(password == null)
+            return false;
+        return this.password.equals(password);
     }
 }

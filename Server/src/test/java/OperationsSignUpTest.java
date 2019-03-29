@@ -35,6 +35,8 @@ public class OperationsSignUpTest {
         Assert.assertEquals("username", operations.getUserByUsername("username").getUsername());
         Assert.assertEquals("password", operations.getUserByUsername("username").getPassword());
         Assert.assertEquals(256, operations.getUserByUsername("username").getPublicKey().length);
+        for(int i=0; i<256; i++)
+            Assert.assertEquals(0, operations.getUserByUsername("username").getPublicKey()[i]);
         Assert.assertEquals(0, operations.getUserByUsername("username").getUserAlbumNumber());
     }
 

@@ -8,36 +8,28 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import java.net.URL;
 
-public class ServiceRootTest {
+public class ServiceBaseTest {
 
-    public static final int OK = 200;
-    public static final int CREATED = 201;
-    public static final int NO_CONTENT = 204;
-    public static final int BAD_REQUEST = 400;
-    public static final int NOT_FOUND = 404;
+    private static final int OK = 200;
+    private static final int BAD_REQUEST = 400;
+    private static final int NOT_FOUND = 404;
 
-    public static final int PORT = 7000;
+    private static final int PORT = 7000;
 
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
     private Javalin app = null;
     private OkHttpClient client = null;
 
-    private Operations operations = null;
     private File original = null;
     private File temporary = null;
 
-    public static final String URL_BASE = "http://localhost:" + PORT;
-    public static final String URL_SIGNUP = URL_BASE + "/signup";
+    private static final String URL_BASE = "http://localhost:" + PORT;
+    private static final String URL_SIGNUP = URL_BASE + "/signup";
 
     @Before
     public void setUp() {
-        JavalinApp javalinApp = new JavalinApp();
-        this.app = javalinApp.init();
-        this.client = new OkHttpClient();
-
         original = new File(Operations.STATE_BACKUP_PATH);
         temporary = new File(Operations.STATE_BACKUP_NAME);
         //If there is already a backup file, it will be moved to other directory
@@ -48,7 +40,22 @@ public class ServiceRootTest {
                 e.printStackTrace();
             }
         }
-        operations = Operations.getServer();
+        JavalinApp javalinApp = new JavalinApp();
+        this.app = javalinApp.init();
+        this.client = new OkHttpClient();
+    }
+
+    @Test
+    public void rootPathTest() {
+        try {
+            Request request = new Request.Builder().url(URL_BASE).build();
+            Response response = client.newCall(request).execute();
+            Assert.assertEquals(OK, response.code());
+            Assert.assertEquals("{\"status\":\"OK\"}", response.body().string());
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
     }
 
     @Test
@@ -67,12 +74,13 @@ public class ServiceRootTest {
     }
 
     @Test
-    public void rootPathTest() {
+    public void nullBodyPostRequestTest() {
         try {
-            Request request = new Request.Builder().url(URL_BASE).build();
+            RequestBody body = RequestBody.create(JSON, new Gson().toJson(null));
+            Request request = new Request.Builder().url(URL_SIGNUP).post(body).build();
             Response response = client.newCall(request).execute();
-            Assert.assertEquals(OK, response.code());
-            Assert.assertEquals("{\"status\":\"OK\"}", response.body().string());
+            Assert.assertEquals(BAD_REQUEST, response.code());
+            Assert.assertEquals(0, Operations.getServer().getUsersLength());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -80,21 +88,13 @@ public class ServiceRootTest {
     }
 
     @Test
-    public void signUpPathTest() {
+    public void invalidBodyPostRequestTest() {
         try {
-            AppRequest appRequest = new AppRequest();
-            appRequest.setUsername("username");
-            appRequest.setPassword("password");
-            appRequest.setPublicKey(new byte[256]);
-            RequestBody body = RequestBody.create(JSON, new Gson().toJson(appRequest));
+            RequestBody body = RequestBody.create(JSON, new Gson().toJson("invalidBody"));
             Request request = new Request.Builder().url(URL_SIGNUP).post(body).build();
             Response response = client.newCall(request).execute();
-
-            Assert.assertEquals(CREATED, response.code());
-            Assert.assertEquals(1, operations.getUsersLength());
-            Assert.assertNotNull(operations.getUserByUsername("username"));
-            Assert.assertEquals("password", operations.getUserByUsername("username").getPassword());
-            Assert.assertEquals(256, operations.getUserByUsername("username").getPublicKey().length);
+            Assert.assertEquals(BAD_REQUEST, response.code());
+            Assert.assertEquals(0, Operations.getServer().getUsersLength());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -103,8 +103,8 @@ public class ServiceRootTest {
 
     @After
     public void tearDown() {
+        this.app.stop();
         Operations.cleanServer(); //Also deletes server backup file
-        operations = null;
         //If there was already a backup file, it is moved back to the backup directory
         if (temporary.exists() && !temporary.isDirectory()) {
             try {
