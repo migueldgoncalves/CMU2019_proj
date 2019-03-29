@@ -14,5 +14,6 @@
     <string name="create_album_button">Create</string>
     <string name="add_album_text">+</string>
     <string name="album_thumb_descr">Album Thumbnail</string>
+    <string name="photo_thumb_descr">Photo Thumbnail</string>
     <string name="album_options_text">...</string>
 </resources>
