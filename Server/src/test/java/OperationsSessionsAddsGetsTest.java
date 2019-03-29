@@ -199,6 +199,29 @@ public class OperationsSessionsAddsGetsTest {
         Assert.assertNull(operations.getSessionById(session.getSessionId() + 1));
     }
 
+    @Test
+    public void deleteExistingSessionTest() {
+        User user = new User("username", "password", new byte[256]);
+        operations.addUser(user);
+        Session session = new Session("username", 5);
+        operations.addSession(session);
+        Assert.assertEquals(1, operations.getSessionsLength());
+        Assert.assertEquals(session.getSessionId(), user.getSessionId());
+
+        String result = operations.deleteSession(session.getSessionId());
+        Assert.assertEquals("Session successfully deleted", result);
+        Assert.assertEquals(0, user.getSessionId());
+        Assert.assertNull(operations.getSessionById(session.getSessionId()));
+        Assert.assertEquals(0, operations.getSessionsLength());
+    }
+
+    @Test
+    public void deleteNonExistingSessionTest() {
+        String result = operations.deleteSession(1);
+        Assert.assertEquals("Session does not exist", result);
+        Assert.assertEquals(0, operations.getSessionsLength());
+    }
+
     @After
     public void tearDown() {
         Operations.cleanServer(); //Also deletes server backup file

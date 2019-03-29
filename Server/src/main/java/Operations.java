@@ -81,6 +81,10 @@ public class Operations {
         return String.valueOf(session.getSessionId());
     }
 
+    public String logOut(int sessionId) {
+        return deleteSession(sessionId);
+    }
+
     // Business logic auxiliary methods
 
     protected String isUsernameValid(String username) {
@@ -208,6 +212,15 @@ public class Operations {
             return "Session already exists";
         }
         return "Session cannot be null";
+    }
+
+    protected String deleteSession(int sessionId) {
+        if(isSessionCreated(sessionId)) {
+            getUserByUsername(getSessionById(sessionId).getUsername()).setSessionId(0);
+            sessions.remove(sessionId);
+            return "Session successfully deleted";
+        }
+        return "Session does not exist";
     }
 
     // Server state getters
