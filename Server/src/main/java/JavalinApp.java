@@ -44,6 +44,12 @@ public class JavalinApp {
             ctx.status(201);
         });
 
+        app.delete("/logout", ctx -> {
+            AppRequest request = ctx.bodyAsClass(AppRequest.class);
+            ctx.json(operations.logOut(request.getSessionId()));
+            ctx.status(200);
+        });
+
         return app;
     }
 }

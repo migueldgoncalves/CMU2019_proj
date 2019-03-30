@@ -15,7 +15,10 @@
    version="1.1"
    id="svg8"
    inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
-   sodipodi:docname="Home.svg">
+   sodipodi:docname="NewHome 2.svg"
+   inkscape:export-filename="D:\GitHub\CMU2019_proj\sketches\New Home 2.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96">
   <defs
      id="defs2" />
   <sodipodi:namedview
@@ -25,16 +28,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.9899495"
-     inkscape:cx="235.87571"
-     inkscape:cy="696.06975"
+     inkscape:zoom="1.4"
+     inkscape:cx="391.57042"
+     inkscape:cy="871.70926"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1920"
-     inkscape:window-height="1017"
-     inkscape:window-x="-8"
-     inkscape:window-y="-8"
+     inkscape:window-height="1001"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
      inkscape:window-maximized="1" />
   <metadata
      id="metadata5">
@@ -92,7 +95,7 @@
        xml:space="preserve"
        id="flowRoot43"
        style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
-       transform="matrix(0.26458333,0,0,0.26458333,-0.94494048,-2.078869)"><flowRegion
+       transform="matrix(0.26458333,0,0,0.26458333,63.467015,-2.6134081)"><flowRegion
          id="flowRegion45"><rect
            id="rect47"
            width="288.57144"
@@ -230,5 +233,74 @@
        id="path1046"
        inkscape:connector-curvature="0"
        transform="scale(0.26458333)" />
-  </g>
+    <rect
+       style="display:inline;fill:none;fill-opacity:0.64676621;stroke:#000000;stroke-width:0.66499996;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect856-3"
+       width="12.473214"
+       height="9.8273811"
+       x="16.214035"
+       y="17.600506" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.60000002;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 18.174328,20.041954 h 8.285356"
+       id="path3783"
+       inkscape:connector-curvature="0" />
+    <path
+       style="display:inline;fill:none;stroke:#000000;stroke-width:0.60000002;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 18.174327,22.246927 h 8.285357"
+       id="path3783-4"
+       inkscape:connector-curvature="0" />
+    <path
+       style="display:inline;fill:none;stroke:#000000;stroke-width:0.60000002;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 18.174327,24.451901 h 8.285356"
+       id="path3783-0"
+       inkscape:connector-curvature="0" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.57231778;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect55"
+       width="33.517517"
+       height="11.064081"
+       x="16.200193"
+       y="27.414043" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot862"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       transform="scale(0.26458333)"><flowRegion
+         id="flowRegion864"><rect
+           id="rect866"
+           width="126.62807"
+           height="41.764687"
+           x="61.281391"
+           y="103.66445" /></flowRegion><flowPara
+         id="flowPara868">FF</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot870"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       transform="matrix(0.13346213,0,0,0.13044584,27.808411,27.82764)"><flowRegion
+         id="flowRegion872"><rect
+           id="rect875"
+           width="257.90945"
+           height="130.05231"
+           x="-70"
+           y="15.376828" /></flowRegion><flowPara
+         id="flowPara877">Find Users</flowPara></flowRoot>    <rect
+       style="display:inline;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.57231784;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect55-0"
+       width="33.517517"
+       height="11.064081"
+       x="16.200193"
+       y="38.478127" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot870-0"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:1;stroke:none"
+       transform="matrix(0.13346213,0,0,0.13044584,27.808411,38.891723)"><flowRegion
+         id="flowRegion872-9"><rect
+           id="rect875-4"
+           width="257.90945"
+           height="130.05231"
+           x="-70"
+           y="15.376828" /></flowRegion><flowPara
+         id="flowPara877-1">Log Out</flowPara></flowRoot>  </g>
 </svg>
