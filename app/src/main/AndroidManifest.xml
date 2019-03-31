@@ -13,7 +13,9 @@
         <activity
             android:name=".FindUsers"
             android:label="@string/title_activity_find_users"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar">
+
+        </activity>
         <activity
             android:name=".HomePage"
             android:label="@string/title_activity_home_page"

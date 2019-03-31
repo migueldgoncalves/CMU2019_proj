@@ -22,6 +22,8 @@ import android.widget.EditText;
 
 import com.dropbox.core.android.Auth;
 
+import pt.ulisboa.tecnico.cmov.proj.Dropbox.DropboxActivity;
+
 public class HomePage extends DropboxActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private String m_Text = "";
