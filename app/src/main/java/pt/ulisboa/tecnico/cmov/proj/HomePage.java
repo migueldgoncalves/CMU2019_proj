@@ -40,44 +40,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(HomePage.this);
-                builder.setTitle("Title");
-
-                // Set up the input
-                final EditText input = new EditText(HomePage.this);
-                // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
-                input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-                builder.setView(input);
-
-                // Set up the buttons
-                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        m_Text = input.getText().toString();
-                        ViewGroup linearLayout = findViewById(R.id.spawner_container);
-                        Button bt = new Button(HomePage.this);
-                        bt.setText(m_Text);
-                        bt.setBackgroundColor(Color.RED);
-                        bt.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT,
-                                LayoutParams.WRAP_CONTENT));
-                        linearLayout.addView(bt);
-                        bt.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-
-                            }
-                        });
-                    }
-                });
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                    }
-                });
-
-                builder.show();
+                createAlbum();
             }
         });
 
@@ -132,15 +95,21 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         if (id == R.id.nav_home) {
             startActivity(new Intent(HomePage.this, HomePage.class));
         } else if (id == R.id.nav_createAlbum) {
-
+            createAlbum();
         } else if (id == R.id.nav_findUsers) {
-
+            startActivity(new Intent(HomePage.this, FindUsers.class));
         } else if (id == R.id.nav_logs) {
 
         } else if (id == R.id.nav_dropbox) {
-            Auth.startOAuth2Authentication(HomePage.this, ACCESS_KEY);
-        } else if (id == R.id.nav_signOut) {
 
+            if(!hasToken()){
+                Auth.startOAuth2Authentication(HomePage.this, ACCESS_KEY);
+            }else {
+                System.out.println("You Are Already Logged In To Dropbox");
+            }
+
+        } else if (id == R.id.nav_signOut) {
+            startActivity(new Intent(HomePage.this, MainActivity.class));
         } else if (id == R.id.nav_settings){
 
         }
@@ -164,4 +133,45 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
     protected void loadData() {
 
     }
+
+    private void createAlbum(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(HomePage.this);
+        builder.setTitle("Title");
+
+        // Set up the input
+        final EditText input = new EditText(HomePage.this);
+        // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        builder.setView(input);
+
+        // Set up the buttons
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                m_Text = input.getText().toString();
+                ViewGroup linearLayout = findViewById(R.id.spawner_container);
+                Button bt = new Button(HomePage.this);
+                bt.setText(m_Text);
+                bt.setBackgroundColor(Color.RED);
+                bt.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT,
+                        LayoutParams.WRAP_CONTENT));
+                linearLayout.addView(bt);
+                bt.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                    }
+                });
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
 }
