@@ -56,8 +56,10 @@ public class ServiceSignUpTest {
             Request request = new Request.Builder().url(URL_SIGNUP).post(body).build();
             Response response = client.newCall(request).execute();
 
+            AppResponse appResponse = new Gson().fromJson(response.body().string(), AppResponse.class);
             Assert.assertEquals(CREATED, response.code());
-            Assert.assertEquals("User created successfully", new Gson().fromJson(response.body().string(), String.class));
+            Assert.assertEquals("User created successfully", appResponse.getSuccess());
+            Assert.assertNull(appResponse.getError());
             Assert.assertEquals(1, operations.getUsersLength());
             Assert.assertEquals("username", operations.getUserByUsername("username").getUsername());
             Assert.assertEquals("password", operations.getUserByUsername("username").getPassword());
@@ -65,6 +67,7 @@ public class ServiceSignUpTest {
             for(int i=0; i<256; i++)
                 Assert.assertEquals(0, operations.getUserByUsername("username").getPublicKey()[i]);
             Assert.assertEquals(0, operations.getUserByUsername("username").getUserAlbumNumber());
+            Assert.assertEquals(1, operations.getLogsLength());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -82,9 +85,11 @@ public class ServiceSignUpTest {
             Request request = new Request.Builder().url(URL_SIGNUP).post(body).build();
             Response response = client.newCall(request).execute();
 
+            AppResponse appResponse = new Gson().fromJson(response.body().string(), AppResponse.class);
             Assert.assertEquals(CREATED, response.code());
-            Assert.assertEquals("Username cannot be empty", new Gson().fromJson(response.body().string(), String.class));
+            Assert.assertEquals("Username cannot be empty", appResponse.getError());
             Assert.assertEquals(0, operations.getUsersLength());
+            Assert.assertEquals(1, operations.getLogsLength());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -102,9 +107,11 @@ public class ServiceSignUpTest {
             Request request = new Request.Builder().url(URL_SIGNUP).post(body).build();
             Response response = client.newCall(request).execute();
 
+            AppResponse appResponse = new Gson().fromJson(response.body().string(), AppResponse.class);
             Assert.assertEquals(CREATED, response.code());
-            Assert.assertEquals("Password must have at least " + Operations.MIN_PASSWORD_LENGTH + " characters", new Gson().fromJson(response.body().string(), String.class));
+            Assert.assertEquals("Password must have at least " + Operations.MIN_PASSWORD_LENGTH + " characters", appResponse.getError());
             Assert.assertEquals(0, operations.getUsersLength());
+            Assert.assertEquals(1, operations.getLogsLength());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -122,9 +129,11 @@ public class ServiceSignUpTest {
             Request request = new Request.Builder().url(URL_SIGNUP).post(body).build();
             Response response = client.newCall(request).execute();
 
+            AppResponse appResponse = new Gson().fromJson(response.body().string(), AppResponse.class);
             Assert.assertEquals(CREATED, response.code());
-            Assert.assertEquals("Public key must have " + Operations.RSA_KEY_BYTE_LENGTH * 8 + " bits", new Gson().fromJson(response.body().string(), String.class));
+            Assert.assertEquals("Public key must have " + Operations.RSA_KEY_BYTE_LENGTH * 8 + " bits", appResponse.getError());
             Assert.assertEquals(0, operations.getUsersLength());
+            Assert.assertEquals(1, operations.getLogsLength());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();

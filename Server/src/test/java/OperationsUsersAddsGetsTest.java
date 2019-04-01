@@ -39,7 +39,7 @@ public class OperationsUsersAddsGetsTest {
 
             String jsonString = FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8");
             jsonString = jsonString.replace("\n", "").replace("\r", "");
-            Assert.assertEquals("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"publicKey\":[0,0,0,0,0],\"albums\":[],\"sessionId\":0}},\"sessions\":{}}", jsonString);
+            Assert.assertEquals("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"publicKey\":[0,0,0,0,0],\"albums\":[],\"sessionId\":0}},\"sessions\":{},\"logs\":[]}", jsonString);
 
             operations = null;
             Operations.cleanServer();
@@ -52,6 +52,7 @@ public class OperationsUsersAddsGetsTest {
             Assert.assertEquals(0, operations.getAlbumsLength());
             Assert.assertEquals(0, operations.getSessionsLength());
             Assert.assertEquals(1, operations.getUsersLength());
+            Assert.assertEquals(0, operations.getLogsLength());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -70,10 +71,11 @@ public class OperationsUsersAddsGetsTest {
             Assert.assertEquals(0, operations.getAlbumsLength());
             Assert.assertEquals(0, operations.getSessionsLength());
             Assert.assertEquals(1, operations.getUsersLength());
+            Assert.assertEquals(0, operations.getLogsLength());
 
             String jsonString = FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8");
             jsonString = jsonString.replace("\n", "").replace("\r", "");
-            Assert.assertEquals("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"publicKey\":[0,0,0,0,0],\"albums\":[],\"sessionId\":0}},\"sessions\":{}}", jsonString);
+            Assert.assertEquals("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"publicKey\":[0,0,0,0,0],\"albums\":[],\"sessionId\":0}},\"sessions\":{},\"logs\":[]}", jsonString);
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -88,10 +90,11 @@ public class OperationsUsersAddsGetsTest {
             Assert.assertEquals(0, operations.getAlbumsLength());
             Assert.assertEquals(0, operations.getSessionsLength());
             Assert.assertEquals(0, operations.getUsersLength());
+            Assert.assertEquals(0, operations.getLogsLength());
 
             String jsonString = FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8");
             jsonString = jsonString.replace("\n", "").replace("\r", "");
-            Assert.assertEquals("{\"albums\":{},\"users\":{},\"sessions\":{}}", jsonString);
+            Assert.assertEquals("{\"albums\":{},\"users\":{},\"sessions\":{},\"logs\":[]}", jsonString);
 
             returnString = operations.addUser(new User("username", "password", new byte[5]));
             Assert.assertEquals("User successfully added", returnString);
@@ -104,23 +107,33 @@ public class OperationsUsersAddsGetsTest {
 
     @Test
     public void getUsersTest() {
-        Assert.assertEquals(0, operations.getUsers().size());
-        Assert.assertEquals(0, operations.getUsersLength());
-        operations.addUser(new User("username", "password", new byte[5]));
-        Assert.assertEquals(1, operations.getUsers().size());
-        Assert.assertEquals(1, operations.getUsersLength());
+        try {
+            Assert.assertEquals(0, operations.getUsers().size());
+            Assert.assertEquals(0, operations.getUsersLength());
+            operations.addUser(new User("username", "password", new byte[5]));
+            Assert.assertEquals(1, operations.getUsers().size());
+            Assert.assertEquals(1, operations.getUsersLength());
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
     }
 
     @Test
     public void getUsersByIdTest() {
-        Assert.assertNull(operations.getUserByUsername(null));
-        Assert.assertNull(operations.getUserByUsername("username"));
-        Assert.assertNull(operations.getUserByUsername("anotherUsername"));
-        User user = new User("username", "password", new byte[5]);
-        operations.addUser(user);
-        Assert.assertNull(operations.getUserByUsername(null));
-        Assert.assertEquals("password", operations.getUserByUsername("username").getPassword());
-        Assert.assertNull(operations.getUserByUsername("anotherUsername"));
+        try {
+            Assert.assertNull(operations.getUserByUsername(null));
+            Assert.assertNull(operations.getUserByUsername("username"));
+            Assert.assertNull(operations.getUserByUsername("anotherUsername"));
+            User user = new User("username", "password", new byte[5]);
+            operations.addUser(user);
+            Assert.assertNull(operations.getUserByUsername(null));
+            Assert.assertEquals("password", operations.getUserByUsername("username").getPassword());
+            Assert.assertNull(operations.getUserByUsername("anotherUsername"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
     }
 
     @After

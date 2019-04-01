@@ -8,8 +8,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.ArrayList;
 
-public class ServiceLogOutTest {
+public class ServiceLogsTest {
 
     private static final int OK = 200;
 
@@ -25,6 +26,9 @@ public class ServiceLogOutTest {
     private File temporary = null;
 
     private static final String URL_BASE = "http://localhost:" + PORT;
+    private static final String URL_LOGS = URL_BASE + "/logs";
+    private static final String URL_SIGNUP = URL_BASE + "/signup";
+    private static final String URL_LOGIN = URL_BASE + "/login";
     private static final String URL_LOGOUT = URL_BASE + "/logout";
 
     @Before
@@ -46,26 +50,13 @@ public class ServiceLogOutTest {
     }
 
     @Test
-    public void logOutValidSessionTest() {
+    public void serviceGetNoLogsTest() {
         try {
-            User user = new User("username", "password", new byte[256]);
-            operations.addUser(user);
-            Session session = new Session("username", 5);
-            operations.addSession(session);
-
-            AppRequest appRequest = new AppRequest();
-            appRequest.setSessionId(session.getSessionId());
-            RequestBody body = RequestBody.create(JSON, new Gson().toJson(appRequest));
-            Request request = new Request.Builder().url(URL_LOGOUT).delete(body).build();
+            Request request = new Request.Builder().url(URL_LOGS).build();
             Response response = client.newCall(request).execute();
             AppResponse appResponse = new Gson().fromJson(response.body().string(), AppResponse.class);
-
-            Assert.assertEquals(OK, response.code());
-            Assert.assertEquals("Session successfully deleted", appResponse.getSuccess());
-            Assert.assertNull(appResponse.getError());
-            Assert.assertEquals(0, operations.getSessionsLength());
-            Assert.assertEquals(0, user.getSessionId());
-            Assert.assertEquals(1, operations.getLogsLength());
+            Assert.assertEquals(1, appResponse.getLogs().size());
+            Assert.assertEquals(Operations.LOGIN_OPERATION, appResponse.getLogs().get(0).getOperation());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -73,25 +64,24 @@ public class ServiceLogOutTest {
     }
 
     @Test
-    public void logOutNonExistingSessionTest() {
+    public void serviceGetLogsTest() {
         try {
-            User user = new User("username", "password", new byte[256]);
-            operations.addUser(user);
-            Session session = new Session("username", 5);
-            operations.addSession(session);
-
             AppRequest appRequest = new AppRequest();
-            appRequest.setSessionId(1);
+            appRequest.setUsername("username");
+            appRequest.setPassword("password");
+            appRequest.setPublicKey(new byte[256]);
             RequestBody body = RequestBody.create(JSON, new Gson().toJson(appRequest));
-            Request request = new Request.Builder().url(URL_LOGOUT).delete(body).build();
+            Request request = new Request.Builder().url(URL_SIGNUP).post(body).build();
             Response response = client.newCall(request).execute();
-            AppResponse appResponse = new Gson().fromJson(response.body().string(), AppResponse.class);
 
-            Assert.assertEquals(OK, response.code());
-            Assert.assertEquals("Session does not exist", appResponse.getError());
-            Assert.assertEquals(1, operations.getSessionsLength());
-            Assert.assertEquals(1, operations.getUsersLength());
-            Assert.assertEquals(1, operations.getLogsLength());
+            body = RequestBody.create(JSON, new Gson().toJson(appRequest));
+            request = new Request.Builder().url(URL_LOGIN).put(body).build();
+            response = client.newCall(request).execute();
+
+            request = new Request.Builder().url(URL_LOGS).build();
+            response = client.newCall(request).execute();
+            ArrayList logs = new Gson().fromJson(response.body().string(), ArrayList.class);
+            Assert.assertEquals(3, logs.size());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();

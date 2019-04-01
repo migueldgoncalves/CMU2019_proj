@@ -22,30 +22,55 @@ public class UserTest {
 
     @Test
     public void userInAlbumTest() {
-        user.addAlbumUserIsIn(1);
-        Assert.assertEquals(1, user.getUserAlbumNumber());
-        Assert.assertTrue(user.isUserInAlbum(1));
+        try {
+            user.addAlbumUserIsIn(1);
+            Assert.assertEquals(1, user.getUserAlbumNumber());
+            Assert.assertTrue(user.isUserInAlbum(1));
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
     }
 
     @Test
     public void userNotInAlbumTest() {
-        Assert.assertEquals(0, user.getUserAlbumNumber());
-        Assert.assertFalse(user.isUserInAlbum(1));
+        try {
+            Assert.assertEquals(0, user.getUserAlbumNumber());
+            Assert.assertFalse(user.isUserInAlbum(1));
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
     }
 
     @Test
     public void correctPasswordVerifierTest() {
-        Assert.assertTrue(user.isPasswordCorrect("password"));
+        try {
+            Assert.assertTrue(user.isPasswordCorrect("password"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
     }
 
     @Test
     public void nullPasswordVerifierTest() {
-        Assert.assertFalse(user.isPasswordCorrect(null));
+        try {
+            Assert.assertFalse(user.isPasswordCorrect(null));
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
     }
 
     @Test
     public void incorrectPasswordVerifierTest() {
-        Assert.assertFalse(user.isPasswordCorrect("incorrectPassword"));
+        try {
+            Assert.assertFalse(user.isPasswordCorrect("incorrectPassword"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
     }
 
     @After

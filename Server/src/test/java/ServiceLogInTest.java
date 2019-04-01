@@ -56,11 +56,15 @@ public class ServiceLogInTest {
             appRequest.setUsername("username");
             appRequest.setPassword("password");
             RequestBody body = RequestBody.create(JSON, new Gson().toJson(appRequest));
-            Request request = new Request.Builder().url(URL_LOGIN).post(body).build();
+            Request request = new Request.Builder().url(URL_LOGIN).put(body).build();
             Response response = client.newCall(request).execute();
 
             Assert.assertEquals(CREATED, response.code());
-            Assert.assertEquals(String.valueOf(session.getSessionId()), new Gson().fromJson(response.body().string(), String.class));
+            AppResponse appResponse = new Gson().fromJson(response.body().string(), AppResponse.class);
+            Assert.assertEquals("Login successful", appResponse.getSuccess());
+            Assert.assertNull(appResponse.getError());
+            Assert.assertEquals(session.getSessionId(), appResponse.getSessionId());
+            Assert.assertEquals(1, operations.getLogsLength());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -76,13 +80,16 @@ public class ServiceLogInTest {
             appRequest.setPassword("password");
 
             RequestBody body = RequestBody.create(JSON, new Gson().toJson(appRequest));
-            Request request = new Request.Builder().url(URL_LOGIN).post(body).build();
+            Request request = new Request.Builder().url(URL_LOGIN).put(body).build();
             Response response = client.newCall(request).execute();
-            String stringResponse = new Gson().fromJson(response.body().string(), String.class);
+            AppResponse appResponse = new Gson().fromJson(response.body().string(), AppResponse.class);
 
             Assert.assertEquals(CREATED, response.code());
-            Assert.assertTrue(Integer.valueOf(stringResponse) > 0);
-            Assert.assertEquals(String.valueOf(operations.getUserByUsername("username").getSessionId()), stringResponse);
+            Assert.assertEquals("Login successful", appResponse.getSuccess());
+            Assert.assertNull(appResponse.getError());
+            Assert.assertTrue(appResponse.getSessionId() > 0);
+            Assert.assertEquals(operations.getUserByUsername("username").getSessionId(), appResponse.getSessionId());
+            Assert.assertEquals(1, operations.getLogsLength());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -98,13 +105,14 @@ public class ServiceLogInTest {
             appRequest.setPassword("password");
 
             RequestBody body = RequestBody.create(JSON, new Gson().toJson(appRequest));
-            Request request = new Request.Builder().url(URL_LOGIN).post(body).build();
+            Request request = new Request.Builder().url(URL_LOGIN).put(body).build();
             Response response = client.newCall(request).execute();
-            String stringResponse = new Gson().fromJson(response.body().string(), String.class);
+            AppResponse appResponse = new Gson().fromJson(response.body().string(), AppResponse.class);
 
             Assert.assertEquals(CREATED, response.code());
-            Assert.assertEquals("The Inserted Username is Incorrect!", stringResponse);
+            Assert.assertEquals("The Inserted Username is Incorrect!", appResponse.getError());
             Assert.assertEquals(0, operations.getUserByUsername("username").getSessionId());
+            Assert.assertEquals(1, operations.getLogsLength());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -120,13 +128,14 @@ public class ServiceLogInTest {
             appRequest.setPassword("password");
 
             RequestBody body = RequestBody.create(JSON, new Gson().toJson(appRequest));
-            Request request = new Request.Builder().url(URL_LOGIN).post(body).build();
+            Request request = new Request.Builder().url(URL_LOGIN).put(body).build();
             Response response = client.newCall(request).execute();
-            String stringResponse = new Gson().fromJson(response.body().string(), String.class);
+            AppResponse appResponse = new Gson().fromJson(response.body().string(), AppResponse.class);
 
             Assert.assertEquals(CREATED, response.code());
-            Assert.assertEquals("The Inserted Username is Incorrect!", stringResponse);
+            Assert.assertEquals("The Inserted Username is Incorrect!", appResponse.getError());
             Assert.assertEquals(0, operations.getUserByUsername("username").getSessionId());
+            Assert.assertEquals(1, operations.getLogsLength());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -142,13 +151,14 @@ public class ServiceLogInTest {
             appRequest.setPassword(null);
 
             RequestBody body = RequestBody.create(JSON, new Gson().toJson(appRequest));
-            Request request = new Request.Builder().url(URL_LOGIN).post(body).build();
+            Request request = new Request.Builder().url(URL_LOGIN).put(body).build();
             Response response = client.newCall(request).execute();
-            String stringResponse = new Gson().fromJson(response.body().string(), String.class);
+            AppResponse appResponse = new Gson().fromJson(response.body().string(), AppResponse.class);
 
             Assert.assertEquals(CREATED, response.code());
-            Assert.assertEquals("Invalid Password! Please Try Again", stringResponse);
+            Assert.assertEquals("Invalid Password! Please Try Again", appResponse.getError());
             Assert.assertEquals(0, operations.getUserByUsername("username").getSessionId());
+            Assert.assertEquals(1, operations.getLogsLength());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -164,13 +174,14 @@ public class ServiceLogInTest {
             appRequest.setPassword("wrongPassword");
 
             RequestBody body = RequestBody.create(JSON, new Gson().toJson(appRequest));
-            Request request = new Request.Builder().url(URL_LOGIN).post(body).build();
+            Request request = new Request.Builder().url(URL_LOGIN).put(body).build();
             Response response = client.newCall(request).execute();
-            String stringResponse = new Gson().fromJson(response.body().string(), String.class);
+            AppResponse appResponse = new Gson().fromJson(response.body().string(), AppResponse.class);
 
             Assert.assertEquals(CREATED, response.code());
-            Assert.assertEquals("Invalid Password! Please Try Again", stringResponse);
+            Assert.assertEquals("Invalid Password! Please Try Again", appResponse.getError());
             Assert.assertEquals(0, operations.getUserByUsername("username").getSessionId());
+            Assert.assertEquals(1, operations.getLogsLength());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();

@@ -20,11 +20,16 @@ public class Operations {
 
     public static final int RSA_KEY_BYTE_LENGTH = 256;
 
-    public static final int SESSION_DURATION = 5; //Minutes
+    public static final int SESSION_DURATION = 5; //Seconds
 
     protected static final String TEMPORARY_BACKUP_NAME = "backups/ServerState.new";
     protected static final String STATE_BACKUP_NAME = "ServerState.old";
     protected static final String STATE_BACKUP_PATH = "backups/" + STATE_BACKUP_NAME;
+
+    protected static final String SIGNUP_OPERATION = "SIGNUP";
+    protected static final String LOGIN_OPERATION = "LOGIN";
+    protected static final String LOGOUT_OPERATION = "LOGOUT";
+    protected static final String LOGS_OPERATION = "LOGS";
 
     private static Operations operations;
 
@@ -33,6 +38,7 @@ public class Operations {
     private HashMap<String, User> users = new HashMap<>();
     //Session ID as Key, SESSION object as value
     private HashMap<Integer, Session> sessions = new HashMap<>();
+    private ArrayList<Log> logs = new ArrayList<>();
 
     private Operations() {
 
@@ -50,39 +56,97 @@ public class Operations {
 
     // Business logic main methods
 
-    public String signUp(String username, String password, byte[] publicKey) {
-        String usernameEvaluation = isUsernameValid(username);
-        if(!usernameEvaluation.equals("Username valid"))
-            return usernameEvaluation;
-        String passwordEvaluation = isPasswordValid(password);
-        if(!passwordEvaluation.equals("Password valid"))
-            return passwordEvaluation;
-        String publicKeyEvaluation = isPublicKeyValid(publicKey);
-        if(!publicKeyEvaluation.equals("Public key valid"))
-            return publicKeyEvaluation;
+    public AppResponse signUp(String username, String password, byte[] publicKey) {
+        AppRequest request = new AppRequest();
+        request.setUsername(username);
+        request.setPassword(password);
+        request.setPublicKey(publicKey);
+        AppResponse response = new AppResponse();
 
+        String usernameEvaluation = isUsernameValid(username);
+        if(!usernameEvaluation.equals("Username valid")) {
+            response.setError(usernameEvaluation);
+            addLog(SIGNUP_OPERATION, request, response);
+            return response;
+        }
+        String passwordEvaluation = isPasswordValid(password);
+        if(!passwordEvaluation.equals("Password valid")) {
+            response.setError(passwordEvaluation);
+            addLog(SIGNUP_OPERATION, request, response);
+            return response;
+        }
+        String publicKeyEvaluation = isPublicKeyValid(publicKey);
+        if(!publicKeyEvaluation.equals("Public key valid")) {
+            response.setError(publicKeyEvaluation);
+            addLog(SIGNUP_OPERATION, request, response);
+            return response;
+        }
         addUser(new User(username, password, publicKey));
-        return "User created successfully";
+        response.setSuccess("User created successfully");
+        addLog(SIGNUP_OPERATION, request, response);
+        return response;
     }
 
-    public String logIn(String username, String password){
+    public AppResponse logIn(String username, String password){
+        AppRequest request = new AppRequest();
+        request.setUsername(username);
+        request.setPassword(password);
+        AppResponse response = new AppResponse();
+
         if(!isUserCreated(username)){
-            return "The Inserted Username is Incorrect!";
+            response.setError("The Inserted Username is Incorrect!");
+            addLog(LOGIN_OPERATION, request, response);
+            return response;
         }
         if(!getUserByUsername(username).isPasswordCorrect(password)){
-            return "Invalid Password! Please Try Again";
+            response.setError("Invalid Password! Please Try Again");
+            addLog(LOGIN_OPERATION, request, response);
+            return response;
         }
-        if(getUserByUsername(username).getSessionId() > 0)
-            return String.valueOf(getUserByUsername(username).getSessionId());
+        if(getUserByUsername(username).getSessionId() > 0) {
+            response.setSuccess("Login successful");
+            response.setSessionId(getUserByUsername(username).getSessionId());
+            addLog(LOGIN_OPERATION, request, response);
+            return response;
+        }
         Session session = new Session(username, SESSION_DURATION);
         String sessionAddResult = addSession(session);
-        if(!sessionAddResult.equals("Session successfully added"))
-            return "Could not create session - Please try to log in again";
-        return String.valueOf(session.getSessionId());
+        if(!sessionAddResult.equals("Session successfully added")) {
+            response.setError("Could not create session - Please try to log in again");
+            addLog(LOGIN_OPERATION, request, response);
+            return response;
+        }
+
+        response.setSuccess("Login successful");
+        response.setSessionId(session.getSessionId());
+        addLog(LOGIN_OPERATION, request, response);
+        return response;
     }
 
-    public String logOut(int sessionId) {
-        return deleteSession(sessionId);
+    public AppResponse logOut(int sessionId) {
+        AppRequest request = new AppRequest();
+        request.setSessionId(sessionId);
+        AppResponse response = new AppResponse();
+        String result = deleteSession(sessionId);
+        if(!result.equals("Session successfully deleted")) {
+            response.setError(result);
+            addLog(LOGOUT_OPERATION, request, response);
+            return response;
+        }
+        response.setSuccess(result);
+        addLog(LOGOUT_OPERATION, request, response);
+        return response;
+    }
+
+    public AppResponse serviceGetLogs() {
+        AppRequest request = new AppRequest();
+        AppResponse response = new AppResponse();
+        //response.setLogs(getLogs());
+        response.setSuccess("Logs correctly obtained");
+        addLog(LOGS_OPERATION, request, new AppResponse());
+        response.setLogs(getLogs());
+        //logs.get(logs.size()-1).getResponse().setLogs(null);
+        return response;
     }
 
     // Business logic auxiliary methods
@@ -120,7 +184,7 @@ public class Operations {
     protected String isPublicKeyValid(byte[] publicKey) {
         if (publicKey == null)
             return "Public key cannot be null";
-        if (publicKey.length != 256)
+        if (publicKey.length != RSA_KEY_BYTE_LENGTH)
             return "Public key must have " + RSA_KEY_BYTE_LENGTH * 8 + " bits";
         return "Public key valid";
     }
@@ -214,10 +278,27 @@ public class Operations {
         return "Session cannot be null";
     }
 
+    protected String addLog(String operation, AppRequest request, AppResponse response) {
+        if(operation!=null) {
+            if(request!=null) {
+                if(response!=null) {
+                    Log log = new Log(operation, request, response);
+                    logs.add(log);
+                    Operations.writeServerState();
+                    return "Operation successfully logged";
+                }
+                return "App Response cannot be null";
+            }
+            return "App Request cannot be null";
+        }
+        return "Operation name cannot be null";
+    }
+
     protected String deleteSession(int sessionId) {
         if(isSessionCreated(sessionId)) {
             getUserByUsername(getSessionById(sessionId).getUsername()).setSessionId(0);
             sessions.remove(sessionId);
+            Operations.writeServerState();
             return "Session successfully deleted";
         }
         return "Session does not exist";
@@ -277,6 +358,14 @@ public class Operations {
 
     protected int getUsersLength() {
         return users.size();
+    }
+
+    protected ArrayList<Log> getLogs() {
+        return logs;
+    }
+
+    protected int getLogsLength() {
+        return logs.size();
     }
 
     // Server state backup methods

@@ -16,10 +16,15 @@ public class SessionTest {
 
     @Test
     public void sessionConstructorTest() {
-        Assert.assertEquals("username", session.getUsername());
-        Assert.assertTrue(session.getSessionId() > 0 && session.getSessionId() < Session.MAX_SESSION_ID);
-        Assert.assertTrue((int) new Date().getTime() - (int) session.getLoginTime().getTime() < 1000);
-        Assert.assertEquals(5, session.getSessionDuration());
+        try {
+            Assert.assertEquals("username", session.getUsername());
+            Assert.assertTrue(session.getSessionId() > 0 && session.getSessionId() < Session.MAX_SESSION_ID);
+            Assert.assertTrue((int) new Date().getTime() - (int) session.getLoginTime().getTime() < 1000);
+            Assert.assertEquals(5, session.getSessionDuration());
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
     }
 
     @After
