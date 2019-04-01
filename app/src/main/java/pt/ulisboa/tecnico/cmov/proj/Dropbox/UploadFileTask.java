@@ -7,9 +7,11 @@ import com.dropbox.core.DbxException;
 import com.dropbox.core.v2.DbxClientV2;
 import com.dropbox.core.v2.files.FileMetadata;
 import com.dropbox.core.v2.files.WriteMode;
+import com.dropbox.core.v2.sharing.SharedLinkMetadata;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -48,6 +50,9 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
         try{
             if(localFile.createNewFile()){
                 System.out.println("File Created Successfuly!");
+                FileWriter out = new FileWriter(localFile);
+                out.write("This is a Test String To Ensure File Has Content");
+                out.close();
             }
             else {
                 throw new IOException("Could Not Create File!");
@@ -63,9 +68,14 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
 
             try{
                 InputStream inputStream = new FileInputStream(localFile);
-                return mDbxClient.files().uploadBuilder(remoteFolderPath + "/" + remoteFileName)
-                        .withMode(WriteMode.OVERWRITE)
-                        .uploadAndFinish(inputStream);
+
+                FileMetadata result = mDbxClient.files().uploadBuilder(remoteFolderPath + "/" + remoteFileName).withMode(WriteMode.OVERWRITE).uploadAndFinish(inputStream);
+
+                SharedLinkMetadata sharedLinkMetadata = mDbxClient.sharing().createSharedLinkWithSettings("/Peer2Photo/Teste");
+                System.out.println(sharedLinkMetadata);
+
+                return result;
+
             } catch (DbxException | IOException e) {
                 mException = e;
                 e.printStackTrace();

@@ -129,7 +129,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         super.onResume();
 
         if(hasToken()){
-            System.out.println("You are now logged in to your Dropbox Accoutn!");
+            System.out.println("You are now logged in to your Dropbox Account!");
         }
 
     }
