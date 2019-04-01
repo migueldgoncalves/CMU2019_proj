@@ -172,7 +172,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
                     public void onError(Exception e) {
 
                     }
-                }).execute(m_Text, "/Peer2Photo");
+                }).execute(m_Text, "/Peer2Photo", "NEW_ALBUM");
                 //#####################################################
 
 
@@ -185,7 +185,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
                 bt.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-
+                        startActivity(new Intent(HomePage.this, AlbumView.class));
                     }
                 });
             }
