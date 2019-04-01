@@ -21,8 +21,11 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.dropbox.core.android.Auth;
+import com.dropbox.core.v2.files.FileMetadata;
 
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.DropboxActivity;
+import pt.ulisboa.tecnico.cmov.proj.Dropbox.DropboxClientFactory;
+import pt.ulisboa.tecnico.cmov.proj.Dropbox.UploadFileTask;
 
 public class HomePage extends DropboxActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -158,7 +161,18 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
                 //#####################################################
 
                 //TODO: Create Cloud File corresponding to album file (TXT file) after server acknowledgment of album creation
+                new UploadFileTask(HomePage.this, DropboxClientFactory.getClient(), new UploadFileTask.Callback(){
 
+                    @Override
+                    public void onUploadComplete(FileMetadata result) {
+
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+
+                    }
+                }).execute(m_Text, "/Peer2Photo");
                 //#####################################################
 
 
