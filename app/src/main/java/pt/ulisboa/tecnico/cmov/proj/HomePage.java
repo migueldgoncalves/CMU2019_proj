@@ -152,6 +152,16 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
             public void onClick(DialogInterface dialog, int which) {
                 m_Text = input.getText().toString();
                 ViewGroup linearLayout = findViewById(R.id.spawner_container);
+
+                //TODO: Ask server to create album in its local storage
+
+                //#####################################################
+
+                //TODO: Create Cloud File corresponding to album file (TXT file) after server acknowledgment of album creation
+
+                //#####################################################
+
+
                 Button bt = new Button(HomePage.this);
                 bt.setText(m_Text);
                 bt.setBackgroundColor(Color.RED);
