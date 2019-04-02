@@ -18,14 +18,14 @@ import java.io.OutputStream;
  * Task to download a file from Dropbox and put it in the Downloads folder
  */
 
-class DownloadFileTask extends AsyncTask<FileMetadata, Void, File> {
+public class DownloadFileTask extends AsyncTask<String, Void, File> {
 
     private final Context mContext;
     private final DbxClientV2 mDbxClient;
     private final Callback mCallback;
     private Exception mException;
 
-    DownloadFileTask(Context context, DbxClientV2 dbxClient, Callback callback) {
+    public DownloadFileTask(Context context, DbxClientV2 dbxClient, Callback callback) {
         mContext = context;
         mDbxClient = dbxClient;
         mCallback = callback;
@@ -42,15 +42,14 @@ class DownloadFileTask extends AsyncTask<FileMetadata, Void, File> {
     }
 
     @Override
-    protected File doInBackground(FileMetadata... params) {
+    protected File doInBackground(String... params) {
         FileMetadata metadata = null;
         try {
-            metadata = (FileMetadata) mDbxClient.files().getMetadata("/Peer2Photo/TEST.txt");
+            metadata = (FileMetadata) mDbxClient.files().getMetadata("/Peer2Photo/" + params[0]);
         } catch (DbxException e) {
             e.printStackTrace();
         }
         try {
-
             File path = new File(mContext.getFilesDir().getPath());
             File file = new File(path, metadata.getName());
 

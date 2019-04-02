@@ -28,10 +28,12 @@ import pt.ulisboa.tecnico.cmov.proj.Dropbox.UploadFileTask;
 public class AlbumView extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_album_view);
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -61,44 +63,62 @@ public class AlbumView extends AppCompatActivity
     {
         super.onActivityResult(requestCode, resultCode, data);
 
-                if(resultCode == RESULT_OK){
-                    Uri selectedImage = data.getData();
-                    String[] filePathColumn = {MediaStore.Images.Media.DATA};
+        if(resultCode == RESULT_OK){
+            Uri selectedImage = data.getData();
+            String[] filePathColumn = {MediaStore.Images.Media.DATA};
 
-                    Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
-                    cursor.moveToFirst();
+            Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
+            cursor.moveToFirst();
 
-                    int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                    String filePath = cursor.getString(columnIndex);
-                    cursor.close();
+            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+            String filePath = cursor.getString(columnIndex);
+            cursor.close();
 
-                    new UploadFileTask(AlbumView.this, DropboxClientFactory.getClient(), new UploadFileTask.Callback(){
+            Bundle b = getIntent().getExtras();
+            String value = "ERROR"; // or other values
+            if(b != null)
+                value = b.getString("AlbumName");
 
-                        @Override
-                        public void onUploadComplete(FileMetadata result) {
+            new UploadFileTask(AlbumView.this, DropboxClientFactory.getClient(), new UploadFileTask.Callback(){
+                 @Override
+                 public void onUploadComplete(FileMetadata result) {
+                  }
 
-                        }
+                  @Override
+                  public void onError(Exception e) {
 
-                        @Override
-                        public void onError(Exception e) {
+                 }//TODO: MUDAR ESTE NOME PARA UM NOME DO GENERO ALBUMID_PHOTO#
+            }).execute("NOME_TESTE_MUDAR_ISTO", "/Peer2Photo", "NEW_PHOTO", filePath, value);
 
-                        }//TODO: MUDAR ESTE NOME PARA UM NOME DO GENERO ALBUMID_PHOTO#
-                    }).execute("NOME_TESTE_MUDAR_ISTO", "/Peer2Photo", "NEW_PHOTO", filePath);
+            imageScalingAndPosting(filePath);
 
-
-                    Bitmap yourSelectedImage = BitmapFactory.decodeFile(filePath);
-
-                    int nh = (int) ( yourSelectedImage.getHeight() * (512.0 / yourSelectedImage.getWidth()) );
-                    Bitmap scaled = Bitmap.createScaledBitmap(yourSelectedImage, 512, nh, true);
-                    /* Now you have choosen image in Bitmap format in object "yourSelectedImage". You can use it in way you want! */
-
-                    ImageView imageView = new ImageView(getApplicationContext());
-                    LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                    imageView.setImageBitmap(scaled);
-                    LinearLayout rl = findViewById(R.id.linearLayout);
-                    rl.addView(imageView, lp);
-                }
         }
+    }
+
+    private void imageScalingAndPosting(String filePath){
+        Bitmap yourSelectedImage = BitmapFactory.decodeFile(filePath);
+
+        final int maxSize = 628;
+        int outWidth;
+        int outHeight;
+        int inWidth = yourSelectedImage.getWidth();
+        int inHeight = yourSelectedImage.getHeight();
+        if(inWidth > inHeight){
+            outWidth = maxSize;
+            outHeight = (inHeight * maxSize) / inWidth;
+        } else {
+            outHeight = maxSize;
+            outWidth = (inWidth * maxSize) / inHeight;
+        }
+
+        Bitmap scaled = Bitmap.createScaledBitmap(yourSelectedImage, outWidth, outHeight, false);
+
+        ImageView imageView = new ImageView(getApplicationContext());
+        imageView.setImageBitmap(scaled);
+
+        LinearLayout layout = findViewById(R.id.linearLayout);
+        layout.addView(imageView);
+    }
 
 
     @Override

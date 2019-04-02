@@ -19,6 +19,8 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.dropbox.core.android.Auth;
 import com.dropbox.core.v2.files.FileMetadata;
@@ -104,13 +106,14 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         } else if (id == R.id.nav_findUsers) {
             startActivity(new Intent(HomePage.this, FindUsers.class));
         } else if (id == R.id.nav_logs) {
-
+            startActivity(new Intent(HomePage.this, LogView.class));
         } else if (id == R.id.nav_dropbox) {
 
             if(!hasToken()){
                 Auth.startOAuth2Authentication(HomePage.this, ACCESS_KEY);
             }else {
-                System.out.println("You Are Already Logged In To Dropbox");
+                Toast.makeText(HomePage.this, "You Are Already Logged In To Your Dropbox",
+                        Toast.LENGTH_LONG).show();
             }
 
         } else if (id == R.id.nav_signOut) {
@@ -129,7 +132,16 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         super.onResume();
 
         if(hasToken()){
-            System.out.println("You are now logged in to your Dropbox Account!");
+            Toast.makeText(HomePage.this, "You Are Now Logged In To Your Dropbox",
+                    Toast.LENGTH_LONG).show();
+            TextView username = findViewById(R.id.UsernameDisplay);
+            TextView mail = findViewById(R.id.MailDisplay);
+            try{
+                username.setText(DropboxClientFactory.getClient().users().getCurrentAccount().getAccountId());
+                mail.setText(DropboxClientFactory.getClient().users().getCurrentAccount().getEmail());
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
 
     }
@@ -185,7 +197,12 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
                 bt.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        startActivity(new Intent(HomePage.this, AlbumView.class));
+                        Intent intent = new Intent(HomePage.this, AlbumView.class);
+                        Bundle b = new Bundle();
+                        b.putString("AlbumName", m_Text); //Your id
+                        intent.putExtras(b); //Put your id to your next Intent
+                        startActivity(intent);
+                        finish();
                     }
                 });
             }

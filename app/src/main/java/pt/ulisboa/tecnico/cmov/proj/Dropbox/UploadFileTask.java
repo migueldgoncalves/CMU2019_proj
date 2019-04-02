@@ -7,10 +7,12 @@ import com.dropbox.core.DbxException;
 import com.dropbox.core.v2.DbxClientV2;
 import com.dropbox.core.v2.files.FileMetadata;
 import com.dropbox.core.v2.files.WriteMode;
+import com.dropbox.core.v2.sharing.CreateSharedLinkWithSettingsErrorException;
 import com.dropbox.core.v2.sharing.SharedLinkMetadata;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -62,12 +64,9 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
             try{
                 if(localFile.createNewFile()){
                     System.out.println("File Created Successfuly!");
-                    //FileWriter out = new FileWriter(localFile);
-                    //out.write("This is a Test String To Ensure File Has Content");
-                    //out.close();
                 }
                 else {
-                    throw new IOException("Could Not Create File!");
+                    System.out.println("The File Already Exists in Local Storage");
                 }
             }catch (Exception e){
                 e.printStackTrace();
@@ -88,6 +87,8 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
 
                     return result;
 
+                }catch (CreateSharedLinkWithSettingsErrorException e){
+                    System.out.println("The File Already has a shared Link Associated with it!");
                 } catch (DbxException | IOException e) {
                     mException = e;
                     e.printStackTrace();
@@ -101,7 +102,7 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
             //PARAMS 1 ---> NOME DA PASTA REMOTA ONDE VAMOS GUARDAR O FICHEIRO
             //PARAMS 2 ---> OPERACAO
             //PARAMS 3 ---> PATH DA FOTO NA LOCAL STORAGE
-            //TODO: Add code to photo handling here
+            //PARAMS 4 ---> NOME DO ALBUM (SLICE) NA LOCAL STORAGE DO USER
             File localFile = new File(params[3]);
 
             if (localFile != null) {
@@ -114,10 +115,36 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
 
                     FileMetadata result = mDbxClient.files().uploadBuilder(remoteFolderPath + "/" + remoteFileName).withMode(WriteMode.OVERWRITE).uploadAndFinish(inputStream);
 
-                    SharedLinkMetadata sharedLinkMetadata = mDbxClient.sharing().createSharedLinkWithSettings("/Peer2Photo/" + remoteFileName);
-                    System.out.println(sharedLinkMetadata);
+                    try{
+                        SharedLinkMetadata sharedLinkMetadata = mDbxClient.sharing().createSharedLinkWithSettings("/Peer2Photo/" + remoteFileName);
+                        System.out.println(sharedLinkMetadata);
 
-                    return result;
+                        //Alter the local slice to Send new version to cloud
+                        File localSlice = new File(mContext.getFilesDir().getPath() + "/" + params[4]);
+                        FileWriter out = new FileWriter(localSlice);
+                        out.append(sharedLinkMetadata.getUrl().replace("?dl=0", "?dl=1"));
+                        out.flush();
+                        out.close();
+
+                        new UploadFileTask(mContext, mDbxClient, new Callback() {
+                            @Override
+                            public void onUploadComplete(FileMetadata result) {
+                                System.out.println("Catalog Updated!");
+                            }
+
+                            @Override
+                            public void onError(Exception e) {
+
+                            }
+                        }).execute(params[4], "/Peer2Photo", "NEW_ALBUM");
+
+                        return result;
+
+                    }catch (CreateSharedLinkWithSettingsErrorException e){
+                        System.out.println("The Shared Link Already Exists");
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
 
                 } catch (DbxException | IOException e) {
                     mException = e;

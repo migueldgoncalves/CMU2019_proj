@@ -39,6 +39,7 @@ public class SignIn extends AppCompatActivity {
     }
 
     private boolean serverValidatesCredentials() {
+
         String introducedUsername = ((EditText)findViewById(R.id.username)).getText().toString();
         String introducedPassword = ((EditText)findViewById(R.id.password)).getText().toString();
 
