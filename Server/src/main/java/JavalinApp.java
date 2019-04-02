@@ -1,10 +1,11 @@
 import io.javalin.Javalin;
 
 import java.util.HashMap;
+import java.util.Set;
 
 public class JavalinApp {
 
-    public static final int PORT = 7000;
+    public static final int PORT = 8080;
 
     public JavalinApp() {
 
@@ -26,10 +27,10 @@ public class JavalinApp {
             ctx.result("This link does not exist");
         });
 
-        HashMap<String, String> hash = new HashMap<String, String>();
-        hash.put("status", "OK");
+        HashMap<String, String> hashRoot = new HashMap<String, String>();
+        hashRoot.put("status", "OK");
         // Requests to the root path will return the JSON { "status" : "OK" }
-        app.get("/", ctx -> ctx.json(hash));
+        app.get("/", ctx -> ctx.json(hashRoot));
 
         app.get("/logs", ctx -> {
             ctx.json(operations.serviceGetLogs());
@@ -37,8 +38,14 @@ public class JavalinApp {
 
         // POST requests to path /signup will invoke method signup with required parameters and receive its response
         app.post("/signup", ctx -> {
-            AppRequest request = ctx.bodyAsClass(AppRequest.class);
-            ctx.json(operations.signUp(request.getUsername(), request.getPassword(), request.getPublicKey()));
+            HashMap<String, String> mapRequest = ctx.bodyAsClass(HashMap.class);
+            HashMap<String, String> mapResponse = new HashMap<>();
+            AppResponse response = operations.signUp(mapRequest.get("username"), mapRequest.get("password"), new byte[256]);
+            mapResponse.put("success", response.getSuccess());
+            mapResponse.put("error", response.getError());
+            System.out.println(response.getSuccess());
+            System.out.println(response.getError());
+            ctx.json(mapResponse);
             ctx.status(201);
         });
 
