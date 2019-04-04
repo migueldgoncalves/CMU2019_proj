@@ -37,7 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import pt.ulisboa.tecnico.cmov.proj.Data.Album;
-import pt.ulisboa.tecnico.cmov.proj.Data.AlbumAdapter;
+import pt.ulisboa.tecnico.cmov.proj.Adapters.AlbumAdapter;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.DropboxActivity;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.DropboxClientFactory;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.UploadFileTask;
