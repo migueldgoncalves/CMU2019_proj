@@ -35,8 +35,8 @@ public class SignIn extends AppCompatActivity {
     private JSONObject httpResponse = null;
 
 
-    private EditText username;
-    private EditText password;
+    private EditText usernameView;
+    private EditText passwordView;
 
 
     @Override
@@ -51,10 +51,12 @@ public class SignIn extends AppCompatActivity {
 
                 //TODO:Check If server acknowledges the introduced credentials and if so store the credentials and proceed to next activity
 
-                if(serverValidatesCredentials()){
+/*                if(serverValidatesCredentials()){
                     InitialVariableSetup();
                     startActivity(new Intent(SignIn.this, HomePage.class));
-                }
+                }*/
+
+                signIn(v);
 
             }
         });
@@ -101,6 +103,21 @@ public class SignIn extends AppCompatActivity {
         }
         );
         queue.add(request);
+    }
+
+    private void signIn(View view) {
+        // Reset errors.
+        usernameView.setError(null);
+        passwordView.setError(null);
+
+        // Store values at the time of the login attempt.
+        String username = usernameView.getText().toString();
+        String password = passwordView.getText().toString();
+
+        boolean cancel = false;
+        View focusView = null;
+
+        httpRequest(username, password);
     }
 
     private void setHTTPResponse(JSONObject json) {

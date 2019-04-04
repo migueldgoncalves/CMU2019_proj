@@ -157,8 +157,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         super.onResume();
 
         if(hasToken()){
-            Toast.makeText(HomePage.this, "You Are Now Logged In To Your Dropbox",
-                    Toast.LENGTH_LONG).show();
+            Toast.makeText(HomePage.this, "You Are Now Logged In To Your Dropbox", Toast.LENGTH_LONG).show();
             TextView username = findViewById(R.id.UsernameDisplay);
             TextView mail = findViewById(R.id.MailDisplay);
             try{
@@ -166,10 +165,8 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
                 mail.setText(DropboxClientFactory.getClient().users().getCurrentAccount().getEmail());
             }catch (Exception e){
 
-                e.printStackTrace();
             }
         }
-
     }
 
     @Override
@@ -217,8 +214,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
                 Button bt = new Button(HomePage.this);
                 bt.setText(m_Text);
                 bt.setBackgroundColor(Color.RED);
-                bt.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT,
-                        LayoutParams.WRAP_CONTENT));
+                bt.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
                 linearLayout.addView(bt);
                 bt.setOnClickListener(new View.OnClickListener() {
                     @Override
