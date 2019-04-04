@@ -1,9 +1,13 @@
 package pt.ulisboa.tecnico.cmov.proj;
 
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -17,17 +21,26 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 
 import com.dropbox.core.v2.files.FileMetadata;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
+import pt.ulisboa.tecnico.cmov.proj.Adapters.PhotoAdapter;
+import pt.ulisboa.tecnico.cmov.proj.Data.Photo;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.DropboxClientFactory;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.UploadFileTask;
 
 public class AlbumView extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    private static ArrayList<Photo> photos = new ArrayList<Photo>();
+    private static ArrayAdapter<Photo> photoAdapter = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,8 +67,64 @@ public class AlbumView extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
+        populatePhotoArray();
+
+        photoAdapter = new PhotoAdapter(this, 0, photos);
+        GridView photoTable = findViewById(R.id.photo_grid);
+        photoTable.setAdapter(photoAdapter);
+
+        photoTable.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View view,int position, long id) {
+                //TODO: O que fazer quando clico numa foto??
+                //SUGESTAO: Nada!
+            }
+        });
+
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+    }
+
+    protected void populatePhotoArray() {
+        //TODO: Replace with fetching all photos from album
+
+        photos   = new ArrayList<>(Arrays.asList(
+                new Photo(BitmapFactory.decodeResource(getApplicationContext().getResources(),
+                        R.drawable.empty_thumbnail)),
+                new Photo(BitmapFactory.decodeResource(getApplicationContext().getResources(),
+                        R.drawable.empty_thumbnail)),
+                new Photo(BitmapFactory.decodeResource(getApplicationContext().getResources(),
+                        R.drawable.empty_thumbnail)),
+                new Photo(BitmapFactory.decodeResource(getApplicationContext().getResources(),
+                        R.drawable.empty_thumbnail)),
+                new Photo(BitmapFactory.decodeResource(getApplicationContext().getResources(),
+                        R.drawable.empty_thumbnail)),
+                new Photo(BitmapFactory.decodeResource(getApplicationContext().getResources(),
+                        R.drawable.empty_thumbnail)),
+                new Photo(BitmapFactory.decodeResource(getApplicationContext().getResources(),
+                        R.drawable.empty_thumbnail))
+        ));
+    }
+
+    public static Bitmap drawableToBitmap (Drawable drawable) {
+        Bitmap bitmap = null;
+
+        if (drawable instanceof BitmapDrawable) {
+            BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
+            if(bitmapDrawable.getBitmap() != null) {
+                return bitmapDrawable.getBitmap();
+            }
+        }
+
+        if(drawable.getIntrinsicWidth() <= 0 || drawable.getIntrinsicHeight() <= 0) {
+            bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888); // Single color bitmap will be created of 1x1 pixel
+        } else {
+            bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        }
+
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+        return bitmap;
     }
 
     @Override
@@ -116,7 +185,7 @@ public class AlbumView extends AppCompatActivity
         ImageView imageView = new ImageView(getApplicationContext());
         imageView.setImageBitmap(scaled);
 
-        LinearLayout layout = findViewById(R.id.linearLayout);
+        GridView layout = findViewById(R.id.photo_grid);
         layout.addView(imageView);
     }
 

@@ -22,14 +22,22 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dropbox.core.android.Auth;
 import com.dropbox.core.v2.files.FileMetadata;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
+import pt.ulisboa.tecnico.cmov.proj.Data.Album;
+import pt.ulisboa.tecnico.cmov.proj.Adapters.AlbumAdapter;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.DropboxActivity;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.DropboxClientFactory;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.UploadFileTask;
@@ -39,6 +47,9 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
     private String m_Text = "";
     private final static String ACCESS_KEY = "ktxcdvzt610l2ao";
     private final static String ACCESS_SECRET = "wurqteptiyuh9s2";
+
+    private static ArrayList<Album> albums = new ArrayList<Album>();
+    private static ArrayAdapter<Album> albumAdapter = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +73,23 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
+        populateAlbumArray();
+
+        albumAdapter = new AlbumAdapter(this, 0, albums);
+        GridView albumTable = findViewById(R.id.album_grid);
+        albumTable.setAdapter(albumAdapter);
+
+        albumTable.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View view,int position, long id) {
+                Intent intent = new Intent(HomePage.this, AlbumView.class);
+                Bundle b = new Bundle();
+                b.putString("AlbumName", albums.get(position).getAlbumName()); //Your id
+                intent.putExtras(b); //Put your id to your next Intent
+                startActivity(intent);
+                finish();
+            }
+        });
+
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
@@ -74,6 +102,36 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
                 requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
             }
         }
+    }
+
+    void populateAlbumArray() {
+        //TODO: Replace with fetching dropbox folder for all albums
+
+        albums = new ArrayList<>(Arrays.asList(
+                new Album("Fotos 2019", R.drawable.empty_thumbnail),
+                new Album("Fotos 2018", R.drawable.empty_thumbnail),
+                new Album("Fotos 2017", R.drawable.empty_thumbnail),
+                new Album("Fotos 2016", R.drawable.empty_thumbnail),
+                new Album("Fotos 2015", R.drawable.empty_thumbnail),
+                new Album("Fotos 2014", R.drawable.empty_thumbnail),
+                new Album("Fotos 2013", R.drawable.empty_thumbnail)
+        ));
+    }
+
+    void updateAlbumAdapter() {
+        albumAdapter.notifyDataSetChanged();
+
+        GridView albumTable = findViewById(R.id.album_grid);
+        albumTable.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View view,int position, long id) {
+                Intent intent = new Intent(HomePage.this, AlbumView.class);
+                Bundle b = new Bundle();
+                b.putString("AlbumName", albums.get(position).getAlbumName()); //Your id
+                intent.putExtras(b); //Put your id to your next Intent
+                startActivity(intent);
+                finish();
+            }
+        });
     }
 
     @Override
@@ -184,12 +242,14 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL);
         builder.setView(input);
 
+        //TODO: Verify if album name already exists
+
         // Set up the buttons
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 m_Text = input.getText().toString();
-                ViewGroup linearLayout = findViewById(R.id.spawner_container);
+                ViewGroup linearLayout = findViewById(R.id.album_grid);
 
                 //TODO: Ask server to create album in its local storage
 
