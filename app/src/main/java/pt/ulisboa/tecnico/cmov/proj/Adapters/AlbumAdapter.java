@@ -1,19 +1,18 @@
-package pt.ulisboa.tecnico.cmov.proj.Data;
+package pt.ulisboa.tecnico.cmov.proj.Adapters;
 
 import android.app.Activity;
 import android.content.Context;
-import android.media.Image;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import pt.ulisboa.tecnico.cmov.proj.Data.Album;
 import pt.ulisboa.tecnico.cmov.proj.R;
 
 public class AlbumAdapter extends ArrayAdapter<Album> {

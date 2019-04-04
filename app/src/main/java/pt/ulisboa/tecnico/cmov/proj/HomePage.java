@@ -22,6 +22,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -33,6 +34,7 @@ import com.dropbox.core.android.Auth;
 import com.dropbox.core.v2.files.FileMetadata;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import pt.ulisboa.tecnico.cmov.proj.Data.Album;
 import pt.ulisboa.tecnico.cmov.proj.Data.AlbumAdapter;
@@ -77,6 +79,17 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         GridView albumTable = findViewById(R.id.album_grid);
         albumTable.setAdapter(albumAdapter);
 
+        albumTable.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View view,int position, long id) {
+                Intent intent = new Intent(HomePage.this, AlbumView.class);
+                Bundle b = new Bundle();
+                b.putString("AlbumName", albums.get(position).getAlbumName()); //Your id
+                intent.putExtras(b); //Put your id to your next Intent
+                startActivity(intent);
+                finish();
+            }
+        });
+
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
@@ -92,7 +105,8 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
     }
 
     void populateAlbumArray() {
-        /*
+        //TODO: Replace with fetching dropbox folder for all albums
+
         albums = new ArrayList<>(Arrays.asList(
                 new Album("Fotos 2019", R.drawable.empty_thumbnail),
                 new Album("Fotos 2018", R.drawable.empty_thumbnail),
@@ -102,7 +116,22 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
                 new Album("Fotos 2014", R.drawable.empty_thumbnail),
                 new Album("Fotos 2013", R.drawable.empty_thumbnail)
         ));
-        */
+    }
+
+    void updateAlbumAdapter() {
+        albumAdapter.notifyDataSetChanged();
+
+        GridView albumTable = findViewById(R.id.album_grid);
+        albumTable.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View view,int position, long id) {
+                Intent intent = new Intent(HomePage.this, AlbumView.class);
+                Bundle b = new Bundle();
+                b.putString("AlbumName", albums.get(position).getAlbumName()); //Your id
+                intent.putExtras(b); //Put your id to your next Intent
+                startActivity(intent);
+                finish();
+            }
+        });
     }
 
     @Override
