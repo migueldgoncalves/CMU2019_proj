@@ -1,11 +1,9 @@
-import java.util.ArrayList;
-
 public class AppResponse {
 
     private String success;
     private String error;
     private int sessionId;
-    private ArrayList<Log> logs;
+    private String logs;
     private int albumId;
 
     public String getSuccess() {
@@ -32,11 +30,11 @@ public class AppResponse {
         this.sessionId = sessionId;
     }
 
-    public ArrayList<Log> getLogs() {
+    public String getLogs() {
         return logs;
     }
 
-    public void setLogs(ArrayList<Log> logs) {
+    public void setLogs(String logs) {
         this.logs = logs;
     }
 

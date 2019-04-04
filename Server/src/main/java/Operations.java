@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -13,14 +14,14 @@ import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
 
 public class Operations {
 
-    public static final int MIN_USERNAME_LENGTH = 3;
-    public static final int MAX_USERNAME_LENGTH = 25;
-    public static final int MIN_PASSWORD_LENGTH = 8;
-    public static final int MAX_PASSWORD_LENGTH = 30;
+    protected static final int MIN_USERNAME_LENGTH = 3;
+    protected static final int MAX_USERNAME_LENGTH = 25;
+    protected static final int MIN_PASSWORD_LENGTH = 8;
+    protected static final int MAX_PASSWORD_LENGTH = 30;
 
-    public static final int RSA_KEY_BYTE_LENGTH = 256;
+    protected static final int RSA_KEY_BYTE_LENGTH = 256;
 
-    public static final int SESSION_DURATION = 5; //Seconds
+    protected static final int SESSION_DURATION = 5; //Seconds
 
     protected static final String TEMPORARY_BACKUP_NAME = "backups/ServerState.new";
     protected static final String STATE_BACKUP_NAME = "ServerState.old";
@@ -39,9 +40,10 @@ public class Operations {
     private HashMap<String, User> users = new HashMap<>();
     //Session ID as Key, SESSION object as value
     private HashMap<Integer, Session> sessions = new HashMap<>();
-    private ArrayList<Log> logs = new ArrayList<>();
+    private String logs = "";
 
     private AtomicInteger counterAlbum = new AtomicInteger(0);
+    private AtomicInteger counterLog = new AtomicInteger(0);
 
     private Operations() {
 
@@ -119,7 +121,6 @@ public class Operations {
             addLog(LOGIN_OPERATION, request, response);
             return response;
         }
-
         response.setSuccess("Login successful");
         response.setSessionId(session.getSessionId());
         addLog(LOGIN_OPERATION, request, response);
@@ -144,27 +145,25 @@ public class Operations {
     public AppResponse serviceGetLogs() {
         AppRequest request = new AppRequest();
         AppResponse response = new AppResponse();
-        //response.setLogs(getLogs());
         response.setSuccess("Logs correctly obtained");
-        addLog(LOGS_OPERATION, request, new AppResponse());
+        addLog(LOGS_OPERATION, request, response);
         response.setLogs(getLogs());
-        //logs.get(logs.size()-1).getResponse().setLogs(null);
         return response;
     }
 
     public AppResponse createAlbum(int sessionId, String username, String albumName) {
-        AppRequest appRequest = new AppRequest();
-        AppResponse appResponse = new AppResponse();
+        AppRequest request = new AppRequest();
+        AppResponse response = new AppResponse();
         String[] result = addAlbum(albumName, username);
-        if(!result[1].equals("Album successfully added")) {
-            appResponse.setError(result[1]);
-            //addLog(CREATE_ALBUM_OPERATION, appRequest, appResponse);
-            return appResponse;
+        if(!result[0].equals("Album successfully added")) {
+            response.setError(result[0]);
+            addLog(CREATE_ALBUM_OPERATION, request, response);
+            return response;
         }
-        appResponse.setSuccess(result[1]);
-        appResponse.setAlbumId(Integer.valueOf(result[2]));
-        //addLog(CREATE_ALBUM_OPERATION, appRequest, appResponse);
-        return appResponse;
+        response.setSuccess(result[0]);
+        response.setAlbumId(Integer.valueOf(result[1]));
+        addLog(CREATE_ALBUM_OPERATION, request, response);
+        return response;
     }
 
     // Business logic auxiliary methods
@@ -217,15 +216,16 @@ public class Operations {
                 Album album = new Album(albumName, id);
                 album.addUserToAlbum(username, null);
                 albums.put(id, album);
+                getUserByUsername(username).addAlbumUserIsIn(id);
                 Operations.writeServerState();
-                response[1] = "Album successfully added";
-                response[2] = String.valueOf(id);
+                response[0] = "Album successfully added";
+                response[1] = String.valueOf(id);
                 return response;
             }
-            response[1] = "Album name cannot be empty";
+            response[0] = "Album name cannot be empty";
             return response;
         }
-        response[1] = "Album name cannot be null";
+        response[0] = "Album name cannot be null";
         return response;
     }
 
@@ -237,17 +237,6 @@ public class Operations {
             return "User Successfully Added To Album";
         }else{
             return "The user was already in The Album";
-        }
-    }
-
-    protected boolean createAlbum(String albumName){
-        try{
-            int newAlbumId = counterAlbum.incrementAndGet();
-            albums.put(newAlbumId, new Album(albumName, newAlbumId));
-            return true;
-        }catch (Exception e){
-            e.printStackTrace();
-            return false;
         }
     }
 
@@ -305,14 +294,21 @@ public class Operations {
         if(operation!=null) {
             if(request!=null) {
                 if(response!=null) {
-                    Log log = new Log(operation, request, response);
-                    logs.add(log);
+                    String log = "";
+                    log+="Operation input: " + counterLog.incrementAndGet() + "\n";
+                    log+="Operation name: " + operation + "\n";
+                    log+="Operation time: " + new Date().toString() + "\n";
+                    log+="Operation input: " + new Gson().toJson(request) + "\n";
+                    log+="Operation output: " + new Gson().toJson(response) + "\n";
+                    log+="---------------------------------------------------------------------------------------------------------------\n";
+                    logs+=log;
                     Operations.writeServerState();
+                    System.out.println(logs);
                     return "Operation successfully logged";
                 }
-                return "App Response cannot be null";
+                return "Operation response cannot be null";
             }
-            return "App Request cannot be null";
+            return "Operation request cannot be null";
         }
         return "Operation name cannot be null";
     }
@@ -383,12 +379,12 @@ public class Operations {
         return users.size();
     }
 
-    protected ArrayList<Log> getLogs() {
+    protected String getLogs() {
         return logs;
     }
 
     protected int getLogsLength() {
-        return logs.size();
+        return counterLog.get();
     }
 
     // Server state backup methods
