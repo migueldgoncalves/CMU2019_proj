@@ -7,7 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
 
@@ -30,6 +30,7 @@ public class Operations {
     protected static final String LOGIN_OPERATION = "LOGIN";
     protected static final String LOGOUT_OPERATION = "LOGOUT";
     protected static final String LOGS_OPERATION = "LOGS";
+    protected static final String CREATE_ALBUM_OPERATION = "CREATE_ALBUM";
 
     private static Operations operations;
 
@@ -39,6 +40,8 @@ public class Operations {
     //Session ID as Key, SESSION object as value
     private HashMap<Integer, Session> sessions = new HashMap<>();
     private ArrayList<Log> logs = new ArrayList<>();
+
+    private AtomicInteger counterAlbum = new AtomicInteger(0);
 
     private Operations() {
 
@@ -149,6 +152,21 @@ public class Operations {
         return response;
     }
 
+    public AppResponse createAlbum(int sessionId, String username, String albumName) {
+        AppRequest appRequest = new AppRequest();
+        AppResponse appResponse = new AppResponse();
+        String[] result = addAlbum(albumName, username);
+        if(!result[1].equals("Album successfully added")) {
+            appResponse.setError(result[1]);
+            //addLog(CREATE_ALBUM_OPERATION, appRequest, appResponse);
+            return appResponse;
+        }
+        appResponse.setSuccess(result[1]);
+        appResponse.setAlbumId(Integer.valueOf(result[2]));
+        //addLog(CREATE_ALBUM_OPERATION, appRequest, appResponse);
+        return appResponse;
+    }
+
     // Business logic auxiliary methods
 
     protected String isUsernameValid(String username) {
@@ -191,16 +209,24 @@ public class Operations {
 
     // Server state setters
 
-    protected String addAlbum(Album album) {
-        if (album != null) {
-            if (!isAlbumCreated(album.getId())) {
-                albums.put(album.getId(), album);
+    protected String[] addAlbum(String albumName, String username) {
+        String[] response = new String[2];
+        if (albumName != null) {
+            if (albumName.length() == 0 || albumName.trim().length() == 0) {
+                int id = counterAlbum.incrementAndGet();
+                Album album = new Album(albumName, id);
+                album.addUserToAlbum(username, null);
+                albums.put(id, album);
                 Operations.writeServerState();
-                return "Album successfully added";
+                response[1] = "Album successfully added";
+                response[2] = String.valueOf(id);
+                return response;
             }
-            return "Album already exists";
+            response[1] = "Album name cannot be empty";
+            return response;
         }
-        return "Album cannot be null";
+        response[1] = "Album name cannot be null";
+        return response;
     }
 
     protected String addUserToAlbum(String username, int albumId, String SliceURL){
@@ -216,10 +242,7 @@ public class Operations {
 
     protected boolean createAlbum(String albumName){
         try{
-            int newAlbumId = new Random().nextInt();
-            while(albums.containsKey(newAlbumId)){
-                newAlbumId = new Random().nextInt();
-            }
+            int newAlbumId = counterAlbum.incrementAndGet();
             albums.put(newAlbumId, new Album(albumName, newAlbumId));
             return true;
         }catch (Exception e){

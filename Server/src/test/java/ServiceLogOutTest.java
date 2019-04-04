@@ -13,7 +13,7 @@ public class ServiceLogOutTest {
 
     private static final int OK = 200;
 
-    private static final int PORT = 7000;
+    private static final int PORT = JavalinApp.PORT;
 
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 

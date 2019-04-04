@@ -6,6 +6,7 @@ public class AppResponse {
     private String error;
     private int sessionId;
     private ArrayList<Log> logs;
+    private int albumId;
 
     public String getSuccess() {
         return success;
@@ -37,5 +38,13 @@ public class AppResponse {
 
     public void setLogs(ArrayList<Log> logs) {
         this.logs = logs;
+    }
+
+    public int getAlbumId() {
+        return albumId;
+    }
+
+    public void setAlbumId(int albumId) {
+        this.albumId = albumId;
     }
 }

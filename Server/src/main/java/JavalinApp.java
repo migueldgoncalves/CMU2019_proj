@@ -1,7 +1,6 @@
 import io.javalin.Javalin;
 
 import java.util.HashMap;
-import java.util.Set;
 
 public class JavalinApp {
 
@@ -41,6 +40,18 @@ public class JavalinApp {
             HashMap<String, String> mapRequest = ctx.bodyAsClass(HashMap.class);
             HashMap<String, String> mapResponse = new HashMap<>();
             AppResponse response = operations.signUp(mapRequest.get("username"), mapRequest.get("password"), new byte[256]);
+            mapResponse.put("success", response.getSuccess());
+            mapResponse.put("error", response.getError());
+            System.out.println(response.getSuccess());
+            System.out.println(response.getError());
+            ctx.json(mapResponse);
+            ctx.status(201);
+        });
+
+        app.post("/createalbum", ctx -> {
+            HashMap<String, String> mapRequest = ctx.bodyAsClass(HashMap.class);
+            HashMap<String, String> mapResponse = new HashMap<>();
+            AppResponse response = operations.createAlbum(Integer.valueOf(mapRequest.get("sessionId")), mapRequest.get("username"), mapRequest.get("albumName"));
             mapResponse.put("success", response.getSuccess());
             mapResponse.put("error", response.getError());
             System.out.println(response.getSuccess());

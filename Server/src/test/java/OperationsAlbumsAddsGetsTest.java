@@ -33,7 +33,7 @@ public class OperationsAlbumsAddsGetsTest {
         try {
             Assert.assertEquals(0, operations.getAlbumsLength());
             Album album = new Album("album", 1);
-            String returnString = operations.addAlbum(album);
+            String returnString = operations.addAlbum("album", "username")[1];
             Assert.assertEquals("Album successfully added", returnString);
             Assert.assertEquals(1, operations.getAlbumsLength());
 
@@ -64,8 +64,8 @@ public class OperationsAlbumsAddsGetsTest {
         try {
             Assert.assertEquals(0, operations.getAlbumsLength());
             Album album = new Album("album", 1);
-            operations.addAlbum(album);
-            String returnValue = operations.addAlbum(album);
+            operations.addAlbum("album", "username");
+            String returnValue = operations.addAlbum("album", "username")[1];
 
             Assert.assertEquals("Album already exists", returnValue);
             Assert.assertEquals(1, operations.getAlbumsLength());
@@ -85,7 +85,7 @@ public class OperationsAlbumsAddsGetsTest {
     @Test
     public void albumAddNullTest() {
         try {
-            String returnString = operations.addAlbum(null);
+            String returnString = operations.addAlbum(null, null)[1];
             Assert.assertEquals("Album cannot be null", returnString);
             Assert.assertEquals(0, operations.getAlbumsLength());
             Assert.assertEquals(0, operations.getSessionsLength());
@@ -96,7 +96,7 @@ public class OperationsAlbumsAddsGetsTest {
             jsonString = jsonString.replace("\n", "").replace("\r", "");
             Assert.assertEquals("{\"albums\":{},\"users\":{},\"sessions\":{},\"logs\":[]}", jsonString);
 
-            returnString = operations.addAlbum(new Album("album", 1));
+            returnString = operations.addAlbum("album", "username")[1];
             Assert.assertEquals("Album successfully added", returnString);
             Assert.assertEquals(1, operations.getAlbumsLength());
         } catch (Exception e) {
@@ -110,10 +110,10 @@ public class OperationsAlbumsAddsGetsTest {
         try {
             Assert.assertEquals(0, operations.getAlbums().size());
             Assert.assertEquals(0, operations.getAlbumsLength());
-            operations.addAlbum(new Album("album", 1));
+            operations.addAlbum("album", "username");
             Assert.assertEquals(1, operations.getAlbums().size());
             Assert.assertEquals(1, operations.getAlbumsLength());
-            operations.addAlbum(new Album("album", 1));
+            operations.addAlbum("album", "username");
             Assert.assertEquals(1, operations.getAlbums().size());
             Assert.assertEquals(1, operations.getAlbumsLength());
         } catch (Exception e) {
@@ -127,7 +127,7 @@ public class OperationsAlbumsAddsGetsTest {
         try {
             Assert.assertNull(operations.getAlbumById(0));
             Assert.assertNull(operations.getAlbumById(1));
-            operations.addAlbum(new Album("album", 1));
+            operations.addAlbum("album", "username");
             Assert.assertNull(operations.getAlbumById(0));
             Assert.assertEquals("album", operations.getAlbumById(1).getName());
             Assert.assertNull(operations.getAlbumById(2));

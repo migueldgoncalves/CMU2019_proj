@@ -69,7 +69,7 @@ public class OperationsSingletonTest {
             appResponse.setSuccess("Success");
 
             operations = Operations.getServer();
-            operations.addAlbum(album);
+            operations.addAlbum("album", "username");
             operations.addUser(user1);
             operations.addUser(user2);
             operations.addUser(user3);

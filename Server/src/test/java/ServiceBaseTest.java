@@ -15,7 +15,7 @@ public class ServiceBaseTest {
     private static final int BAD_REQUEST = 400;
     private static final int NOT_FOUND = 404;
 
-    private static final int PORT = 7000;
+    private static final int PORT = JavalinApp.PORT;
 
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
