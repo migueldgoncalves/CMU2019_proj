@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.cmov.proj.Data.Adapters;
+package pt.ulisboa.tecnico.cmov.proj.Adapters;
 
 import android.app.Activity;
 import android.content.Context;
