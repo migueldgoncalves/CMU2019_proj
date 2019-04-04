@@ -61,9 +61,15 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
             //PARAMS 2 ---> OPERACAO
 
             File localFile = new File(mContext.getFilesDir().getPath() + "/" + params[0]);
+            File file = new File(mContext.getFilesDir().getPath() + "/" + params[0] + "/" + params[0] + ".txt");
             try{
-                if(localFile.createNewFile()){
-                    System.out.println("File Created Successfuly!");
+                if(localFile.mkdir()){
+                    System.out.println("Folder Created Successfuly!");
+                    if(file.createNewFile()){
+                        System.out.println("Album File Created Successfully!");
+                    }else {
+                        System.out.println("Failed To Create Album File!");
+                    }
                 }
                 else {
                     System.out.println("The File Already Exists in Local Storage");
@@ -72,13 +78,13 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
                 e.printStackTrace();
             }
 
-            if (localFile != null) {
+            if (file != null) {
 
                 String remoteFolderPath = params[1];
-                String remoteFileName = params[0];
+                String remoteFileName = params[0] + ".txt";
 
                 try{
-                    InputStream inputStream = new FileInputStream(localFile);
+                    InputStream inputStream = new FileInputStream(file);
 
                     FileMetadata result = mDbxClient.files().uploadBuilder(remoteFolderPath + "/" + remoteFileName).withMode(WriteMode.OVERWRITE).uploadAndFinish(inputStream);
 
