@@ -1,15 +1,19 @@
 package pt.ulisboa.tecnico.cmov.proj;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONException;
@@ -20,56 +24,89 @@ import java.util.HashMap;
 
 public class SignUp extends AppCompatActivity {
 
-    public static final String URL_BASE = "http://192.168.42.51:8080";
+    //public static final String URL_BASE = "http://localhost:8080";
+    public static final String URL_BASE = "http://192.168.1.10:8080";
     public static final String URL_SIGNUP = URL_BASE + "/signup";
 
     Context ctx = this;
     private RequestQueue queue = null;
     private JSONObject httpResponse = null;
 
+    private EditText UsernameView;
+    private EditText PasswordView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
-        //try {
-        android.util.Log.d("debug", "Real beginning " + new Date().getTime());
-            httpPost("username", "password");
-        //while(httpResponse==null) {if(httpResponse!=null) break;}
-            android.util.Log.d("debug", "All began at " + new Date().getTime());
-            //android.util.Log.d("debug", httpResponse.getString("success"));
-        //JSONArray array = httpResponse.getJSONArray("");
-            //AppResponse response = (AppResponse) array.get(0);
-        //} catch (JSONException e) {
-        //    android.util.Log.d("debug", e.getStackTrace().toString());
-        //}
-        android.util.Log.d("debug", "Start cleaning " + new Date().getTime());
-        cleanHTTPResponse();
+
+        UsernameView = findViewById(R.id.username_signup);
+        PasswordView = findViewById(R.id.password_signup);
+
+        Button SignUpButton = findViewById(R.id.sign_up_button);
+        SignUpButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                signUp(view);
+            }
+        });
     }
 
-    private void httpGet() {
-// ...
-
-// Instantiate the RequestQueue.
-        RequestQueue queue = Volley.newRequestQueue(this);
-        String url ="http://www.google.com";
-
-// Request a string response from the provided URL.
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, URL_BASE,
-                new Response.Listener<String>() {
+    private void httpRequest(String username, String password) {
+        android.util.Log.d("debug", "Starting POST request to URL " + URL_SIGNUP);
+        createHTTPQueue();
+        HashMap<String, String> mapRequest = new HashMap();
+        mapRequest.put("username", username);
+        mapRequest.put("password", password);
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, URL_SIGNUP, new JSONObject(mapRequest),
+                new Response.Listener<JSONObject>()
+                {
                     @Override
-                    public void onResponse(String response) {
-                        // Display the first 500 characters of the response string.
-                        android.util.Log.d("debug","Response is: " + response);
+                    public void onResponse(JSONObject httpResponse) {
+                        try {
+                            setHTTPResponse(httpResponse);
+                            String success = httpResponse.getString("success");
+                            String error = httpResponse.getString("error");
+                            android.util.Log.d("debug", httpResponse.toString());
+                            android.util.Log.d("debug", success);
+                            android.util.Log.d("debug", error);
+                            if(!error.equals("null")) {
+                                Toast.makeText(ctx, error, Toast.LENGTH_SHORT).show();
+                            }
+                            else {
+                                Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(ctx, SignIn.class);
+                                startActivity(intent);
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        cleanHTTPResponse();
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                android.util.Log.d("debug","You failed");
+                cleanHTTPResponse();
+                android.util.Log.d("debug", "POST error");
             }
-        });
+        }
+        );
+        queue.add(request);
+    }
 
-// Add the request to the RequestQueue.
-        queue.add(stringRequest);
+    private void signUp(View view) {
+        // Reset errors.
+        UsernameView.setError(null);
+        PasswordView.setError(null);
+
+        // Store values at the time of the login attempt.
+        String username = UsernameView.getText().toString();
+        String password = PasswordView.getText().toString();
+
+        boolean cancel = false;
+        View focusView = null;
+
+        httpRequest(username, password);
     }
 
     private void setHTTPResponse(JSONObject json) {
@@ -85,40 +122,5 @@ public class SignUp extends AppCompatActivity {
         if(this.queue == null) {
             this.queue = Volley.newRequestQueue(ctx);
         }
-    }
-
-    private void httpPost(String username, String password) {
-        android.util.Log.d("debug", "Iniciando pedido POST al URL " + URL_SIGNUP);
-        createHTTPQueue();
-        HashMap<String, String> mapRequest = new HashMap();
-        mapRequest.put("username", "username5");
-        mapRequest.put("password", "password");
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, URL_SIGNUP, new JSONObject(mapRequest),
-                new Response.Listener<JSONObject>()
-                {
-                    @Override
-                    public void onResponse(JSONObject httpResponse) {
-                        setHTTPResponse(httpResponse);
-                        android.util.Log.d("debug", httpResponse.toString());
-                        android.util.Log.d("debug", "This should not be last: " + new Date().getTime());
-                        try {
-                            android.util.Log.d("debug", httpResponse.getString("success"));
-                            android.util.Log.d("debug", httpResponse.getString("error"));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                        cleanHTTPResponse();
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                cleanHTTPResponse();
-                android.util.Log.d("debug", "POST error");
-            }
-        }
-        );
-        queue.add(request);
-        android.util.Log.d("debug", "Pedido POST ejecutado, su respuesta es " + httpResponse);
-        android.util.Log.d("debug", "This is the real end: " + new Date().getTime());
     }
 }
