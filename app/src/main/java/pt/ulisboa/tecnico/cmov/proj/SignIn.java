@@ -50,14 +50,8 @@ public class SignIn extends AppCompatActivity {
             public void onClick(View v) {
 
                 //TODO:Check If server acknowledges the introduced credentials and if so store the credentials and proceed to next activity
-
-/*                if(serverValidatesCredentials()){
-                    InitialVariableSetup();
-                    startActivity(new Intent(SignIn.this, HomePage.class));
-                }*/
-
-                signIn(v);
-
+                InitialVariableSetup();
+                startActivity(new Intent(SignIn.this, HomePage.class));
             }
         });
 

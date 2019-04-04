@@ -44,7 +44,6 @@ import pt.ulisboa.tecnico.cmov.proj.Dropbox.UploadFileTask;
 
 public class HomePage extends DropboxActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-    private String m_Text = "";
     private final static String ACCESS_KEY = "ktxcdvzt610l2ao";
     private final static String ACCESS_SECRET = "wurqteptiyuh9s2";
 
@@ -107,6 +106,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
     void populateAlbumArray() {
         //TODO: Replace with fetching dropbox folder for all albums
 
+        /*
         albums = new ArrayList<>(Arrays.asList(
                 new Album("Fotos 2019", R.drawable.empty_thumbnail),
                 new Album("Fotos 2018", R.drawable.empty_thumbnail),
@@ -116,6 +116,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
                 new Album("Fotos 2014", R.drawable.empty_thumbnail),
                 new Album("Fotos 2013", R.drawable.empty_thumbnail)
         ));
+        */
     }
 
     void updateAlbumAdapter() {
@@ -232,6 +233,11 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
 
     }
 
+    private void addNewAlbum(String albumName) {
+        albums.add(new Album(albumName, R.drawable.empty_thumbnail));
+        albumAdapter.notifyDataSetChanged();
+    }
+
     private void createAlbum(){
         AlertDialog.Builder builder = new AlertDialog.Builder(HomePage.this);
         builder.setTitle("Title");
@@ -248,8 +254,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                m_Text = input.getText().toString();
-                ViewGroup linearLayout = findViewById(R.id.album_grid);
+                String albumName = input.getText().toString();
 
                 //TODO: Ask server to create album in its local storage
 
@@ -267,26 +272,10 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
                     public void onError(Exception e) {
 
                     }
-                }).execute(m_Text, "/Peer2Photo", "NEW_ALBUM");
+                }).execute(albumName, "/Peer2Photo", "NEW_ALBUM");
                 //#####################################################
 
-
-                Button bt = new Button(HomePage.this);
-                bt.setText(m_Text);
-                bt.setBackgroundColor(Color.RED);
-                bt.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
-                linearLayout.addView(bt);
-                bt.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent = new Intent(HomePage.this, AlbumView.class);
-                        Bundle b = new Bundle();
-                        b.putString("AlbumName", m_Text); //Your id
-                        intent.putExtras(b); //Put your id to your next Intent
-                        startActivity(intent);
-                        finish();
-                    }
-                });
+                addNewAlbum(albumName);
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
