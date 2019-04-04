@@ -140,6 +140,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
                 username.setText(DropboxClientFactory.getClient().users().getCurrentAccount().getAccountId());
                 mail.setText(DropboxClientFactory.getClient().users().getCurrentAccount().getEmail());
             }catch (Exception e){
+
                 e.printStackTrace();
             }
         }
@@ -158,7 +159,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         // Set up the input
         final EditText input = new EditText(HomePage.this);
         // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
-        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL);
         builder.setView(input);
 
         // Set up the buttons
