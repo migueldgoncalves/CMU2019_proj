@@ -1,13 +1,9 @@
 package pt.ulisboa.tecnico.cmov.proj;
 
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -24,12 +20,11 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
-import android.widget.ImageView;
 
 import com.dropbox.core.v2.files.FileMetadata;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Random;
 
 import pt.ulisboa.tecnico.cmov.proj.Adapters.PhotoAdapter;
 import pt.ulisboa.tecnico.cmov.proj.Data.Photo;
@@ -133,6 +128,8 @@ public class AlbumView extends AppCompatActivity
             if(b != null)
                 value = b.getString("AlbumName");
 
+            String PhotoName = value + "_Photo_" + new Random().nextInt();
+
             new UploadFileTask(AlbumView.this, DropboxClientFactory.getClient(), new UploadFileTask.Callback(){
                  @Override
                  public void onUploadComplete(FileMetadata result) {
@@ -141,8 +138,8 @@ public class AlbumView extends AppCompatActivity
                   @Override
                   public void onError(Exception e) {
 
-                 }//TODO: MUDAR ESTE NOME PARA UM NOME DO GENERO ALBUMID_PHOTO#
-            }).execute("NOME_TESTE_MUDAR_ISTO", "/Peer2Photo", "NEW_PHOTO", filePath, value);
+                 }
+            }).execute(PhotoName, "/Peer2Photo", "NEW_PHOTO", filePath, value);
 
             imageScalingAndPosting(filePath);
         }

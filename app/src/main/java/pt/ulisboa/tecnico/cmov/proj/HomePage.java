@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -20,11 +19,8 @@ import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.TextView;
@@ -33,11 +29,11 @@ import android.widget.Toast;
 import com.dropbox.core.android.Auth;
 import com.dropbox.core.v2.files.FileMetadata;
 
+import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 
-import pt.ulisboa.tecnico.cmov.proj.Data.Album;
 import pt.ulisboa.tecnico.cmov.proj.Adapters.AlbumAdapter;
+import pt.ulisboa.tecnico.cmov.proj.Data.Album;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.DropboxActivity;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.DropboxClientFactory;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.UploadFileTask;
@@ -78,6 +74,8 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         GridView albumTable = findViewById(R.id.album_grid);
         albumTable.setAdapter(albumAdapter);
 
+        loadAlbums();
+
         albumTable.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view,int position, long id) {
                 Intent intent = new Intent(HomePage.this, AlbumView.class);
@@ -101,6 +99,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
                 requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
             }
         }
+
     }
 
     void populateAlbumArray() {
@@ -286,6 +285,16 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         });
 
         builder.show();
+    }
+
+    private void loadAlbums(){
+        File[] directories = new File(getApplicationContext().getFilesDir().getPath()).listFiles(File::isDirectory);
+
+        for (File i : directories){
+            addNewAlbum(i.getName());
+        }
+
+        System.out.println("Finished Loading Albums!");
     }
 
 }

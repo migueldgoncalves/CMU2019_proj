@@ -10,6 +10,7 @@ import com.dropbox.core.v2.files.WriteMode;
 import com.dropbox.core.v2.sharing.CreateSharedLinkWithSettingsErrorException;
 import com.dropbox.core.v2.sharing.SharedLinkMetadata;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
@@ -62,6 +63,7 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
 
             File localFile = new File(mContext.getFilesDir().getPath() + "/" + params[0]);
             File file = new File(mContext.getFilesDir().getPath() + "/" + params[0] + "/" + params[0] + ".txt");
+            File localPhotosFile = new File(mContext.getFilesDir().getPath() + "/" + params[0] + "/" + params[0] + "_LOCAL.txt");
             try{
                 if(localFile.mkdir()){
                     System.out.println("Folder Created Successfuly!");
@@ -70,9 +72,15 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
                     }else {
                         System.out.println("Failed To Create Album File!");
                     }
+
+                    if (localFile.createNewFile()){
+                        System.out.println("The Local Photos File Was Created Successfuly!");
+                    }else{
+                        System.out.println("The Local Photos File Already Exists!");
+                    }
                 }
                 else {
-                    System.out.println("The File Already Exists in Local Storage");
+                    System.out.println("The File Already Exists in Local Storage. Perfoming Update...");
                 }
             }catch (Exception e){
                 e.printStackTrace();
@@ -90,6 +98,8 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
 
                     SharedLinkMetadata sharedLinkMetadata = mDbxClient.sharing().createSharedLinkWithSettings("/Peer2Photo/" + remoteFileName);
                     System.out.println(sharedLinkMetadata);
+
+                    //TODO: Send URL (ENCRYPTED) To Server
 
                     return result;
 
@@ -126,9 +136,14 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
                         System.out.println(sharedLinkMetadata);
 
                         //Alter the local slice to Send new version to cloud
-                        File localSlice = new File(mContext.getFilesDir().getPath() + "/" + params[4]);
-                        FileWriter out = new FileWriter(localSlice);
-                        out.append(sharedLinkMetadata.getUrl().replace("?dl=0", "?dl=1"));
+                        File localSlice = new File(mContext.getFilesDir().getPath() + "/" + params[4] + "/" + params[4] + ".txt");
+                        BufferedWriter out = new BufferedWriter(new FileWriter(localSlice, true));
+                        out.write(sharedLinkMetadata.getUrl().replace("?dl=0", "?dl=1") + "\n");
+                        out.flush();
+                        out.close();
+
+                        out = new BufferedWriter(new FileWriter(new File(mContext.getFilesDir().getPath() + "/" + params[4] + "/" + params[4] + "_LOCAL.txt"), true));
+                        out.write(params[3] + "\n");
                         out.flush();
                         out.close();
 
