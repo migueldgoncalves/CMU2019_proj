@@ -44,6 +44,7 @@ import java.util.HashMap;
 
 import pt.ulisboa.tecnico.cmov.proj.Adapters.AlbumAdapter;
 import pt.ulisboa.tecnico.cmov.proj.Data.Album;
+import pt.ulisboa.tecnico.cmov.proj.Data.Peer2PhotoApp;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.DropboxActivity;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.DropboxClientFactory;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.UploadFileTask;
@@ -55,7 +56,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
 
     //public static final String URL_BASE = "http://localhost:8080";
     public static final String URL_BASE = "http://192.168.43.165:8080";
-    public static final String URL_SIGNUP = URL_BASE + "/signup";
+    public static final String URL_SIGNUP = URL_BASE + "/createalbum";
 
     Context ctx = this;
     private RequestQueue queue = null;
@@ -274,27 +275,12 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String albumName = input.getText().toString();
+                String sessionId = ((Peer2PhotoApp) getApplication()).getSessionId();
+                String username = ((Peer2PhotoApp) getApplication()).getUsername();
 
                 //TODO: Ask server to create album in its local storage
 
-                //#####################################################
-
-                //TODO: Create Cloud File corresponding to album file (TXT file) after server acknowledgment of album creation
-                new UploadFileTask(HomePage.this, DropboxClientFactory.getClient(), new UploadFileTask.Callback(){
-
-                    @Override
-                    public void onUploadComplete(FileMetadata result) {
-
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-
-                    }
-                }).execute(albumName, "/Peer2Photo", "NEW_ALBUM");
-                //#####################################################
-
-                addNewAlbum(albumName);
+                httpRequest(albumName, username, sessionId);
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -322,12 +308,13 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
 
     }
 
-    private void httpRequest(String username, String password) {
+    private void httpRequest(String albumName, String username, String sessionId) {
         android.util.Log.d("debug", "Starting POST request to URL " + URL_SIGNUP);
         createHTTPQueue();
         HashMap<String, String> mapRequest = new HashMap<>();
+        mapRequest.put("albumName", albumName);
         mapRequest.put("username", username);
-        mapRequest.put("password", password);
+        mapRequest.put("sessionId", sessionId);
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, URL_SIGNUP, new JSONObject(mapRequest),
                 httpResponse -> {
                     try {
@@ -342,8 +329,24 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
                         }
                         else {
                             Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
-                            Intent intent = new Intent(ctx, SignIn.class);
-                            startActivity(intent);
+                            //#####################################################
+
+                            //TODO: Create Cloud File corresponding to album file (TXT file) after server acknowledgment of album creation
+                            new UploadFileTask(HomePage.this, DropboxClientFactory.getClient(), new UploadFileTask.Callback(){
+
+                                @Override
+                                public void onUploadComplete(FileMetadata result) {
+
+                                }
+
+                                @Override
+                                public void onError(Exception e) {
+
+                                }
+                            }).execute(albumName, "/Peer2Photo", "NEW_ALBUM");
+                            //#####################################################
+
+                            addNewAlbum(albumName);
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();

@@ -78,7 +78,7 @@ public class SignIn extends AppCompatActivity {
                         else {
                             Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(ctx, HomePage.class);
-                            InitialVariableSetup();
+                            InitialVariableSetup(httpResponse.getString("sessionId"));
                             startActivity(intent);
                         }
                     } catch (JSONException e) {
@@ -131,9 +131,10 @@ public class SignIn extends AppCompatActivity {
         return true;
     }
 
-    private void InitialVariableSetup(){
+    private void InitialVariableSetup(String sessionId){
         ((Peer2PhotoApp) this.getApplication()).setUsername(((EditText)findViewById(R.id.username_login)).getText().toString());
         ((Peer2PhotoApp) this.getApplication()).setPassword(((EditText)findViewById(R.id.password_login)).getText().toString());
+        ((Peer2PhotoApp) this.getApplication()).setSessionId(sessionId);
     }
 
 }

@@ -7,8 +7,8 @@
     <list default="true" id="da83fd6f-730d-48d5-9f30-7dcb426cb748" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backups/ServerState.old" beforeDir="false" afterPath="$PROJECT_DIR$/backups/ServerState.old" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../app/src/main/java/pt/ulisboa/tecnico/cmov/proj/SignIn.java" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/pt/ulisboa/tecnico/cmov/proj/SignIn.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../app/src/main/java/pt/ulisboa/tecnico/cmov/proj/SignUp.java" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/pt/ulisboa/tecnico/cmov/proj/SignUp.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/src/main/java/pt/ulisboa/tecnico/cmov/proj/Data/Peer2PhotoApp.java" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/pt/ulisboa/tecnico/cmov/proj/Data/Peer2PhotoApp.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app/src/main/java/pt/ulisboa/tecnico/cmov/proj/HomePage.java" beforeDir="false" afterPath="$PROJECT_DIR$/../app/src/main/java/pt/ulisboa/tecnico/cmov/proj/HomePage.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/target/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -27,7 +27,7 @@
         <entry file="file://$PROJECT_DIR$/src/main/java/Operations.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="4845">
-              <caret line="301" column="31" selection-start-line="301" selection-start-column="31" selection-end-line="301" selection-end-column="72" />
+              <caret line="297" column="31" selection-start-line="297" selection-start-column="31" selection-end-line="297" selection-end-column="72" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -62,7 +62,7 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/Main.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="68">
+            <state relative-caret-position="6">
               <caret line="4" column="19" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
             </state>
           </provider>
@@ -243,7 +243,7 @@
       <updated>1553709482635</updated>
       <workItem from="1553709483948" duration="12495000" />
       <workItem from="1553742878112" duration="6371000" />
-      <workItem from="1554432409496" duration="2920000" />
+      <workItem from="1554432409496" duration="3530000" />
     </task>
     <task id="LOCAL-00001" summary="Javalyn class created&#10;Proceeding to work on Google Drive API">
       <created>1553733355462</created>
@@ -288,7 +288,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="28730000" />
+    <option name="totallyTimeSpent" value="29340000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1912" y="-8" width="1936" height="1056" extended-state="6" />
@@ -303,7 +303,7 @@
       <window_info id="Favorites" order="6" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.16222222" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.96666664" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -355,7 +355,7 @@
     <entry file="file://$PROJECT_DIR$/src/main/java/Operations.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="4845">
-          <caret line="301" column="31" selection-start-line="301" selection-start-column="31" selection-end-line="301" selection-end-column="72" />
+          <caret line="297" column="31" selection-start-line="297" selection-start-column="31" selection-end-line="297" selection-end-column="72" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
@@ -415,7 +415,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/Main.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
+        <state relative-caret-position="6">
           <caret line="4" column="19" selection-start-line="4" selection-start-column="19" selection-end-line="4" selection-end-column="19" />
         </state>
       </provider>

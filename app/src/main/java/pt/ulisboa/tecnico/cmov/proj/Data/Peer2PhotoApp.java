@@ -6,6 +6,7 @@ public class Peer2PhotoApp extends Application {
 
     private String username;
     private String password;
+    private String sessionId;
 
     public String getUsername() {
         return username;
@@ -23,5 +24,12 @@ public class Peer2PhotoApp extends Application {
         this.password = password;
     }
 
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
+    }
 
 }
