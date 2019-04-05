@@ -4,6 +4,7 @@ public class AppRequest {
     private String password;
     private byte[] publicKey;
     private int sessionId;
+    private String albumName;
 
     public AppRequest() {
 
@@ -39,5 +40,13 @@ public class AppRequest {
 
     public void setSessionId(int sessionId) {
         this.sessionId = sessionId;
+    }
+
+    public String getAlbumName() {
+        return albumName;
+    }
+
+    public void setAlbumName(String albumName) {
+        this.albumName = albumName;
     }
 }

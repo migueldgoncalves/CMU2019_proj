@@ -154,6 +154,9 @@ public class Operations {
     public AppResponse createAlbum(int sessionId, String username, String albumName) {
         AppRequest request = new AppRequest();
         AppResponse response = new AppResponse();
+        request.setSessionId(sessionId);
+        request.setUsername(username);
+        request.setAlbumName(albumName);
         String[] result = addAlbum(new Album(albumName, counterAlbum.incrementAndGet()), username);
         if(!result[0].equals("Album successfully added")) {
             response.setError(result[0]);
