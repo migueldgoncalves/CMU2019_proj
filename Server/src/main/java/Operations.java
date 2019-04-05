@@ -151,10 +151,10 @@ public class Operations {
         return response;
     }
 
-    public AppResponse createAlbum(int sessionId, String username, String albumName, String sliceURL) {
+    public AppResponse createAlbum(int sessionId, String username, String albumName) {
         AppRequest request = new AppRequest();
         AppResponse response = new AppResponse();
-        String[] result = addAlbum(new Album(albumName, counterAlbum.incrementAndGet()), username, sliceURL);
+        String[] result = addAlbum(new Album(albumName, counterAlbum.incrementAndGet()), username);
         if(!result[0].equals("Album successfully added")) {
             response.setError(result[0]);
             addLog(CREATE_ALBUM_OPERATION, request, response);
@@ -208,20 +208,16 @@ public class Operations {
 
     // Server state setters
 
-    protected String[] addAlbum(Album album, String username, String sliceURL) {
+    protected String[] addAlbum(Album album, String username) {
         String[] response = new String[2];
         if (album != null) {
             if(isUserCreated(username)) {
-                if(sliceURL != null) {
-                    album.addUserToAlbum(username, sliceURL);
-                    getUserByUsername(username).addAlbumUserIsIn(album.getId());
-                    albums.put(album.getId(), album);
-                    Operations.writeServerState();
-                    response[0] = "Album successfully added";
-                    response[1] = String.valueOf(album.getId());
-                    return response;
-                }
-                response[0] = "URL cannot be null";
+                album.addUserToAlbum(username, null);
+                getUserByUsername(username).addAlbumUserIsIn(album.getId());
+                albums.put(album.getId(), album);
+                Operations.writeServerState();
+                response[0] = "Album successfully added";
+                response[1] = String.valueOf(album.getId());
                 return response;
             }
             response[0] = "Username does not exist or is invalid";

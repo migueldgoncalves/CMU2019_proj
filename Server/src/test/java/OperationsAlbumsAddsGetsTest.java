@@ -35,7 +35,7 @@ public class OperationsAlbumsAddsGetsTest {
             operations.addUser(new User("username", "password", new byte[256]));
             operations.addUser(new User("username2", "password", new byte[256]));
 
-            String[] returnValues = operations.addAlbum(new Album("album", 10), "username", "url");
+            String[] returnValues = operations.addAlbum(new Album("album", 10), "username");
             Assert.assertEquals("Album successfully added", returnValues[0]);
             Assert.assertEquals("10", returnValues[1]);
             Assert.assertEquals(1, operations.getAlbumsLength());
@@ -43,17 +43,17 @@ public class OperationsAlbumsAddsGetsTest {
             Assert.assertEquals(10, (int) operations.getUserByUsername("username").getAlbums().get(0));
             Assert.assertEquals(1, operations.getAlbumById(10).getAlbumUserNumber());
             Assert.assertTrue(operations.getAlbumById(10).isUserInAlbum("username"));
-            Assert.assertEquals("url", operations.getAlbumById(10).getSliceURL("username"));
+            Assert.assertNull(operations.getAlbumById(10).getSliceURL("username"));
 
-            returnValues = operations.addAlbum(new Album("album", 11), "username", "url");
+            returnValues = operations.addAlbum(new Album("album", 11), "username");
             Assert.assertEquals("Album successfully added", returnValues[0]);
             Assert.assertEquals("11", returnValues[1]);
             Assert.assertEquals(2, operations.getAlbumsLength());
             Assert.assertEquals(2, operations.getUserByUsername("username").getUserAlbumNumber());
             Assert.assertEquals(11, (int) operations.getUserByUsername("username").getAlbums().get(1));
-            Assert.assertEquals("url", operations.getAlbumById(11).getSliceURL("username"));
+            Assert.assertNull(operations.getAlbumById(11).getSliceURL("username"));
 
-            returnValues = operations.addAlbum(new Album("album", 12), "username2", "url");
+            returnValues = operations.addAlbum(new Album("album", 12), "username2");
             Assert.assertEquals("Album successfully added", returnValues[0]);
             Assert.assertEquals("12", returnValues[1]);
             Assert.assertEquals(3, operations.getAlbumsLength());
@@ -61,7 +61,7 @@ public class OperationsAlbumsAddsGetsTest {
             Assert.assertEquals(11, (int) operations.getUserByUsername("username").getAlbums().get(1));
             Assert.assertEquals(1, operations.getAlbumById(12).getAlbumUserNumber());
             Assert.assertTrue(operations.getAlbumById(12).isUserInAlbum("username2"));
-            Assert.assertEquals("url", operations.getAlbumById(12).getSliceURL("username2"));
+            Assert.assertNull(operations.getAlbumById(12).getSliceURL("username2"));
 
             String jsonString = FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8");
             jsonString = jsonString.replace("\n", "").replace("\r", "");
@@ -89,7 +89,7 @@ public class OperationsAlbumsAddsGetsTest {
     public void albumAddNullAlbumTest() {
         try {
             operations.addUser(new User("username", "password", new byte[256]));
-            String[] returnValues = operations.addAlbum(null, "username", "url");
+            String[] returnValues = operations.addAlbum(null, "username");
             Assert.assertEquals("Album cannot be null", returnValues[0]);
             Assert.assertNull(returnValues[1]);
 
@@ -102,12 +102,12 @@ public class OperationsAlbumsAddsGetsTest {
             Assert.assertEquals(1, operations.getUsersLength());
             Assert.assertEquals(0, operations.getLogsLength());
 
-            returnValues = operations.addAlbum(new Album("album", 10), "username", "url");
+            returnValues = operations.addAlbum(new Album("album", 10), "username");
             Assert.assertEquals("Album successfully added", returnValues[0]);
             Assert.assertEquals("10", returnValues[1]);
             Assert.assertEquals(1, operations.getAlbumsLength());
             Assert.assertEquals(10, (int) operations.getUserByUsername("username").getAlbums().get(0));
-            Assert.assertEquals("url", operations.getAlbumById(10).getSliceURL("username"));
+            Assert.assertNull(operations.getAlbumById(10).getSliceURL("username"));
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -118,7 +118,7 @@ public class OperationsAlbumsAddsGetsTest {
     public void albumAddInvalidUsernameTest() {
         try {
             operations.addUser(new User("username", "password", new byte[256]));
-            String[] returnValues = operations.addAlbum(new Album("album", 10), "username2", "url");
+            String[] returnValues = operations.addAlbum(new Album("album", 10), "username2");
             Assert.assertEquals("Username does not exist or is invalid", returnValues[0]);
             Assert.assertNull(returnValues[1]);
 
@@ -131,41 +131,12 @@ public class OperationsAlbumsAddsGetsTest {
             Assert.assertEquals(1, operations.getUsersLength());
             Assert.assertEquals(0, operations.getLogsLength());
 
-            returnValues = operations.addAlbum(new Album("album", 10), "username", "url");
+            returnValues = operations.addAlbum(new Album("album", 10), "username");
             Assert.assertEquals("Album successfully added", returnValues[0]);
             Assert.assertEquals("10", returnValues[1]);
             Assert.assertEquals(1, operations.getAlbumsLength());
             Assert.assertEquals(10, (int) operations.getUserByUsername("username").getAlbums().get(0));
-            Assert.assertEquals("url", operations.getAlbumById(10).getSliceURL("username"));
-        } catch (Exception e) {
-            e.printStackTrace();
-            Assert.fail();
-        }
-    }
-
-    @Test
-    public void albumAddNullURLTest() {
-        try {
-            operations.addUser(new User("username", "password", new byte[256]));
-            String[] returnValues = operations.addAlbum(new Album("album", 10), "username", null);
-            Assert.assertEquals("URL cannot be null", returnValues[0]);
-            Assert.assertNull(returnValues[1]);
-
-            String jsonString = FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8");
-            jsonString = jsonString.replace("\n", "").replace("\r", "");
-            Assert.assertEquals("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"publicKey\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"albums\":[],\"sessionId\":0}},\"sessions\":{},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}", jsonString);
-
-            Assert.assertEquals(0, operations.getAlbumsLength());
-            Assert.assertEquals(0, operations.getSessionsLength());
-            Assert.assertEquals(1, operations.getUsersLength());
-            Assert.assertEquals(0, operations.getLogsLength());
-
-            returnValues = operations.addAlbum(new Album("album", 10), "username", "url");
-            Assert.assertEquals("Album successfully added", returnValues[0]);
-            Assert.assertEquals("10", returnValues[1]);
-            Assert.assertEquals(1, operations.getAlbumsLength());
-            Assert.assertEquals(10, (int) operations.getUserByUsername("username").getAlbums().get(0));
-            Assert.assertEquals("url", operations.getAlbumById(10).getSliceURL("username"));
+            Assert.assertNull(operations.getAlbumById(10).getSliceURL("username"));
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -178,10 +149,10 @@ public class OperationsAlbumsAddsGetsTest {
             Assert.assertEquals(0, operations.getAlbums().size());
             Assert.assertEquals(0, operations.getAlbumsLength());
             operations.addUser(new User("username", "password", new byte[256]));
-            operations.addAlbum(new Album("album", 10), "username", "url");
+            operations.addAlbum(new Album("album", 10), "username");
             Assert.assertEquals(1, operations.getAlbums().size());
             Assert.assertEquals(1, operations.getAlbumsLength());
-            operations.addAlbum(new Album("album", 11), "username", "url");
+            operations.addAlbum(new Album("album", 11), "username");
             Assert.assertEquals(2, operations.getAlbums().size());
             Assert.assertEquals(2, operations.getAlbumsLength());
         } catch (Exception e) {
@@ -196,7 +167,7 @@ public class OperationsAlbumsAddsGetsTest {
             Assert.assertNull(operations.getAlbumById(0));
             Assert.assertNull(operations.getAlbumById(1));
             operations.addUser(new User("username", "password", new byte[256]));
-            operations.addAlbum(new Album("album", 1), "username", "url");
+            operations.addAlbum(new Album("album", 1), "username");
             Assert.assertNull(operations.getAlbumById(0));
             Assert.assertEquals("album", operations.getAlbumById(1).getName());
             Assert.assertNull(operations.getAlbumById(2));

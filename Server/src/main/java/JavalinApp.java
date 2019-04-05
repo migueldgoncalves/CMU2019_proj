@@ -51,7 +51,7 @@ public class JavalinApp {
         app.post("/createalbum", ctx -> {
             HashMap<String, String> mapRequest = ctx.bodyAsClass(HashMap.class);
             HashMap<String, String> mapResponse = new HashMap<>();
-            AppResponse response = operations.createAlbum(Integer.valueOf(mapRequest.get("sessionId")), mapRequest.get("username"), mapRequest.get("albumName"), mapRequest.get("sliceURL"));
+            AppResponse response = operations.createAlbum(Integer.valueOf(mapRequest.get("sessionId")), mapRequest.get("username"), mapRequest.get("albumName"));
             mapResponse.put("success", response.getSuccess());
             mapResponse.put("error", response.getError());
             System.out.println(response.getSuccess());
