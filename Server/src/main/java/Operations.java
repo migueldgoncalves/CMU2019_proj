@@ -42,8 +42,8 @@ public class Operations {
     private HashMap<Integer, Session> sessions = new HashMap<>();
     private String logs = "";
 
-    private AtomicInteger counterAlbum = new AtomicInteger(0);
-    private AtomicInteger counterLog = new AtomicInteger(0);
+    protected AtomicInteger counterAlbum = new AtomicInteger(0);
+    protected AtomicInteger counterLog = new AtomicInteger(0);
 
     private Operations() {
 
@@ -151,10 +151,10 @@ public class Operations {
         return response;
     }
 
-    public AppResponse createAlbum(int sessionId, String username, String albumName) {
+    public AppResponse createAlbum(int sessionId, String username, String albumName, String sliceURL) {
         AppRequest request = new AppRequest();
         AppResponse response = new AppResponse();
-        String[] result = addAlbum(albumName, username);
+        String[] result = addAlbum(new Album(albumName, counterAlbum.incrementAndGet()), username, sliceURL);
         if(!result[0].equals("Album successfully added")) {
             response.setError(result[0]);
             addLog(CREATE_ALBUM_OPERATION, request, response);
@@ -208,24 +208,26 @@ public class Operations {
 
     // Server state setters
 
-    protected String[] addAlbum(String albumName, String username) {
+    protected String[] addAlbum(Album album, String username, String sliceURL) {
         String[] response = new String[2];
-        if (albumName != null) {
-            if (albumName.length() == 0 || albumName.trim().length() == 0) {
-                int id = counterAlbum.incrementAndGet();
-                Album album = new Album(albumName, id);
-                album.addUserToAlbum(username, null);
-                albums.put(id, album);
-                getUserByUsername(username).addAlbumUserIsIn(id);
-                Operations.writeServerState();
-                response[0] = "Album successfully added";
-                response[1] = String.valueOf(id);
+        if (album != null) {
+            if(isUserCreated(username)) {
+                if(sliceURL != null) {
+                    album.addUserToAlbum(username, sliceURL);
+                    getUserByUsername(username).addAlbumUserIsIn(album.getId());
+                    albums.put(album.getId(), album);
+                    Operations.writeServerState();
+                    response[0] = "Album successfully added";
+                    response[1] = String.valueOf(album.getId());
+                    return response;
+                }
+                response[0] = "URL cannot be null";
                 return response;
             }
-            response[0] = "Album name cannot be empty";
+            response[0] = "Username does not exist or is invalid";
             return response;
         }
-        response[0] = "Album name cannot be null";
+        response[0] = "Album cannot be null";
         return response;
     }
 
@@ -295,7 +297,7 @@ public class Operations {
             if(request!=null) {
                 if(response!=null) {
                     String log = "";
-                    log+="Operation input: " + counterLog.incrementAndGet() + "\n";
+                    log+="Operation ID: " + counterLog.incrementAndGet() + "\n";
                     log+="Operation name: " + operation + "\n";
                     log+="Operation time: " + new Date().toString() + "\n";
                     log+="Operation input: " + new Gson().toJson(request) + "\n";

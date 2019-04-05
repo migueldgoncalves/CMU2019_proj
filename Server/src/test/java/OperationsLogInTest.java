@@ -31,26 +31,25 @@ public class OperationsLogInTest {
     public void validLogInWithPreviousSessionTest() {
         try {
             User user = new User("username", "password", new byte[256]);
-            operations.addUser(user);
+            operations.addUser(new User("username", "password", new byte[256]));
             Session session = new Session("username", Operations.SESSION_DURATION);
             operations.addSession(session);
             user.setSessionId(session.getSessionId());
 
             AppResponse response = operations.logIn("username", "password");
             Assert.assertEquals("Login successful", response.getSuccess());
-            Assert.assertNull(null, response.getError());
+            Assert.assertNull(response.getError());
             Assert.assertEquals(session.getSessionId(), response.getSessionId());
             Assert.assertEquals(1, operations.getUsersLength());
             Assert.assertEquals(1, operations.getSessionsLength());
             Assert.assertEquals(0, operations.getAlbumsLength());
             Assert.assertEquals(1, operations.getLogsLength());
 
-            /*Assert.assertEquals(Operations.LOGIN_OPERATION, operations.getLogs().get(0).getOperation());
-            Assert.assertTrue(new Date().getTime() - operations.getLogs().get(0).getTimestamp().getTime() < 1000);
-            Assert.assertEquals("username", operations.getLogs().get(0).getRequest().getUsername());
-            Assert.assertEquals("password", operations.getLogs().get(0).getRequest().getPassword());
-            Assert.assertEquals("Login successful", operations.getLogs().get(0).getResponse().getSuccess());
-            Assert.assertNull(operations.getLogs().get(0).getResponse().getError());*/
+            Assert.assertTrue(operations.getLogs().contains("Operation ID: 1"));
+            Assert.assertTrue(operations.getLogs().contains("Operation name: LOGIN"));
+            Assert.assertTrue(operations.getLogs().contains("Operation time:"));
+            Assert.assertTrue(operations.getLogs().contains("Operation input: {\"username\":\"username\",\"password\":\"password\",\"sessionId\":0}"));
+            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"success\":\"Login successful\",\"sessionId\":"));
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -74,12 +73,11 @@ public class OperationsLogInTest {
             Assert.assertEquals(0, operations.getAlbumsLength());
             Assert.assertEquals(1, operations.getLogsLength());
 
-            /*Assert.assertEquals(Operations.LOGIN_OPERATION, operations.getLogs().get(0).getOperation());
-            Assert.assertTrue(new Date().getTime() - operations.getLogs().get(0).getTimestamp().getTime() < 1000);
-            Assert.assertEquals("username", operations.getLogs().get(0).getRequest().getUsername());
-            Assert.assertEquals("password", operations.getLogs().get(0).getRequest().getPassword());
-            Assert.assertEquals("Login successful", operations.getLogs().get(0).getResponse().getSuccess());
-            Assert.assertNull(operations.getLogs().get(0).getResponse().getError());*/
+            Assert.assertTrue(operations.getLogs().contains("Operation ID: 1"));
+            Assert.assertTrue(operations.getLogs().contains("Operation name: LOGIN"));
+            Assert.assertTrue(operations.getLogs().contains("Operation time:"));
+            Assert.assertTrue(operations.getLogs().contains("Operation input: {\"username\":\"username\",\"password\":\"password\",\"sessionId\":0}"));
+            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"success\":\"Login successful\",\"sessionId\":"));
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -95,12 +93,11 @@ public class OperationsLogInTest {
             Assert.assertEquals(0, operations.getAlbumsLength());
             Assert.assertEquals(1, operations.getLogsLength());
 
-            /*Assert.assertEquals(Operations.LOGIN_OPERATION, operations.getLogs().get(0).getOperation());
-            Assert.assertTrue(new Date().getTime() - operations.getLogs().get(0).getTimestamp().getTime() < 1000);
-            Assert.assertNull(operations.getLogs().get(0).getRequest().getUsername());
-            Assert.assertEquals("password", operations.getLogs().get(0).getRequest().getPassword());
-            Assert.assertEquals("The Inserted Username is Incorrect!", operations.getLogs().get(0).getResponse().getError());
-            Assert.assertNull(operations.getLogs().get(0).getResponse().getSuccess());*/
+            Assert.assertTrue(operations.getLogs().contains("Operation ID: 1"));
+            Assert.assertTrue(operations.getLogs().contains("Operation name: LOGIN"));
+            Assert.assertTrue(operations.getLogs().contains("Operation time:"));
+            Assert.assertTrue(operations.getLogs().contains("Operation input: {\"password\":\"password\",\"sessionId\":0}"));
+            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"error\":\"The Inserted Username is Incorrect!\",\"sessionId\":0,\"albumId\":0}"));
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -116,12 +113,11 @@ public class OperationsLogInTest {
             Assert.assertEquals(0, operations.getAlbumsLength());
             Assert.assertEquals(1, operations.getLogsLength());
 
-            /*Assert.assertEquals(Operations.LOGIN_OPERATION, operations.getLogs().get(0).getOperation());
-            Assert.assertTrue(new Date().getTime() - operations.getLogs().get(0).getTimestamp().getTime() < 1000);
-            Assert.assertEquals("username", operations.getLogs().get(0).getRequest().getUsername());
-            Assert.assertEquals("password", operations.getLogs().get(0).getRequest().getPassword());
-            Assert.assertEquals("The Inserted Username is Incorrect!", operations.getLogs().get(0).getResponse().getError());
-            Assert.assertNull(operations.getLogs().get(0).getResponse().getSuccess());*/
+            Assert.assertTrue(operations.getLogs().contains("Operation ID: 1"));
+            Assert.assertTrue(operations.getLogs().contains("Operation name: LOGIN"));
+            Assert.assertTrue(operations.getLogs().contains("Operation time:"));
+            Assert.assertTrue(operations.getLogs().contains("Operation input: {\"username\":\"username\",\"password\":\"password\",\"sessionId\":0}"));
+            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"error\":\"The Inserted Username is Incorrect!\",\"sessionId\":0,\"albumId\":0}"));
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -139,12 +135,11 @@ public class OperationsLogInTest {
             Assert.assertEquals(0, operations.getAlbumsLength());
             Assert.assertEquals(1, operations.getLogsLength());
 
-            /*Assert.assertEquals(Operations.LOGIN_OPERATION, operations.getLogs().get(0).getOperation());
-            Assert.assertTrue(new Date().getTime() - operations.getLogs().get(0).getTimestamp().getTime() < 1000);
-            Assert.assertEquals("username", operations.getLogs().get(0).getRequest().getUsername());
-            Assert.assertNull(operations.getLogs().get(0).getRequest().getPassword());
-            Assert.assertEquals("Invalid Password! Please Try Again", operations.getLogs().get(0).getResponse().getError());
-            Assert.assertNull(operations.getLogs().get(0).getResponse().getSuccess());*/
+            Assert.assertTrue(operations.getLogs().contains("Operation ID: 1"));
+            Assert.assertTrue(operations.getLogs().contains("Operation name: LOGIN"));
+            Assert.assertTrue(operations.getLogs().contains("Operation time:"));
+            Assert.assertTrue(operations.getLogs().contains("Operation input: {\"username\":\"username\",\"sessionId\":0}"));
+            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"error\":\"Invalid Password! Please Try Again\",\"sessionId\":0,\"albumId\":0}"));
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -162,12 +157,11 @@ public class OperationsLogInTest {
             Assert.assertEquals(0, operations.getAlbumsLength());
             Assert.assertEquals(1, operations.getLogsLength());
 
-            /*Assert.assertEquals(Operations.LOGIN_OPERATION, operations.getLogs().get(0).getOperation());
-            Assert.assertTrue(new Date().getTime() - operations.getLogs().get(0).getTimestamp().getTime() < 1000);
-            Assert.assertEquals("username", operations.getLogs().get(0).getRequest().getUsername());
-            Assert.assertEquals("incorrectPassword", operations.getLogs().get(0).getRequest().getPassword());
-            Assert.assertEquals("Invalid Password! Please Try Again", operations.getLogs().get(0).getResponse().getError());
-            Assert.assertNull(operations.getLogs().get(0).getResponse().getSuccess());*/
+            Assert.assertTrue(operations.getLogs().contains("Operation ID: 1"));
+            Assert.assertTrue(operations.getLogs().contains("Operation name: LOGIN"));
+            Assert.assertTrue(operations.getLogs().contains("Operation time:"));
+            Assert.assertTrue(operations.getLogs().contains("Operation input: {\"username\":\"username\",\"password\":\"incorrectPassword\",\"sessionId\":0}"));
+            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"error\":\"Invalid Password! Please Try Again\",\"sessionId\":0,\"albumId\":0}"));
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
