@@ -23,6 +23,9 @@ import android.widget.GridView;
 
 import com.dropbox.core.v2.files.FileMetadata;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -45,15 +48,14 @@ public class AlbumView extends AppCompatActivity
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        photos.clear(); //Não eleminar Esta Linha
+
         FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent i = new Intent(Intent.ACTION_PICK,
-                        android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI);
-                final int ACTIVITY_SELECT_IMAGE = 1234;
-                startActivityForResult(i, ACTIVITY_SELECT_IMAGE);
-            }
+        fab.setOnClickListener(view -> {
+            Intent i = new Intent(Intent.ACTION_PICK,
+                    MediaStore.Images.Media.INTERNAL_CONTENT_URI);
+            final int ACTIVITY_SELECT_IMAGE = 1234;
+            startActivityForResult(i, ACTIVITY_SELECT_IMAGE);
         });
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -72,11 +74,14 @@ public class AlbumView extends AppCompatActivity
             public void onItemClick(AdapterView<?> parent, View view,int position, long id) {
                 //TODO: O que fazer quando clico numa foto??
                 //SUGESTAO: Nada!
+                //Só Sei Que Nada Fará
             }
         });
 
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        loadLocalPhotos();
     }
 
     protected void populatePhotoArray() {
@@ -166,7 +171,6 @@ public class AlbumView extends AppCompatActivity
         addNewPhoto(scaled);
     }
 
-
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -223,4 +227,33 @@ public class AlbumView extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+    private boolean loadLocalPhotos(){
+
+        Bundle b = getIntent().getExtras();
+        String value = "ERROR"; // or other values
+        if(b != null)
+            value = b.getString("AlbumName");
+
+        File localPhotoPaths = new File(getApplicationContext().getFilesDir().getPath() + "/" + value + "/" + value + "_LOCAL.txt");
+
+        if(localPhotoPaths.isFile()){
+            try{
+                BufferedReader br = new BufferedReader(new FileReader(localPhotoPaths));
+                String line;
+                while ((line = br.readLine()) != null) {
+                    imageScalingAndPosting(line);
+                }
+                return true;
+            }catch (Exception e){
+                e.printStackTrace();
+                return false;
+            }
+        }
+
+        System.out.println("IT IS NOT A FILE!!");
+        return false;
+
+    }
+
 }

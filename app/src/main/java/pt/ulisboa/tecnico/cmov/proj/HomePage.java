@@ -54,6 +54,8 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        albums.clear();
+
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -287,14 +289,19 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         builder.show();
     }
 
-    private void loadAlbums(){
+    private boolean loadAlbums(){
         File[] directories = new File(getApplicationContext().getFilesDir().getPath()).listFiles(File::isDirectory);
+
+        if(directories.length == 0){
+            return false;
+        }
 
         for (File i : directories){
             addNewAlbum(i.getName());
         }
 
-        System.out.println("Finished Loading Albums!");
+        return true;
+
     }
 
 }
