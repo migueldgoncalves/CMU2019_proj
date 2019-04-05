@@ -51,7 +51,7 @@ public class JavalinApp {
         app.post("/createalbum", ctx -> {
             HashMap<String, String> mapRequest = ctx.bodyAsClass(HashMap.class);
             HashMap<String, String> mapResponse = new HashMap<>();
-            AppResponse response = operations.createAlbum(Integer.valueOf(mapRequest.get("sessionId")), mapRequest.get("username"), mapRequest.get("albumName"));
+            AppResponse response = operations.createAlbum(Integer.valueOf(mapRequest.get("sessionId")), mapRequest.get("username"), mapRequest.get("albumName"), mapRequest.get("sliceURL"));
             mapResponse.put("success", response.getSuccess());
             mapResponse.put("error", response.getError());
             System.out.println(response.getSuccess());
@@ -61,8 +61,16 @@ public class JavalinApp {
         });
 
         app.put("/login", ctx -> {
-            AppRequest request = ctx.bodyAsClass(AppRequest.class);
-            ctx.json(operations.logIn(request.getUsername(), request.getPassword()));
+            HashMap<String, String> mapRequest = ctx.bodyAsClass(HashMap.class);
+            HashMap<String, String> mapResponse = new HashMap<>();
+            AppResponse response = operations.logIn(mapRequest.get("username"), mapRequest.get("password"));
+            mapResponse.put("success", response.getSuccess());
+            mapResponse.put("error", response.getError());
+            mapResponse.put("sessionId", String.valueOf(response.getSessionId()));
+            System.out.println(response.getSuccess());
+            System.out.println(response.getError());
+            System.out.println(response.getSessionId());
+            ctx.json(mapResponse);
             ctx.status(201);
         });
 
