@@ -11,8 +11,6 @@ import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -25,7 +23,7 @@ import java.util.HashMap;
 public class SignUp extends AppCompatActivity {
 
     //public static final String URL_BASE = "http://localhost:8080";
-    public static final String URL_BASE = "http://192.168.1.10:8080";
+    public static final String URL_BASE = "http://192.168.43.165:8080";
     public static final String URL_SIGNUP = URL_BASE + "/signup";
 
     Context ctx = this;
@@ -44,52 +42,40 @@ public class SignUp extends AppCompatActivity {
         PasswordView = findViewById(R.id.password_signup);
 
         Button SignUpButton = findViewById(R.id.sign_up_button);
-        SignUpButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                signUp(view);
-            }
-        });
+        SignUpButton.setOnClickListener(view -> signUp(view));
     }
 
     private void httpRequest(String username, String password) {
         android.util.Log.d("debug", "Starting POST request to URL " + URL_SIGNUP);
         createHTTPQueue();
-        HashMap<String, String> mapRequest = new HashMap();
+        HashMap<String, String> mapRequest = new HashMap<>();
         mapRequest.put("username", username);
         mapRequest.put("password", password);
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, URL_SIGNUP, new JSONObject(mapRequest),
-                new Response.Listener<JSONObject>()
-                {
-                    @Override
-                    public void onResponse(JSONObject httpResponse) {
-                        try {
-                            setHTTPResponse(httpResponse);
-                            String success = httpResponse.getString("success");
-                            String error = httpResponse.getString("error");
-                            android.util.Log.d("debug", httpResponse.toString());
-                            android.util.Log.d("debug", success);
-                            android.util.Log.d("debug", error);
-                            if(!error.equals("null")) {
-                                Toast.makeText(ctx, error, Toast.LENGTH_SHORT).show();
-                            }
-                            else {
-                                Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
-                                Intent intent = new Intent(ctx, SignIn.class);
-                                startActivity(intent);
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                httpResponse -> {
+                    try {
+                        setHTTPResponse(httpResponse);
+                        String success = httpResponse.getString("success");
+                        String error = httpResponse.getString("error");
+                        android.util.Log.d("debug", httpResponse.toString());
+                        android.util.Log.d("debug", success);
+                        android.util.Log.d("debug", error);
+                        if(!error.equals("null")) {
+                            Toast.makeText(ctx, error, Toast.LENGTH_SHORT).show();
                         }
-                        cleanHTTPResponse();
+                        else {
+                            Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent(ctx, SignIn.class);
+                            startActivity(intent);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                cleanHTTPResponse();
-                android.util.Log.d("debug", "POST error");
-            }
-        }
+                    cleanHTTPResponse();
+                }, error -> {
+                    cleanHTTPResponse();
+                    android.util.Log.d("debug", "POST error");
+                }
         );
         queue.add(request);
     }

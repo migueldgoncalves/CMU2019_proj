@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.cmov.proj;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -26,11 +27,20 @@ import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.dropbox.core.android.Auth;
 import com.dropbox.core.v2.files.FileMetadata;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 
 import pt.ulisboa.tecnico.cmov.proj.Adapters.AlbumAdapter;
 import pt.ulisboa.tecnico.cmov.proj.Data.Album;
@@ -42,6 +52,14 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
 
     private final static String ACCESS_KEY = "ktxcdvzt610l2ao";
     private final static String ACCESS_SECRET = "wurqteptiyuh9s2";
+
+    //public static final String URL_BASE = "http://localhost:8080";
+    public static final String URL_BASE = "http://192.168.43.165:8080";
+    public static final String URL_SIGNUP = URL_BASE + "/signup";
+
+    Context ctx = this;
+    private RequestQueue queue = null;
+    private JSONObject httpResponse = null;
 
     private static ArrayList<Album> albums = new ArrayList<Album>();
     private static ArrayAdapter<Album> albumAdapter = null;
@@ -302,6 +320,56 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
 
         return true;
 
+    }
+
+    private void httpRequest(String username, String password) {
+        android.util.Log.d("debug", "Starting POST request to URL " + URL_SIGNUP);
+        createHTTPQueue();
+        HashMap<String, String> mapRequest = new HashMap<>();
+        mapRequest.put("username", username);
+        mapRequest.put("password", password);
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, URL_SIGNUP, new JSONObject(mapRequest),
+                httpResponse -> {
+                    try {
+                        setHTTPResponse(httpResponse);
+                        String success = httpResponse.getString("success");
+                        String error = httpResponse.getString("error");
+                        android.util.Log.d("debug", httpResponse.toString());
+                        android.util.Log.d("debug", success);
+                        android.util.Log.d("debug", error);
+                        if(!error.equals("null")) {
+                            Toast.makeText(ctx, error, Toast.LENGTH_SHORT).show();
+                        }
+                        else {
+                            Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent(ctx, SignIn.class);
+                            startActivity(intent);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    cleanHTTPResponse();
+                }, error -> {
+            cleanHTTPResponse();
+            android.util.Log.d("debug", "POST error");
+        }
+        );
+        queue.add(request);
+    }
+
+    private void setHTTPResponse(JSONObject json) {
+        this.httpResponse = json;
+    }
+
+    private void cleanHTTPResponse() {
+        this.httpResponse = null;
+        android.util.Log.d("debug", "Cleaned " + new Date().getTime());
+    }
+
+    private void createHTTPQueue() {
+        if(this.queue == null) {
+            this.queue = Volley.newRequestQueue(ctx);
+        }
     }
 
 }
