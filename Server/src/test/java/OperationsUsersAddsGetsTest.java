@@ -39,7 +39,7 @@ public class OperationsUsersAddsGetsTest {
 
             String jsonString = FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8");
             jsonString = jsonString.replace("\n", "").replace("\r", "");
-            Assert.assertEquals("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"publicKey\":[0,0,0,0,0],\"albums\":[],\"sessionId\":0}},\"sessions\":{},\"logs\":[]}", jsonString);
+            Assert.assertEquals("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"publicKey\":[0,0,0,0,0],\"albums\":[],\"sessionId\":0}},\"sessions\":{},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}", jsonString);
 
             operations = null;
             Operations.cleanServer();
@@ -75,7 +75,7 @@ public class OperationsUsersAddsGetsTest {
 
             String jsonString = FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8");
             jsonString = jsonString.replace("\n", "").replace("\r", "");
-            Assert.assertEquals("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"publicKey\":[0,0,0,0,0],\"albums\":[],\"sessionId\":0}},\"sessions\":{},\"logs\":[]}", jsonString);
+            Assert.assertEquals("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"publicKey\":[0,0,0,0,0],\"albums\":[],\"sessionId\":0}},\"sessions\":{},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}", jsonString);
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -94,7 +94,7 @@ public class OperationsUsersAddsGetsTest {
 
             String jsonString = FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8");
             jsonString = jsonString.replace("\n", "").replace("\r", "");
-            Assert.assertEquals("{\"albums\":{},\"users\":{},\"sessions\":{},\"logs\":[]}", jsonString);
+            Assert.assertEquals("{\"albums\":{},\"users\":{},\"sessions\":{},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}", jsonString);
 
             returnString = operations.addUser(new User("username", "password", new byte[5]));
             Assert.assertEquals("User successfully added", returnString);

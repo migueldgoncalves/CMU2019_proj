@@ -8,7 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.HashMap;
 
 public class ServiceLogsTest {
 
@@ -29,7 +29,6 @@ public class ServiceLogsTest {
     private static final String URL_LOGS = URL_BASE + "/logs";
     private static final String URL_SIGNUP = URL_BASE + "/signup";
     private static final String URL_LOGIN = URL_BASE + "/login";
-    private static final String URL_LOGOUT = URL_BASE + "/logout";
 
     @Before
     public void setUp() {
@@ -50,13 +49,22 @@ public class ServiceLogsTest {
     }
 
     @Test
-    public void serviceGetNoLogsTest() {
+    public void serviceGetEmptyLogsTest() {
         try {
             Request request = new Request.Builder().url(URL_LOGS).build();
             Response response = client.newCall(request).execute();
-            AppResponse appResponse = new Gson().fromJson(response.body().string(), AppResponse.class);
-            /*Assert.assertEquals(1, appResponse.getLogs().size());
-            Assert.assertEquals(Operations.LOGIN_OPERATION, appResponse.getLogs().get(0).getOperation());*/
+            Assert.assertEquals(OK, response.code());
+            HashMap<String, String> mapResponse = new Gson().fromJson(response.body().string(), HashMap.class);
+
+            String logs = mapResponse.get("logs");
+            Assert.assertTrue(logs.contains("Operation ID: 1"));
+            Assert.assertFalse(logs.contains("Operation ID: 2"));
+            Assert.assertTrue(logs.contains("Operation name: LOGS"));
+            Assert.assertTrue(logs.contains("Operation time:"));
+            Assert.assertTrue(logs.contains("Operation input: {\"sessionId\":0}"));
+            Assert.assertTrue(logs.contains("Operation output: {\"success\":\"Logs correctly obtained\",\"sessionId\":0,\"albumId\":0}"));
+            Assert.assertTrue(logs.contains("---------------------------------------------------------------------------------------------------------------"));
+            Assert.assertEquals(1, operations.getLogsLength());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -66,22 +74,44 @@ public class ServiceLogsTest {
     @Test
     public void serviceGetLogsTest() {
         try {
-            AppRequest appRequest = new AppRequest();
-            appRequest.setUsername("username");
-            appRequest.setPassword("password");
-            appRequest.setPublicKey(new byte[256]);
-            RequestBody body = RequestBody.create(JSON, new Gson().toJson(appRequest));
+            HashMap<String, String> mapRequest = new HashMap<>();
+            mapRequest.put("username", "username");
+            mapRequest.put("password", "password");
+
+            RequestBody body = RequestBody.create(JSON, new Gson().toJson(mapRequest));
             Request request = new Request.Builder().url(URL_SIGNUP).post(body).build();
-            Response response = client.newCall(request).execute();
+            client.newCall(request).execute();
 
-            body = RequestBody.create(JSON, new Gson().toJson(appRequest));
+            // Request Body has same parameters for Sign Up and Log In
             request = new Request.Builder().url(URL_LOGIN).put(body).build();
-            response = client.newCall(request).execute();
+            client.newCall(request).execute();
 
+            // The method to get logs receives nothing, so there is no need for a request body
+            // When HTTP request type is absent, it defaults to GET
             request = new Request.Builder().url(URL_LOGS).build();
-            response = client.newCall(request).execute();
-            ArrayList logs = new Gson().fromJson(response.body().string(), ArrayList.class);
-            Assert.assertEquals(3, logs.size());
+            Response response = client.newCall(request).execute();
+            Assert.assertEquals(OK, response.code());
+            HashMap<String, String> mapResponse = new Gson().fromJson(response.body().string(), HashMap.class);
+
+            String logs = mapResponse.get("logs");
+            Assert.assertTrue(logs.contains("Operation ID: 1"));
+            Assert.assertTrue(logs.contains("Operation name: SIGNUP"));
+            Assert.assertTrue(logs.contains("Operation time:"));
+            Assert.assertTrue(logs.contains("Operation input: {\"username\":\"username\",\"password\":\"password\",\"publicKey\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"sessionId\":0}"));
+            Assert.assertTrue(logs.contains("Operation output: {\"success\":\"User created successfully\",\"sessionId\":0,\"albumId\":0}"));
+            Assert.assertTrue(logs.contains("---------------------------------------------------------------------------------------------------------------"));
+            Assert.assertTrue(logs.contains("Operation ID: 2"));
+            Assert.assertTrue(logs.contains("Operation name: LOGIN"));
+            Assert.assertTrue(logs.contains("Operation time:"));
+            Assert.assertTrue(logs.contains("Operation input: {\"username\":\"username\",\"password\":\"password\",\"sessionId\":0}"));
+            Assert.assertTrue(logs.contains("Operation output: {\"success\":\"Login successful\",\"sessionId\":"));
+            Assert.assertTrue(logs.contains("Operation ID: 3"));
+            Assert.assertTrue(logs.contains("Operation name: LOGS"));
+            Assert.assertTrue(logs.contains("Operation time:"));
+            Assert.assertTrue(logs.contains("Operation input: {\"sessionId\":0}"));
+            Assert.assertTrue(logs.contains("Operation output: {\"success\":\"Logs correctly obtained\",\"sessionId\":0,\"albumId\":0}"));
+            Assert.assertFalse(logs.contains("Operation ID: 4"));
+            Assert.assertEquals(3, operations.getLogsLength());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();

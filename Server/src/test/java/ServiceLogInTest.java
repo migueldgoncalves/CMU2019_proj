@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.HashMap;
 
 public class ServiceLogInTest {
 
@@ -52,18 +53,18 @@ public class ServiceLogInTest {
             Session session = new Session("username", 5);
             operations.addSession(session);
 
-            AppRequest appRequest = new AppRequest();
-            appRequest.setUsername("username");
-            appRequest.setPassword("password");
-            RequestBody body = RequestBody.create(JSON, new Gson().toJson(appRequest));
+            HashMap<String, String> mapRequest = new HashMap<>();
+            mapRequest.put("username", "username");
+            mapRequest.put("password", "password");
+            RequestBody body = RequestBody.create(JSON, new Gson().toJson(mapRequest));
             Request request = new Request.Builder().url(URL_LOGIN).put(body).build();
             Response response = client.newCall(request).execute();
 
             Assert.assertEquals(CREATED, response.code());
-            AppResponse appResponse = new Gson().fromJson(response.body().string(), AppResponse.class);
-            Assert.assertEquals("Login successful", appResponse.getSuccess());
-            Assert.assertNull(appResponse.getError());
-            Assert.assertEquals(session.getSessionId(), appResponse.getSessionId());
+            HashMap<String, String> mapResponse = new Gson().fromJson(response.body().string(), HashMap.class);
+            Assert.assertEquals("Login successful", mapResponse.get("success"));
+            Assert.assertNull(mapResponse.get("error"));
+            Assert.assertEquals(String.valueOf(session.getSessionId()), mapResponse.get("sessionId"));
             Assert.assertEquals(1, operations.getLogsLength());
         } catch (Exception e) {
             e.printStackTrace();
@@ -75,20 +76,20 @@ public class ServiceLogInTest {
     public void validLogInRequestWithoutPreviousSession() {
         try {
             operations.addUser(new User("username", "password", new byte[256]));
-            AppRequest appRequest = new AppRequest();
-            appRequest.setUsername("username");
-            appRequest.setPassword("password");
+            HashMap<String, String> mapRequest = new HashMap<>();
+            mapRequest.put("username", "username");
+            mapRequest.put("password", "password");
 
-            RequestBody body = RequestBody.create(JSON, new Gson().toJson(appRequest));
+            RequestBody body = RequestBody.create(JSON, new Gson().toJson(mapRequest));
             Request request = new Request.Builder().url(URL_LOGIN).put(body).build();
             Response response = client.newCall(request).execute();
-            AppResponse appResponse = new Gson().fromJson(response.body().string(), AppResponse.class);
 
             Assert.assertEquals(CREATED, response.code());
-            Assert.assertEquals("Login successful", appResponse.getSuccess());
-            Assert.assertNull(appResponse.getError());
-            Assert.assertTrue(appResponse.getSessionId() > 0);
-            Assert.assertEquals(operations.getUserByUsername("username").getSessionId(), appResponse.getSessionId());
+            HashMap mapResponse = new Gson().fromJson(response.body().string(), HashMap.class);
+            Assert.assertEquals("Login successful", mapResponse.get("success"));
+            Assert.assertNull(mapResponse.get("error"));
+            Assert.assertTrue(Integer.valueOf((String) mapResponse.get("sessionId")) > 0);
+            Assert.assertEquals(String.valueOf(operations.getUserByUsername("username").getSessionId()), mapResponse.get("sessionId"));
             Assert.assertEquals(1, operations.getLogsLength());
         } catch (Exception e) {
             e.printStackTrace();
@@ -100,17 +101,17 @@ public class ServiceLogInTest {
     public void nullUsernameLogInRequestTest() {
         try {
             operations.addUser(new User("username", "password", new byte[256]));
-            AppRequest appRequest = new AppRequest();
-            appRequest.setUsername(null);
-            appRequest.setPassword("password");
+            HashMap<String, String> mapRequest = new HashMap<>();
+            mapRequest.put("username", null);
+            mapRequest.put("password", "password");
 
-            RequestBody body = RequestBody.create(JSON, new Gson().toJson(appRequest));
+            RequestBody body = RequestBody.create(JSON, new Gson().toJson(mapRequest));
             Request request = new Request.Builder().url(URL_LOGIN).put(body).build();
             Response response = client.newCall(request).execute();
-            AppResponse appResponse = new Gson().fromJson(response.body().string(), AppResponse.class);
 
             Assert.assertEquals(CREATED, response.code());
-            Assert.assertEquals("The Inserted Username is Incorrect!", appResponse.getError());
+            HashMap<String, String> mapResponse = new Gson().fromJson(response.body().string(), HashMap.class);
+            Assert.assertEquals("The Inserted Username is Incorrect!", mapResponse.get("error"));
             Assert.assertEquals(0, operations.getUserByUsername("username").getSessionId());
             Assert.assertEquals(1, operations.getLogsLength());
         } catch (Exception e) {
@@ -123,17 +124,17 @@ public class ServiceLogInTest {
     public void invalidUsernameLogInRequestTest() {
         try {
             operations.addUser(new User("username", "password", new byte[256]));
-            AppRequest appRequest = new AppRequest();
-            appRequest.setUsername("anotherUsername");
-            appRequest.setPassword("password");
+            HashMap<String, String> mapRequest = new HashMap<>();
+            mapRequest.put("username", "anotherUsername");
+            mapRequest.put("password", "password");
 
-            RequestBody body = RequestBody.create(JSON, new Gson().toJson(appRequest));
+            RequestBody body = RequestBody.create(JSON, new Gson().toJson(mapRequest));
             Request request = new Request.Builder().url(URL_LOGIN).put(body).build();
             Response response = client.newCall(request).execute();
-            AppResponse appResponse = new Gson().fromJson(response.body().string(), AppResponse.class);
 
             Assert.assertEquals(CREATED, response.code());
-            Assert.assertEquals("The Inserted Username is Incorrect!", appResponse.getError());
+            HashMap<String, String> mapResponse = new Gson().fromJson(response.body().string(), HashMap.class);
+            Assert.assertEquals("The Inserted Username is Incorrect!", mapResponse.get("error"));
             Assert.assertEquals(0, operations.getUserByUsername("username").getSessionId());
             Assert.assertEquals(1, operations.getLogsLength());
         } catch (Exception e) {
@@ -146,17 +147,17 @@ public class ServiceLogInTest {
     public void nullPasswordLogInRequestTest() {
         try {
             operations.addUser(new User("username", "password", new byte[256]));
-            AppRequest appRequest = new AppRequest();
-            appRequest.setUsername("username");
-            appRequest.setPassword(null);
+            HashMap<String, String> mapRequest = new HashMap<>();
+            mapRequest.put("username", "username");
+            mapRequest.put("password", null);
 
-            RequestBody body = RequestBody.create(JSON, new Gson().toJson(appRequest));
+            RequestBody body = RequestBody.create(JSON, new Gson().toJson(mapRequest));
             Request request = new Request.Builder().url(URL_LOGIN).put(body).build();
             Response response = client.newCall(request).execute();
-            AppResponse appResponse = new Gson().fromJson(response.body().string(), AppResponse.class);
 
             Assert.assertEquals(CREATED, response.code());
-            Assert.assertEquals("Invalid Password! Please Try Again", appResponse.getError());
+            HashMap<String, String> mapResponse = new Gson().fromJson(response.body().string(), HashMap.class);
+            Assert.assertEquals("Invalid Password! Please Try Again", mapResponse.get("error"));
             Assert.assertEquals(0, operations.getUserByUsername("username").getSessionId());
             Assert.assertEquals(1, operations.getLogsLength());
         } catch (Exception e) {
@@ -169,17 +170,17 @@ public class ServiceLogInTest {
     public void invalidPasswordLogInRequestTest() {
         try {
             operations.addUser(new User("username", "password", new byte[256]));
-            AppRequest appRequest = new AppRequest();
-            appRequest.setUsername("username");
-            appRequest.setPassword("wrongPassword");
+            HashMap<String, String> mapRequest = new HashMap<>();
+            mapRequest.put("username", "username");
+            mapRequest.put("password", "invalidPassword");
 
-            RequestBody body = RequestBody.create(JSON, new Gson().toJson(appRequest));
+            RequestBody body = RequestBody.create(JSON, new Gson().toJson(mapRequest));
             Request request = new Request.Builder().url(URL_LOGIN).put(body).build();
             Response response = client.newCall(request).execute();
-            AppResponse appResponse = new Gson().fromJson(response.body().string(), AppResponse.class);
 
             Assert.assertEquals(CREATED, response.code());
-            Assert.assertEquals("Invalid Password! Please Try Again", appResponse.getError());
+            HashMap<String, String> mapResponse = new Gson().fromJson(response.body().string(), HashMap.class);
+            Assert.assertEquals("Invalid Password! Please Try Again", mapResponse.get("error"));
             Assert.assertEquals(0, operations.getUserByUsername("username").getSessionId());
             Assert.assertEquals(1, operations.getLogsLength());
         } catch (Exception e) {

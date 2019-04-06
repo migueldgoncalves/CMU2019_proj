@@ -42,12 +42,11 @@ public class OperationsSignUpTest {
                 Assert.assertEquals(0, operations.getUserByUsername("username").getPublicKey()[i]);
             Assert.assertEquals(0, operations.getUserByUsername("username").getUserAlbumNumber());
 
-            /*Assert.assertEquals(Operations.SIGNUP_OPERATION, operations.getLogs().get(0).getOperation());
-            Assert.assertTrue(new Date().getTime() - operations.getLogs().get(0).getTimestamp().getTime() < 1000);
-            Assert.assertEquals("username", operations.getLogs().get(0).getRequest().getUsername());
-            Assert.assertEquals("password", operations.getLogs().get(0).getRequest().getPassword());
-            Assert.assertEquals("User created successfully", operations.getLogs().get(0).getResponse().getSuccess());
-            Assert.assertNull(operations.getLogs().get(0).getResponse().getError());*/
+            Assert.assertTrue(operations.getLogs().contains("Operation ID: 1"));
+            Assert.assertTrue(operations.getLogs().contains("Operation name: SIGNUP"));
+            Assert.assertTrue(operations.getLogs().contains("Operation time:"));
+            Assert.assertTrue(operations.getLogs().contains("Operation input: {\"username\":\"username\",\"password\":\"password\",\"publicKey\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"sessionId\":0}"));
+            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"success\":\"User created successfully\",\"sessionId\":0"));
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -69,14 +68,26 @@ public class OperationsSignUpTest {
             Assert.assertEquals(1, operations.getUsersLength());
             Assert.assertEquals(8, operations.getLogsLength());
 
-            /*Assert.assertEquals("Username cannot be null", operations.getLogs().get(0).getResponse().getError());
-            Assert.assertEquals("Username cannot be empty", operations.getLogs().get(1).getResponse().getError());
-            Assert.assertEquals("Username cannot be empty", operations.getLogs().get(2).getResponse().getError());
-            Assert.assertEquals("Username must only contain digits and letters", operations.getLogs().get(3).getResponse().getError());
-            Assert.assertEquals("Username must have at least " + Operations.MIN_USERNAME_LENGTH + " characters", operations.getLogs().get(4).getResponse().getError());
-            Assert.assertEquals("Username must have at most " + Operations.MAX_USERNAME_LENGTH + " characters", operations.getLogs().get(5).getResponse().getError());
-            Assert.assertEquals("User created successfully", operations.getLogs().get(6).getResponse().getSuccess());
-            Assert.assertEquals("Username already exists", operations.getLogs().get(7).getResponse().getError());*/
+            Assert.assertTrue(operations.getLogs().contains("Operation ID: 1"));
+            Assert.assertTrue(operations.getLogs().contains("Operation ID: 2"));
+            Assert.assertTrue(operations.getLogs().contains("Operation ID: 3"));
+            Assert.assertTrue(operations.getLogs().contains("Operation ID: 4"));
+            Assert.assertTrue(operations.getLogs().contains("Operation ID: 5"));
+            Assert.assertTrue(operations.getLogs().contains("Operation ID: 6"));
+            Assert.assertTrue(operations.getLogs().contains("Operation ID: 7"));
+            Assert.assertTrue(operations.getLogs().contains("Operation ID: 8"));
+            Assert.assertFalse(operations.getLogs().contains("Operation ID: 9"));
+            Assert.assertTrue(operations.getLogs().contains("Operation name: SIGNUP"));
+            Assert.assertTrue(operations.getLogs().contains("Operation time:"));
+            Assert.assertTrue(operations.getLogs().contains("Operation input: {\"password\":\"password\",\"publicKey\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"sessionId\":0}"));
+            Assert.assertTrue(operations.getLogs().contains("Operation input: {\"username\":\"username\",\"password\":\"password\",\"publicKey\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"sessionId\":0}"));
+            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"error\":\"Username cannot be null\",\"sessionId\":0"));
+            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"error\":\"Username cannot be empty\",\"sessionId\":0"));
+            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"error\":\"Username must only contain digits and letters\",\"sessionId\":0"));
+            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"error\":\"Username must have at least " + Operations.MIN_USERNAME_LENGTH + " characters\",\"sessionId\":0"));
+            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"error\":\"Username must have at most " + Operations.MAX_USERNAME_LENGTH + " characters\",\"sessionId\":0"));
+            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"success\":\"User created successfully\",\"sessionId\":0"));
+            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"error\":\"Username already exists\",\"sessionId\":0"));
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -94,11 +105,19 @@ public class OperationsSignUpTest {
             Assert.assertEquals(0, operations.getUsersLength());
             Assert.assertEquals(5, operations.getLogsLength());
 
-            /*Assert.assertEquals("Password cannot be null", operations.getLogs().get(0).getResponse().getError());
-            Assert.assertEquals("Password cannot be empty", operations.getLogs().get(1).getResponse().getError());
-            Assert.assertEquals("Password cannot be empty", operations.getLogs().get(2).getResponse().getError());
-            Assert.assertEquals("Password must have at least " + Operations.MIN_PASSWORD_LENGTH + " characters", operations.getLogs().get(3).getResponse().getError());
-            Assert.assertEquals("Password must have at most " + Operations.MAX_PASSWORD_LENGTH + " characters", operations.getLogs().get(4).getResponse().getError());*/
+            Assert.assertTrue(operations.getLogs().contains("Operation ID: 1"));
+            Assert.assertTrue(operations.getLogs().contains("Operation ID: 2"));
+            Assert.assertTrue(operations.getLogs().contains("Operation ID: 3"));
+            Assert.assertTrue(operations.getLogs().contains("Operation ID: 4"));
+            Assert.assertTrue(operations.getLogs().contains("Operation ID: 5"));
+            Assert.assertFalse(operations.getLogs().contains("Operation ID: 6"));
+            Assert.assertTrue(operations.getLogs().contains("Operation name: SIGNUP"));
+            Assert.assertTrue(operations.getLogs().contains("Operation time:"));
+            Assert.assertTrue(operations.getLogs().contains("Operation input: {\"username\":\"username\",\"publicKey\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"sessionId\":0}"));
+            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"error\":\"Password cannot be null\",\"sessionId\":0"));
+            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"error\":\"Password cannot be empty\",\"sessionId\":0"));
+            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"error\":\"Password must have at least " + Operations.MIN_PASSWORD_LENGTH + " characters\",\"sessionId\":0"));
+            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"error\":\"Password must have at most " + Operations.MAX_PASSWORD_LENGTH + " characters\",\"sessionId\":0"));
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -115,10 +134,16 @@ public class OperationsSignUpTest {
             Assert.assertEquals(0, operations.getUsersLength());
             Assert.assertEquals(4, operations.getLogsLength());
 
-            /*Assert.assertEquals("Public key cannot be null", operations.getLogs().get(0).getResponse().getError());
-            Assert.assertEquals("Public key must have " + Operations.RSA_KEY_BYTE_LENGTH * 8 + " bits", operations.getLogs().get(1).getResponse().getError());
-            Assert.assertEquals("Public key must have " + Operations.RSA_KEY_BYTE_LENGTH * 8 + " bits", operations.getLogs().get(2).getResponse().getError());
-            Assert.assertEquals("Public key must have " + Operations.RSA_KEY_BYTE_LENGTH * 8 + " bits", operations.getLogs().get(3).getResponse().getError());*/
+            Assert.assertTrue(operations.getLogs().contains("Operation ID: 1"));
+            Assert.assertTrue(operations.getLogs().contains("Operation ID: 2"));
+            Assert.assertTrue(operations.getLogs().contains("Operation ID: 3"));
+            Assert.assertTrue(operations.getLogs().contains("Operation ID: 4"));
+            Assert.assertFalse(operations.getLogs().contains("Operation ID: 5"));
+            Assert.assertTrue(operations.getLogs().contains("Operation name: SIGNUP"));
+            Assert.assertTrue(operations.getLogs().contains("Operation time:"));
+            Assert.assertTrue(operations.getLogs().contains("Operation input: {\"username\":\"username\",\"password\":\"password\",\"publicKey\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"sessionId\":0}"));
+            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"error\":\"Public key cannot be null\",\"sessionId\":0"));
+            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"error\":\"Public key must have " + Operations.RSA_KEY_BYTE_LENGTH * 8 + " bits\",\"sessionId\":0"));
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -131,7 +156,12 @@ public class OperationsSignUpTest {
             Assert.assertEquals("Username cannot be null", operations.signUp(null, "x", new byte[1]).getError());
             Assert.assertEquals(0, operations.getUsersLength());
             Assert.assertEquals(1, operations.getLogsLength());
-            //Assert.assertEquals("Username cannot be null", operations.getLogs().get(0).getResponse().getError());
+            Assert.assertTrue(operations.getLogs().contains("Operation ID: 1"));
+            Assert.assertFalse(operations.getLogs().contains("Operation ID: 2"));
+            Assert.assertTrue(operations.getLogs().contains("Operation name: SIGNUP"));
+            Assert.assertTrue(operations.getLogs().contains("Operation time:"));
+            Assert.assertTrue(operations.getLogs().contains("Operation input: {\"password\":\"x\",\"publicKey\":[0],\"sessionId\":0}"));
+            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"error\":\"Username cannot be null\",\"sessionId\":0"));
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();

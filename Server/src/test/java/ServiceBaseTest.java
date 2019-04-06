@@ -17,7 +17,7 @@ public class ServiceBaseTest {
 
     private static final int PORT = JavalinApp.PORT;
 
-    public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+    private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
     private Javalin app = null;
     private OkHttpClient client = null;

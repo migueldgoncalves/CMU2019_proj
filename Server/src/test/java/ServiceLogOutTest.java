@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.HashMap;
 
 public class ServiceLogOutTest {
 
@@ -53,16 +54,17 @@ public class ServiceLogOutTest {
             Session session = new Session("username", 5);
             operations.addSession(session);
 
-            AppRequest appRequest = new AppRequest();
-            appRequest.setSessionId(session.getSessionId());
-            RequestBody body = RequestBody.create(JSON, new Gson().toJson(appRequest));
+            HashMap<String, String> mapRequest = new HashMap<>();
+            mapRequest.put("sessionId", String.valueOf(session.getSessionId()));
+
+            RequestBody body = RequestBody.create(JSON, new Gson().toJson(mapRequest));
             Request request = new Request.Builder().url(URL_LOGOUT).delete(body).build();
             Response response = client.newCall(request).execute();
-            AppResponse appResponse = new Gson().fromJson(response.body().string(), AppResponse.class);
 
             Assert.assertEquals(OK, response.code());
-            Assert.assertEquals("Session successfully deleted", appResponse.getSuccess());
-            Assert.assertNull(appResponse.getError());
+            HashMap<String, String> mapResponse = new Gson().fromJson(response.body().string(), HashMap.class);
+            Assert.assertEquals("Session successfully deleted", mapResponse.get("success"));
+            Assert.assertNull(mapResponse.get("error"));
             Assert.assertEquals(0, operations.getSessionsLength());
             Assert.assertEquals(0, user.getSessionId());
             Assert.assertEquals(1, operations.getLogsLength());
@@ -80,15 +82,16 @@ public class ServiceLogOutTest {
             Session session = new Session("username", 5);
             operations.addSession(session);
 
-            AppRequest appRequest = new AppRequest();
-            appRequest.setSessionId(1);
-            RequestBody body = RequestBody.create(JSON, new Gson().toJson(appRequest));
+            HashMap<String, String> mapRequest = new HashMap<>();
+            mapRequest.put("sessionId", "1");
+
+            RequestBody body = RequestBody.create(JSON, new Gson().toJson(mapRequest));
             Request request = new Request.Builder().url(URL_LOGOUT).delete(body).build();
             Response response = client.newCall(request).execute();
-            AppResponse appResponse = new Gson().fromJson(response.body().string(), AppResponse.class);
 
             Assert.assertEquals(OK, response.code());
-            Assert.assertEquals("Session does not exist", appResponse.getError());
+            HashMap<String, String> mapResponse = new Gson().fromJson(response.body().string(), HashMap.class);
+            Assert.assertEquals("Session does not exist", mapResponse.get("error"));
             Assert.assertEquals(1, operations.getSessionsLength());
             Assert.assertEquals(1, operations.getUsersLength());
             Assert.assertEquals(1, operations.getLogsLength());

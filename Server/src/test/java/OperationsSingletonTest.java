@@ -56,12 +56,7 @@ public class OperationsSingletonTest {
     @Test
     public void singletonGetNonEmptyServerTest() {
         try {
-            Album album = new Album("album", 1);
-            Session session1 = new Session("user1", 5);
-            Session session2 = new Session("user2", 10);
-            User user1 = new User("user1", "password1", new byte[5]);
-            User user2 = new User("user2", "password2", new byte[10]);
-            User user3 = new User("user3", "password3", new byte[20]);
+            Session session = new Session("user1", 5);
             AppRequest appRequest = new AppRequest();
             appRequest.setUsername("username");
             appRequest.setPassword("password");
@@ -69,12 +64,12 @@ public class OperationsSingletonTest {
             appResponse.setSuccess("Success");
 
             operations = Operations.getServer();
-            operations.addAlbum(new Album("album", 1), "username");
-            operations.addUser(user1);
-            operations.addUser(user2);
-            operations.addUser(user3);
-            operations.addSession(session1);
-            operations.addSession(session2);
+            operations.addUser(new User("user1", "password1", new byte[5]));
+            operations.addUser(new User("user2", "password2", new byte[10]));
+            operations.addUser(new User("user3", "password3", new byte[20]));
+            operations.addSession(session);
+            operations.addSession(new Session("user2", 10));
+            operations.addAlbum(new Album("album", 1), "user1");
             operations.addLog("operation", appRequest, appResponse);
 
             operations = null;
@@ -83,9 +78,15 @@ public class OperationsSingletonTest {
             Assert.assertEquals(2, operations.getSessionsLength());
             Assert.assertEquals(3, operations.getUsersLength());
             Assert.assertEquals("album", operations.getAlbumById(1).getName());
-            Assert.assertEquals(10, operations.getSessionById(session2.getSessionId()).getSessionDuration());
+            Assert.assertEquals(5, operations.getSessionById(session.getSessionId()).getSessionDuration());
             Assert.assertEquals(20, operations.getUserByUsername("user3").getPublicKey().length);
-            //Assert.assertEquals("operation", operations.getLogs().get(0).getOperation());
+
+            Assert.assertTrue(operations.getLogs().contains("Operation ID: 1"));
+            Assert.assertFalse(operations.getLogs().contains("Operation ID: 2"));
+            Assert.assertTrue(operations.getLogs().contains("Operation name: operation"));
+            Assert.assertTrue(operations.getLogs().contains("Operation time:"));
+            Assert.assertTrue(operations.getLogs().contains("Operation input: {\"username\":\"username\",\"password\":\"password\",\"sessionId\":0}"));
+            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"success\":\"Success\",\"sessionId\":0"));
 
             operations = null;
             Operations.cleanServer();

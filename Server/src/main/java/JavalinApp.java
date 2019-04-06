@@ -32,7 +32,15 @@ public class JavalinApp {
         app.get("/", ctx -> ctx.json(hashRoot));
 
         app.get("/logs", ctx -> {
-            ctx.json(operations.serviceGetLogs());
+            HashMap<String, String> mapResponse = new HashMap<>();
+            AppResponse response = operations.serviceGetLogs();
+            mapResponse.put("success", response.getSuccess());
+            mapResponse.put("error", response.getError());
+            mapResponse.put("logs", response.getLogs());
+            System.out.println("HTTP success: " + response.getSuccess());
+            System.out.println("HTTP error: " + response.getError());
+            System.out.println("HTTP logs: " + response.getLogs());
+            ctx.json(mapResponse);
         });
 
         // POST requests to path /signup will invoke method signup with required parameters and receive its response
@@ -42,8 +50,8 @@ public class JavalinApp {
             AppResponse response = operations.signUp(mapRequest.get("username"), mapRequest.get("password"), new byte[256]);
             mapResponse.put("success", response.getSuccess());
             mapResponse.put("error", response.getError());
-            System.out.println(response.getSuccess());
-            System.out.println(response.getError());
+            System.out.println("HTTP success: " + response.getSuccess());
+            System.out.println("HTTP error: " + response.getError());
             ctx.json(mapResponse);
             ctx.status(201);
         });
@@ -54,8 +62,8 @@ public class JavalinApp {
             AppResponse response = operations.createAlbum(Integer.valueOf(mapRequest.get("sessionId")), mapRequest.get("username"), mapRequest.get("albumName"));
             mapResponse.put("success", response.getSuccess());
             mapResponse.put("error", response.getError());
-            System.out.println(response.getSuccess());
-            System.out.println(response.getError());
+            System.out.println("HTTP success: " + response.getSuccess());
+            System.out.println("HTTP error: " + response.getError());
             ctx.json(mapResponse);
             ctx.status(201);
         });
@@ -67,16 +75,22 @@ public class JavalinApp {
             mapResponse.put("success", response.getSuccess());
             mapResponse.put("error", response.getError());
             mapResponse.put("sessionId", String.valueOf(response.getSessionId()));
-            System.out.println(response.getSuccess());
-            System.out.println(response.getError());
-            System.out.println(response.getSessionId());
+            System.out.println("HTTP success: " + response.getSuccess());
+            System.out.println("HTTP error: " + response.getError());
+            System.out.println("HTTP session id:" + response.getSessionId());
             ctx.json(mapResponse);
             ctx.status(201);
         });
 
         app.delete("/logout", ctx -> {
-            AppRequest request = ctx.bodyAsClass(AppRequest.class);
-            ctx.json(operations.logOut(request.getSessionId()));
+            HashMap<String, String> mapRequest = ctx.bodyAsClass(HashMap.class);
+            HashMap<String, String> mapResponse = new HashMap<>();
+            AppResponse response = operations.logOut(Integer.valueOf(mapRequest.get("sessionId")));
+            mapResponse.put("success", response.getSuccess());
+            mapResponse.put("error", response.getError());
+            System.out.println("HTTP success: " + response.getSuccess());
+            System.out.println("HTTP error: " + response.getError());
+            ctx.json(mapResponse);
             ctx.status(200);
         });
 

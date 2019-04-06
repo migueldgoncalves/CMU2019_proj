@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.HashMap;
 
 public class ServiceSignUpTest {
 
@@ -48,25 +49,19 @@ public class ServiceSignUpTest {
     @Test
     public void validSignUpRequestTest() {
         try {
-            AppRequest appRequest = new AppRequest();
-            appRequest.setUsername("username");
-            appRequest.setPassword("password");
-            appRequest.setPublicKey(new byte[256]);
-            RequestBody body = RequestBody.create(JSON, new Gson().toJson(appRequest));
+            HashMap<String, String> mapRequest = new HashMap<>();
+            mapRequest.put("username", "username");
+            mapRequest.put("password", "password");
+
+            RequestBody body = RequestBody.create(JSON, new Gson().toJson(mapRequest));
             Request request = new Request.Builder().url(URL_SIGNUP).post(body).build();
             Response response = client.newCall(request).execute();
 
-            AppResponse appResponse = new Gson().fromJson(response.body().string(), AppResponse.class);
             Assert.assertEquals(CREATED, response.code());
-            Assert.assertEquals("User created successfully", appResponse.getSuccess());
-            Assert.assertNull(appResponse.getError());
+            HashMap<String, String> mapResponse = new Gson().fromJson(response.body().string(), HashMap.class);
+            Assert.assertEquals("User created successfully", mapResponse.get("success"));
+            Assert.assertNull(mapResponse.get("error"));
             Assert.assertEquals(1, operations.getUsersLength());
-            Assert.assertEquals("username", operations.getUserByUsername("username").getUsername());
-            Assert.assertEquals("password", operations.getUserByUsername("username").getPassword());
-            Assert.assertEquals(256, operations.getUserByUsername("username").getPublicKey().length);
-            for(int i=0; i<256; i++)
-                Assert.assertEquals(0, operations.getUserByUsername("username").getPublicKey()[i]);
-            Assert.assertEquals(0, operations.getUserByUsername("username").getUserAlbumNumber());
             Assert.assertEquals(1, operations.getLogsLength());
         } catch (Exception e) {
             e.printStackTrace();
@@ -77,17 +72,17 @@ public class ServiceSignUpTest {
     @Test
     public void invalidUsernameSignUpRequestTest() {
         try {
-            AppRequest appRequest = new AppRequest();
-            appRequest.setUsername("");
-            appRequest.setPassword("password");
-            appRequest.setPublicKey(new byte[256]);
-            RequestBody body = RequestBody.create(JSON, new Gson().toJson(appRequest));
+            HashMap<String, String> mapRequest = new HashMap<>();
+            mapRequest.put("username", "");
+            mapRequest.put("password", "password");
+
+            RequestBody body = RequestBody.create(JSON, new Gson().toJson(mapRequest));
             Request request = new Request.Builder().url(URL_SIGNUP).post(body).build();
             Response response = client.newCall(request).execute();
 
-            AppResponse appResponse = new Gson().fromJson(response.body().string(), AppResponse.class);
             Assert.assertEquals(CREATED, response.code());
-            Assert.assertEquals("Username cannot be empty", appResponse.getError());
+            HashMap<String, String> mapResponse = new Gson().fromJson(response.body().string(), HashMap.class);
+            Assert.assertEquals("Username cannot be empty", mapResponse.get("error"));
             Assert.assertEquals(0, operations.getUsersLength());
             Assert.assertEquals(1, operations.getLogsLength());
         } catch (Exception e) {
@@ -99,39 +94,17 @@ public class ServiceSignUpTest {
     @Test
     public void invalidPasswordSignUpRequestTest() {
         try {
-            AppRequest appRequest = new AppRequest();
-            appRequest.setUsername("username");
-            appRequest.setPassword("x");
-            appRequest.setPublicKey(new byte[256]);
-            RequestBody body = RequestBody.create(JSON, new Gson().toJson(appRequest));
+            HashMap<String, String> mapRequest = new HashMap<>();
+            mapRequest.put("username", "username");
+            mapRequest.put("password", "x");
+
+            RequestBody body = RequestBody.create(JSON, new Gson().toJson(mapRequest));
             Request request = new Request.Builder().url(URL_SIGNUP).post(body).build();
             Response response = client.newCall(request).execute();
 
-            AppResponse appResponse = new Gson().fromJson(response.body().string(), AppResponse.class);
             Assert.assertEquals(CREATED, response.code());
-            Assert.assertEquals("Password must have at least " + Operations.MIN_PASSWORD_LENGTH + " characters", appResponse.getError());
-            Assert.assertEquals(0, operations.getUsersLength());
-            Assert.assertEquals(1, operations.getLogsLength());
-        } catch (Exception e) {
-            e.printStackTrace();
-            Assert.fail();
-        }
-    }
-
-    @Test
-    public void invalidPublicKeySignUpRequestTest() {
-        try {
-            AppRequest appRequest = new AppRequest();
-            appRequest.setUsername("username");
-            appRequest.setPassword("password");
-            appRequest.setPublicKey(new byte[1]);
-            RequestBody body = RequestBody.create(JSON, new Gson().toJson(appRequest));
-            Request request = new Request.Builder().url(URL_SIGNUP).post(body).build();
-            Response response = client.newCall(request).execute();
-
-            AppResponse appResponse = new Gson().fromJson(response.body().string(), AppResponse.class);
-            Assert.assertEquals(CREATED, response.code());
-            Assert.assertEquals("Public key must have " + Operations.RSA_KEY_BYTE_LENGTH * 8 + " bits", appResponse.getError());
+            HashMap<String, String> mapResponse = new Gson().fromJson(response.body().string(), HashMap.class);
+            Assert.assertEquals("Password must have at least " + Operations.MIN_PASSWORD_LENGTH + " characters", mapResponse.get("error"));
             Assert.assertEquals(0, operations.getUsersLength());
             Assert.assertEquals(1, operations.getLogsLength());
         } catch (Exception e) {
