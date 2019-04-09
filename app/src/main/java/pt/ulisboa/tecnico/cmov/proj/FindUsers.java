@@ -5,24 +5,38 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.design.widget.TextInputEditText;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.GridView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
+import pt.ulisboa.tecnico.cmov.proj.Adapters.UserAdapter;
+import pt.ulisboa.tecnico.cmov.proj.Data.Album;
 import pt.ulisboa.tecnico.cmov.proj.Data.Peer2PhotoApp;
+import pt.ulisboa.tecnico.cmov.proj.Data.User;
 
 public class FindUsers extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    private static ArrayList<User> users = new ArrayList<User>();
+    private static ArrayAdapter<User> userAdapter = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,16 +44,6 @@ public class FindUsers extends AppCompatActivity
         setContentView(R.layout.activity_find_users);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-                findUsers();
-            }
-        });
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -49,6 +53,39 @@ public class FindUsers extends AppCompatActivity
 
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        users.clear();
+
+        users = new ArrayList<>(Arrays.asList(
+                new User(0, "Joao"),
+                new User(1, "Jacinto")
+        ));
+
+        userAdapter = new UserAdapter(this, 0, users);
+        ListView userTable = findViewById(R.id.userList);
+        userTable.setAdapter(userAdapter);
+
+        //Send server requests as user types out user's name
+        EditText searchText = findViewById(R.id.searchText);
+        searchText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {}
+            @Override
+            public void beforeTextChanged(CharSequence s, int start,
+                                          int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start,
+                                      int before, int count) {
+                //TODO: Comecamos a procurar depois do utilizador introduzir 2 caracteres?
+                if(s.length() > 1)
+                    sendServerRequest(s.toString());
+            }
+        });
+    }
+
+    protected void sendServerRequest(String userName) {
+
     }
 
     @Override
@@ -106,42 +143,6 @@ public class FindUsers extends AppCompatActivity
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
-    }
-
-    private void findUsers(){
-        //Make call to server to get arraylist of users
-        //
-        //Proceed to go through every username and represent them
-        ArrayList<String> arrayListOfUsernames = new ArrayList<>(); //TODO: Substituir esta new arraylist pelo retorno do servidor
-
-        //TODO: ELIMINAR AS SEGUINTES LINHAS QUE APENAS ESTÃO AQUI POR QUESTÕES DE TESTE
-        arrayListOfUsernames.add("Utilizador 1");
-        arrayListOfUsernames.add("Utilizador 2");
-        arrayListOfUsernames.add("Utilizador 3");
-        arrayListOfUsernames.add("Utilizador 4");
-        arrayListOfUsernames.add("Utilizador 5");
-        arrayListOfUsernames.add("Utilizador 6");
-        //##############################################################################
-
-        for(String i : arrayListOfUsernames){
-            if(!i.equals(((Peer2PhotoApp) this.getApplication()).getUsername())){
-                LinearLayout linearLayout = findViewById(R.id.userPresentationTable);
-                Button bt = new Button(FindUsers.this);
-                bt.setText(i);
-                bt.setBackgroundColor(Color.BLUE);
-                bt.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT));
-                linearLayout.addView(bt);
-
-                bt.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-
-                    }
-                });
-            }
-        }
-
     }
 
 }
