@@ -47,8 +47,9 @@ public class AlbumView extends AppCompatActivity
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        toolbar.setTitle(getIntent().getStringExtra("AlbumName"));
 
-        photos.clear(); //Não eleminar Esta Linha
+        photos.clear(); //Não eliminar esta linha
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(view -> {
@@ -185,6 +186,7 @@ public class AlbumView extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.album_view, menu);
+        menu.add(0, 0, 0, "Add User");
         return true;
     }
 

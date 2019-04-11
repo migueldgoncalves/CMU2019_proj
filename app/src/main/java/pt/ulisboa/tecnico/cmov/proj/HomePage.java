@@ -72,6 +72,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        toolbar.setTitle("Home");
 
         albums.clear();
 
@@ -176,13 +177,6 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.home_page, menu);
-        return true;
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -207,8 +201,6 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
             startActivity(new Intent(HomePage.this, HomePage.class));
         } else if (id == R.id.nav_createAlbum) {
             createAlbum();
-        } else if (id == R.id.nav_findUsers) {
-            startActivity(new Intent(HomePage.this, FindUsers.class));
         } else if (id == R.id.nav_logs) {
             startActivity(new Intent(HomePage.this, LogView.class));
         } else if (id == R.id.nav_dropbox) {

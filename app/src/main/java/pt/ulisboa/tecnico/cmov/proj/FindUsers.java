@@ -1,5 +1,7 @@
 package pt.ulisboa.tecnico.cmov.proj;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -17,6 +19,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -64,6 +67,15 @@ public class FindUsers extends AppCompatActivity
         userAdapter = new UserAdapter(this, 0, users);
         ListView userTable = findViewById(R.id.userList);
         userTable.setAdapter(userAdapter);
+
+        userTable.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View view,int position, long id) {
+                Intent intent = new Intent();
+                intent.putExtra("userName", users.get(position).getUserName());
+                setResult(Activity.RESULT_OK, intent);
+                finish();
+            }
+        });
 
         //Send server requests as user types out user's name
         EditText searchText = findViewById(R.id.searchText);
@@ -126,17 +138,17 @@ public class FindUsers extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        if (id == R.id.nav_home) {
 
-        } else if (id == R.id.nav_slideshow) {
+        } else if (id == R.id.nav_createAlbum) {
 
-        } else if (id == R.id.nav_manage) {
+        } else if (id == R.id.nav_logs) {
+            
+        } else if (id == R.id.nav_dropbox) {
 
-        } else if (id == R.id.nav_share) {
+        } else if (id == R.id.nav_signOut) {
 
-        } else if (id == R.id.nav_send) {
+        } else if (id == R.id.nav_settings){
 
         }
 
