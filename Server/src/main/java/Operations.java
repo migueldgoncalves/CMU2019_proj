@@ -19,8 +19,6 @@ public class Operations {
     protected static final int MIN_PASSWORD_LENGTH = 8;
     protected static final int MAX_PASSWORD_LENGTH = 30;
 
-    protected static final int RSA_KEY_BYTE_LENGTH = 256;
-
     protected static final int SESSION_DURATION = 5; //Seconds
 
     protected static final String TEMPORARY_BACKUP_NAME = "backups/ServerState.new";
@@ -61,110 +59,103 @@ public class Operations {
 
     // Business logic main methods
 
-    public AppResponse signUp(String username, String password, byte[] publicKey) {
-        AppRequest request = new AppRequest();
-        request.setUsername(username);
-        request.setPassword(password);
-        request.setPublicKey(publicKey);
-        AppResponse response = new AppResponse();
+    public HashMap<String, String> signUp(String username, String password) {
+        HashMap<String, String> request = new HashMap<>();
+        request.put("username", username);
+        request.put("password", password);
+        HashMap<String, String> response = new HashMap<>();
 
         String usernameEvaluation = isUsernameValid(username);
         if(!usernameEvaluation.equals("Username valid")) {
-            response.setError(usernameEvaluation);
+            response.put("error", usernameEvaluation);
             addLog(SIGNUP_OPERATION, request, response);
             return response;
         }
         String passwordEvaluation = isPasswordValid(password);
         if(!passwordEvaluation.equals("Password valid")) {
-            response.setError(passwordEvaluation);
+            response.put("error", passwordEvaluation);
             addLog(SIGNUP_OPERATION, request, response);
             return response;
         }
-        String publicKeyEvaluation = isPublicKeyValid(publicKey);
-        if(!publicKeyEvaluation.equals("Public key valid")) {
-            response.setError(publicKeyEvaluation);
-            addLog(SIGNUP_OPERATION, request, response);
-            return response;
-        }
-        addUser(new User(username, password, publicKey));
-        response.setSuccess("User created successfully");
+        addUser(new User(username, password));
+        response.put("success", "User created successfully");
         addLog(SIGNUP_OPERATION, request, response);
         return response;
     }
 
-    public AppResponse logIn(String username, String password){
-        AppRequest request = new AppRequest();
-        request.setUsername(username);
-        request.setPassword(password);
-        AppResponse response = new AppResponse();
+    public HashMap<String, String> logIn(String username, String password){
+        HashMap<String, String> request = new HashMap<>();
+        request.put("username", username);
+        request.put("password", password);
+        HashMap<String, String> response = new HashMap<>();
 
         if(!isUserCreated(username)){
-            response.setError("The Inserted Username is Incorrect!");
+            response.put("error", "The Inserted Username is Incorrect!");
             addLog(LOGIN_OPERATION, request, response);
             return response;
         }
         if(!getUserByUsername(username).isPasswordCorrect(password)){
-            response.setError("Invalid Password! Please Try Again");
+            response.put("error", "Invalid Password! Please Try Again");
             addLog(LOGIN_OPERATION, request, response);
             return response;
         }
         if(getUserByUsername(username).getSessionId() > 0) {
-            response.setSuccess("Login successful");
-            response.setSessionId(getUserByUsername(username).getSessionId());
+            response.put("success", "Login successful");
+            response.put("sessionId", String.valueOf(getUserByUsername(username).getSessionId()));
             addLog(LOGIN_OPERATION, request, response);
             return response;
         }
         Session session = new Session(username, SESSION_DURATION);
         String sessionAddResult = addSession(session);
         if(!sessionAddResult.equals("Session successfully added")) {
-            response.setError("Could not create session - Please try to log in again");
+            response.put("error", "Could not create session - Please try to log in again");
             addLog(LOGIN_OPERATION, request, response);
             return response;
         }
-        response.setSuccess("Login successful");
-        response.setSessionId(session.getSessionId());
+        response.put("success", "Login successful");
+        response.put("sessionId", String.valueOf(session.getSessionId()));
         addLog(LOGIN_OPERATION, request, response);
         return response;
     }
 
-    public AppResponse logOut(int sessionId) {
-        AppRequest request = new AppRequest();
-        request.setSessionId(sessionId);
-        AppResponse response = new AppResponse();
+    public HashMap<String, String> logOut(int sessionId) {
+        HashMap<String, String> request = new HashMap<>();
+        request.put("sessionId", String.valueOf(sessionId));
+        HashMap<String, String> response = new HashMap<>();
         String result = deleteSession(sessionId);
         if(!result.equals("Session successfully deleted")) {
-            response.setError(result);
+            response.put("error", result);
             addLog(LOGOUT_OPERATION, request, response);
             return response;
         }
-        response.setSuccess(result);
+        response.put("success", result);
         addLog(LOGOUT_OPERATION, request, response);
         return response;
     }
 
-    public AppResponse serviceGetLogs() {
-        AppRequest request = new AppRequest();
-        AppResponse response = new AppResponse();
-        response.setSuccess("Logs correctly obtained");
+    public HashMap<String, String> serviceGetLogs() {
+        HashMap<String, String> request = new HashMap<>();
+        HashMap<String, String> response = new HashMap<>();
+        response.put("success", "Logs correctly obtained");
         addLog(LOGS_OPERATION, request, response);
-        response.setLogs(getLogs());
+        response.put("logs", getLogs());
         return response;
     }
 
-    public AppResponse createAlbum(int sessionId, String username, String albumName) {
-        AppRequest request = new AppRequest();
-        AppResponse response = new AppResponse();
-        request.setSessionId(sessionId);
-        request.setUsername(username);
-        request.setAlbumName(albumName);
+    public HashMap<String, String> createAlbum(int sessionId, String username, String albumName) {
+        HashMap<String, String> request = new HashMap<>();
+        HashMap<String, String> response = new HashMap<>();
+        request.put("sessionId", String.valueOf(sessionId));
+        request.put("username", username);
+        request.put("albumName", albumName);
         String[] result = addAlbum(new Album(albumName, counterAlbum.incrementAndGet()), username);
         if(!result[0].equals("Album successfully added")) {
-            response.setError(result[0]);
+            response.put("error", result[0]);
             addLog(CREATE_ALBUM_OPERATION, request, response);
             return response;
         }
-        response.setSuccess(result[0]);
-        response.setAlbumId(Integer.valueOf(result[1]));
+        response.put("success", result[0]);
+        response.put("albumId", result[1]);
         addLog(CREATE_ALBUM_OPERATION, request, response);
         return response;
     }
@@ -199,14 +190,6 @@ public class Operations {
         if (password.length() > MAX_PASSWORD_LENGTH)
             return "Password must have at most " + MAX_PASSWORD_LENGTH + " characters";
         return "Password valid";
-    }
-
-    protected String isPublicKeyValid(byte[] publicKey) {
-        if (publicKey == null)
-            return "Public key cannot be null";
-        if (publicKey.length != RSA_KEY_BYTE_LENGTH)
-            return "Public key must have " + RSA_KEY_BYTE_LENGTH * 8 + " bits";
-        return "Public key valid";
     }
 
     // Server state setters
@@ -291,7 +274,7 @@ public class Operations {
         return "Session cannot be null";
     }
 
-    protected String addLog(String operation, AppRequest request, AppResponse response) {
+    protected String addLog(String operation, HashMap request, HashMap response) {
         if(operation!=null) {
             if(request!=null) {
                 if(response!=null) {

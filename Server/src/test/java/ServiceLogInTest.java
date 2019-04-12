@@ -49,7 +49,7 @@ public class ServiceLogInTest {
     @Test
     public void validLogInRequestWithPreviousSession() {
         try {
-            operations.addUser(new User("username", "password", new byte[256]));
+            operations.addUser(new User("username", "password"));
             Session session = new Session("username", 5);
             operations.addSession(session);
 
@@ -75,7 +75,7 @@ public class ServiceLogInTest {
     @Test
     public void validLogInRequestWithoutPreviousSession() {
         try {
-            operations.addUser(new User("username", "password", new byte[256]));
+            operations.addUser(new User("username", "password"));
             HashMap<String, String> mapRequest = new HashMap<>();
             mapRequest.put("username", "username");
             mapRequest.put("password", "password");
@@ -100,7 +100,7 @@ public class ServiceLogInTest {
     @Test
     public void nullUsernameLogInRequestTest() {
         try {
-            operations.addUser(new User("username", "password", new byte[256]));
+            operations.addUser(new User("username", "password"));
             HashMap<String, String> mapRequest = new HashMap<>();
             mapRequest.put("username", null);
             mapRequest.put("password", "password");
@@ -123,7 +123,7 @@ public class ServiceLogInTest {
     @Test
     public void invalidUsernameLogInRequestTest() {
         try {
-            operations.addUser(new User("username", "password", new byte[256]));
+            operations.addUser(new User("username", "password"));
             HashMap<String, String> mapRequest = new HashMap<>();
             mapRequest.put("username", "anotherUsername");
             mapRequest.put("password", "password");
@@ -146,7 +146,7 @@ public class ServiceLogInTest {
     @Test
     public void nullPasswordLogInRequestTest() {
         try {
-            operations.addUser(new User("username", "password", new byte[256]));
+            operations.addUser(new User("username", "password"));
             HashMap<String, String> mapRequest = new HashMap<>();
             mapRequest.put("username", "username");
             mapRequest.put("password", null);
@@ -169,7 +169,7 @@ public class ServiceLogInTest {
     @Test
     public void invalidPasswordLogInRequestTest() {
         try {
-            operations.addUser(new User("username", "password", new byte[256]));
+            operations.addUser(new User("username", "password"));
             HashMap<String, String> mapRequest = new HashMap<>();
             mapRequest.put("username", "username");
             mapRequest.put("password", "invalidPassword");

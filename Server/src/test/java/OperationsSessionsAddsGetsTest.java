@@ -32,7 +32,7 @@ public class OperationsSessionsAddsGetsTest {
     public void sessionAddNewTest() {
         try {
             Assert.assertEquals(0, operations.getSessionsLength());
-            User user = new User("username", "password", new byte[256]);
+            User user = new User("username", "password");
             operations.addUser(user);
             Session session = new Session("username", 5);
             String returnString = operations.addSession(session);
@@ -42,7 +42,7 @@ public class OperationsSessionsAddsGetsTest {
             String jsonString = FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8");
             jsonString = jsonString.replace("\n", "").replace("\r", "");
             System.out.println(jsonString);
-            Assert.assertTrue(jsonString.contains("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"publicKey\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"albums\":[],\"sessionId\":"));
+            Assert.assertTrue(jsonString.contains("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"albums\":[],\"sessionId\":"));
             Assert.assertTrue(jsonString.contains("\":{\"username\":\"username\",\"sessionId\":"));
             Assert.assertTrue(jsonString.contains(",\"loginTime\":\""));
             Assert.assertTrue(jsonString.contains("\",\"sessionDuration\":5}},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}"));
@@ -79,7 +79,7 @@ public class OperationsSessionsAddsGetsTest {
             jsonString = jsonString.replace("\n", "").replace("\r", "");
             Assert.assertEquals("{\"albums\":{},\"users\":{},\"sessions\":{},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}", jsonString);
 
-            operations.addUser(new User("username", "password", new byte[256]));
+            operations.addUser(new User("username", "password"));
             returnString = operations.addSession(new Session("username", 5));
             Assert.assertEquals("Session successfully added", returnString);
             Assert.assertEquals(1, operations.getSessionsLength());
@@ -92,7 +92,7 @@ public class OperationsSessionsAddsGetsTest {
     @Test
     public void sessionAddExistingTest() {
         try {
-            operations.addUser(new User("username", "password", new byte[256]));
+            operations.addUser(new User("username", "password"));
             Assert.assertEquals(0, operations.getSessionsLength());
             Session session = new Session("username", 5);
             operations.addSession(session);
@@ -106,7 +106,7 @@ public class OperationsSessionsAddsGetsTest {
 
             String jsonString = FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8");
             jsonString = jsonString.replace("\n", "").replace("\r", "");
-            Assert.assertTrue(jsonString.contains("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"publicKey\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"albums\":[],\"sessionId\":"));
+            Assert.assertTrue(jsonString.contains("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"albums\":[],\"sessionId\":"));
             Assert.assertTrue(jsonString.contains("\":{\"username\":\"username\",\"sessionId\":"));
             Assert.assertTrue(jsonString.contains(",\"loginTime\":\""));
             Assert.assertTrue(jsonString.contains("\",\"sessionDuration\":5}},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}"));
@@ -128,7 +128,7 @@ public class OperationsSessionsAddsGetsTest {
             Assert.assertEquals(0, operations.getUsersLength());
             Assert.assertEquals(0, operations.getLogsLength());
 
-            operations.addUser(new User("username", "password", new byte[256]));
+            operations.addUser(new User("username", "password"));
             returnValue = operations.addSession(session);
             Assert.assertEquals("Session successfully added", returnValue);
             Assert.assertEquals(0, operations.getAlbumsLength());
@@ -138,7 +138,7 @@ public class OperationsSessionsAddsGetsTest {
 
             String jsonString = FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8");
             jsonString = jsonString.replace("\n", "").replace("\r", "");
-            Assert.assertTrue(jsonString.contains("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"publicKey\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"albums\":[],\"sessionId\":"));
+            Assert.assertTrue(jsonString.contains("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"albums\":[],\"sessionId\":"));
             Assert.assertTrue(jsonString.contains("\":{\"username\":\"username\",\"sessionId\":"));
             Assert.assertTrue(jsonString.contains(",\"loginTime\":\""));
             Assert.assertTrue(jsonString.contains("\",\"sessionDuration\":5}},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}"));
@@ -151,7 +151,7 @@ public class OperationsSessionsAddsGetsTest {
     @Test
     public void sessionAddUserAlreadyHasSessionTest() {
         try {
-            User user = new User("username", "password", new byte[256]);
+            User user = new User("username", "password");
             operations.addUser(user);
             Session session = new Session("username", 5);
             Session session2 = new Session("username", 5);
@@ -167,7 +167,7 @@ public class OperationsSessionsAddsGetsTest {
 
             String jsonString = FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8");
             jsonString = jsonString.replace("\n", "").replace("\r", "");
-            Assert.assertTrue(jsonString.contains("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"publicKey\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"albums\":[],\"sessionId\":"));
+            Assert.assertTrue(jsonString.contains("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"albums\":[],\"sessionId\":"));
             Assert.assertTrue(jsonString.contains("\":{\"username\":\"username\",\"sessionId\":"));
             Assert.assertTrue(jsonString.contains(",\"loginTime\":\""));
             Assert.assertTrue(jsonString.contains("\",\"sessionDuration\":5}},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}"));
@@ -186,7 +186,7 @@ public class OperationsSessionsAddsGetsTest {
         try {
             Assert.assertEquals(0, operations.getSessions().size());
             Assert.assertEquals(0, operations.getSessionsLength());
-            operations.addUser(new User("username", "password", new byte[256]));
+            operations.addUser(new User("username", "password"));
             operations.addSession(new Session("username", 5));
             Assert.assertEquals(1, operations.getSessions().size());
             Assert.assertEquals(1, operations.getSessionsLength());
@@ -203,7 +203,7 @@ public class OperationsSessionsAddsGetsTest {
             Assert.assertNull(operations.getSessionById(1));
             Assert.assertNull(operations.getSessionById(Session.MAX_SESSION_ID - 2));
             Assert.assertNull((operations.getSessionById(Session.MAX_SESSION_ID - 1)));
-            operations.addUser(new User("username", "password", new byte[256]));
+            operations.addUser(new User("username", "password"));
             Session session = new Session("username", 5);
             operations.addSession(session);
             Assert.assertNull(operations.getSessionById(session.getSessionId() - 1));
@@ -218,7 +218,7 @@ public class OperationsSessionsAddsGetsTest {
     @Test
     public void deleteExistingSessionTest() {
         try {
-            User user = new User("username", "password", new byte[256]);
+            User user = new User("username", "password");
             operations.addUser(user);
             Session session = new Session("username", 5);
             operations.addSession(session);
@@ -233,7 +233,7 @@ public class OperationsSessionsAddsGetsTest {
 
             String jsonString = FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8");
             jsonString = jsonString.replace("\n", "").replace("\r", "");
-            Assert.assertEquals("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"publicKey\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"albums\":[],\"sessionId\":0}},\"sessions\":{},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}", jsonString);
+            Assert.assertEquals("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"albums\":[],\"sessionId\":0}},\"sessions\":{},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}", jsonString);
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();

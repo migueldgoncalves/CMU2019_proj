@@ -32,8 +32,8 @@ public class OperationsAlbumsAddsGetsTest {
     public void albumAddNewTest() {
         try {
             Assert.assertEquals(0, operations.getAlbumsLength());
-            operations.addUser(new User("username", "password", new byte[256]));
-            operations.addUser(new User("username2", "password", new byte[256]));
+            operations.addUser(new User("username", "password"));
+            operations.addUser(new User("username2", "password"));
 
             String[] returnValues = operations.addAlbum(new Album("album", 10), "username");
             Assert.assertEquals("Album successfully added", returnValues[0]);
@@ -65,7 +65,7 @@ public class OperationsAlbumsAddsGetsTest {
 
             String jsonString = FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8");
             jsonString = jsonString.replace("\n", "").replace("\r", "");
-            Assert.assertEquals("{\"albums\":{\"10\":{\"id\":10,\"slices\":{},\"name\":\"album\"},\"11\":{\"id\":11,\"slices\":{},\"name\":\"album\"},\"12\":{\"id\":12,\"slices\":{},\"name\":\"album\"}},\"users\":{\"username2\":{\"username\":\"username2\",\"password\":\"password\",\"publicKey\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"albums\":[12],\"sessionId\":0},\"username\":{\"username\":\"username\",\"password\":\"password\",\"publicKey\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"albums\":[10,11],\"sessionId\":0}},\"sessions\":{},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}", jsonString);
+            Assert.assertEquals("{\"albums\":{\"10\":{\"id\":10,\"slices\":{},\"name\":\"album\"},\"11\":{\"id\":11,\"slices\":{},\"name\":\"album\"},\"12\":{\"id\":12,\"slices\":{},\"name\":\"album\"}},\"users\":{\"username2\":{\"username\":\"username2\",\"password\":\"password\",\"albums\":[12],\"sessionId\":0},\"username\":{\"username\":\"username\",\"password\":\"password\",\"albums\":[10,11],\"sessionId\":0}},\"sessions\":{},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}", jsonString);
 
             operations = null;
             Operations.cleanServer();
@@ -88,14 +88,14 @@ public class OperationsAlbumsAddsGetsTest {
     @Test
     public void albumAddNullAlbumTest() {
         try {
-            operations.addUser(new User("username", "password", new byte[256]));
+            operations.addUser(new User("username", "password"));
             String[] returnValues = operations.addAlbum(null, "username");
             Assert.assertEquals("Album cannot be null", returnValues[0]);
             Assert.assertNull(returnValues[1]);
 
             String jsonString = FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8");
             jsonString = jsonString.replace("\n", "").replace("\r", "");
-            Assert.assertEquals("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"publicKey\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"albums\":[],\"sessionId\":0}},\"sessions\":{},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}", jsonString);
+            Assert.assertEquals("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"albums\":[],\"sessionId\":0}},\"sessions\":{},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}", jsonString);
 
             Assert.assertEquals(0, operations.getAlbumsLength());
             Assert.assertEquals(0, operations.getSessionsLength());
@@ -117,14 +117,14 @@ public class OperationsAlbumsAddsGetsTest {
     @Test
     public void albumAddInvalidUsernameTest() {
         try {
-            operations.addUser(new User("username", "password", new byte[256]));
+            operations.addUser(new User("username", "password"));
             String[] returnValues = operations.addAlbum(new Album("album", 10), "username2");
             Assert.assertEquals("Username does not exist or is invalid", returnValues[0]);
             Assert.assertNull(returnValues[1]);
 
             String jsonString = FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8");
             jsonString = jsonString.replace("\n", "").replace("\r", "");
-            Assert.assertEquals("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"publicKey\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"albums\":[],\"sessionId\":0}},\"sessions\":{},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}", jsonString);
+            Assert.assertEquals("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"albums\":[],\"sessionId\":0}},\"sessions\":{},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}", jsonString);
 
             Assert.assertEquals(0, operations.getAlbumsLength());
             Assert.assertEquals(0, operations.getSessionsLength());
@@ -148,7 +148,7 @@ public class OperationsAlbumsAddsGetsTest {
         try {
             Assert.assertEquals(0, operations.getAlbums().size());
             Assert.assertEquals(0, operations.getAlbumsLength());
-            operations.addUser(new User("username", "password", new byte[256]));
+            operations.addUser(new User("username", "password"));
             operations.addAlbum(new Album("album", 10), "username");
             Assert.assertEquals(1, operations.getAlbums().size());
             Assert.assertEquals(1, operations.getAlbumsLength());
@@ -166,7 +166,7 @@ public class OperationsAlbumsAddsGetsTest {
         try {
             Assert.assertNull(operations.getAlbumById(0));
             Assert.assertNull(operations.getAlbumById(1));
-            operations.addUser(new User("username", "password", new byte[256]));
+            operations.addUser(new User("username", "password"));
             operations.addAlbum(new Album("album", 1), "username");
             Assert.assertNull(operations.getAlbumById(0));
             Assert.assertEquals("album", operations.getAlbumById(1).getName());

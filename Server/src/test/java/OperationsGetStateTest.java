@@ -46,7 +46,7 @@ public class OperationsGetStateTest {
                             replace("\n", "").replace("\r", ""));
             Assert.assertEquals("album", operations.getAlbumById(1).getName());
             Assert.assertEquals(5, operations.getSessionById(1749358129).getSessionDuration());
-            Assert.assertEquals(256, operations.getUserByUsername("user3").getPublicKey().length);
+            Assert.assertEquals("password", operations.getUserByUsername("user3").getPassword());
             Assert.assertTrue(operations.getLogs().contains("CREATE_ALBUM"));
             Assert.assertEquals(1, operations.counterAlbum.get());
             Assert.assertEquals(1, operations.counterLog.get());
