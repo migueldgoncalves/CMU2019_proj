@@ -252,7 +252,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
 
     private void createAlbum(){
         AlertDialog.Builder builder = new AlertDialog.Builder(HomePage.this);
-        builder.setTitle("Title");
+        builder.setTitle("Album Title");
 
         // Set up the input
         final EditText input = new EditText(HomePage.this);

@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.cmov.proj;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -11,9 +12,11 @@ import android.support.design.widget.TextInputEditText;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -70,10 +73,7 @@ public class FindUsers extends AppCompatActivity
 
         userTable.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view,int position, long id) {
-                Intent intent = new Intent();
-                intent.putExtra("userName", users.get(position).getUserName());
-                setResult(Activity.RESULT_OK, intent);
-                finish();
+                addUser(position);
             }
         });
 
@@ -155,6 +155,30 @@ public class FindUsers extends AppCompatActivity
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void addUser(int position){
+        AlertDialog.Builder builder = new AlertDialog.Builder(FindUsers.this);
+        builder.setTitle("Add " + users.get(position).getUserName() + " to album?");
+
+        // Set up the buttons
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Intent intent = new Intent();
+                intent.putExtra("userName", users.get(position).getUserName());
+                setResult(Activity.RESULT_OK, intent);
+                finish();
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
     }
 
 }
