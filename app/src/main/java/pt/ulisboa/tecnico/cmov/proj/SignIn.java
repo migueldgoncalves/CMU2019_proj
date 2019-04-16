@@ -47,13 +47,7 @@ public class SignIn extends AppCompatActivity {
         passwordView = findViewById(R.id.password_login);
 
         Button signInButton = findViewById(R.id.sign_in_button);
-        signInButton.setOnClickListener(v -> {
-
-            signIn();
-
-            //TODO:Check If server acknowledges the introduced credentials and if so store the credentials and proceed to next activity
-            //startActivity(new Intent(SignIn.this, HomePage.class));
-        });
+        signInButton.setOnClickListener(v -> signIn());
 
     }
 
@@ -102,6 +96,7 @@ public class SignIn extends AppCompatActivity {
         String username = usernameView.getText().toString();
         String password = passwordView.getText().toString();
 
+        //TODO: The Fuck is this for?
         boolean cancel = false;
         View focusView = null;
 
@@ -121,14 +116,6 @@ public class SignIn extends AppCompatActivity {
         if(this.queue == null) {
             this.queue = Volley.newRequestQueue(ctx);
         }
-    }
-
-    private boolean serverValidatesCredentials() {
-
-        String introducedUsername = ((EditText)findViewById(R.id.username_login)).getText().toString();
-        String introducedPassword = ((EditText)findViewById(R.id.password_login)).getText().toString();
-
-        return true;
     }
 
     private void InitialVariableSetup(String sessionId){

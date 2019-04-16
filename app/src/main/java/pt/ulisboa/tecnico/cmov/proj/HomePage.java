@@ -97,15 +97,13 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
 
         loadAlbums();
 
-        albumTable.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View view,int position, long id) {
-                Intent intent = new Intent(HomePage.this, AlbumView.class);
-                Bundle b = new Bundle();
-                b.putString("AlbumName", albums.get(position).getAlbumName()); //Your id
-                intent.putExtras(b); //Put your id to your next Intent
-                startActivity(intent);
-                finish();
-            }
+        albumTable.setOnItemClickListener((parent, view, position, id) -> {
+            Intent intent = new Intent(HomePage.this, AlbumView.class);
+            Bundle b = new Bundle();
+            b.putString("AlbumName", albums.get(position).getAlbumName()); //Your id
+            intent.putExtras(b); //Put your id to your next Intent
+            startActivity(intent);
+            finish();
         });
 
         NavigationView navigationView = findViewById(R.id.nav_view);
@@ -262,9 +260,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         AlertDialog.Builder builder = new AlertDialog.Builder(HomePage.this);
         builder.setTitle("Title");
 
-        // Set up the input
         final EditText input = new EditText(HomePage.this);
-        // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL);
         builder.setView(input);
 
