@@ -9,14 +9,13 @@ public class UserTest {
 
     @Before
     public void setUp() {
-        user = new User("username", "password", new byte[10]);
+        user = new User("username", "password");
     }
 
     @Test
     public void userConstructorTest() {
         Assert.assertEquals("username", user.getUsername());
         Assert.assertEquals("password", user.getPassword());
-        Assert.assertEquals(10, user.getPublicKey().length);
         Assert.assertEquals(0, user.getUserAlbumNumber());
     }
 

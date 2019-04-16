@@ -32,64 +32,47 @@ public class JavalinApp {
         app.get("/", ctx -> ctx.json(hashRoot));
 
         app.get("/logs", ctx -> {
-            HashMap<String, String> mapResponse = new HashMap<>();
-            AppResponse response = operations.serviceGetLogs();
-            mapResponse.put("success", response.getSuccess());
-            mapResponse.put("error", response.getError());
-            mapResponse.put("logs", response.getLogs());
-            System.out.println("HTTP success: " + response.getSuccess());
-            System.out.println("HTTP error: " + response.getError());
-            System.out.println("HTTP logs: " + response.getLogs());
+            HashMap<String, String> mapResponse = operations.serviceGetLogs();
+            System.out.println("HTTP success: " + mapResponse.get("success"));
+            System.out.println("HTTP error: " + mapResponse.get("error"));
+            System.out.println("HTTP logs: " + mapResponse.get("logs"));
             ctx.json(mapResponse);
         });
 
         // POST requests to path /signup will invoke method signup with required parameters and receive its response
         app.post("/signup", ctx -> {
             HashMap<String, String> mapRequest = ctx.bodyAsClass(HashMap.class);
-            HashMap<String, String> mapResponse = new HashMap<>();
-            AppResponse response = operations.signUp(mapRequest.get("username"), mapRequest.get("password"), new byte[256]);
-            mapResponse.put("success", response.getSuccess());
-            mapResponse.put("error", response.getError());
-            System.out.println("HTTP success: " + response.getSuccess());
-            System.out.println("HTTP error: " + response.getError());
+            HashMap<String, String> mapResponse = operations.signUp(mapRequest.get("username"), mapRequest.get("password"));
+            System.out.println("HTTP success: " + mapResponse.get("success"));
+            System.out.println("HTTP error: " + mapResponse.get("error"));
             ctx.json(mapResponse);
             ctx.status(201);
         });
 
         app.post("/createalbum", ctx -> {
             HashMap<String, String> mapRequest = ctx.bodyAsClass(HashMap.class);
-            HashMap<String, String> mapResponse = new HashMap<>();
-            AppResponse response = operations.createAlbum(Integer.valueOf(mapRequest.get("sessionId")), mapRequest.get("username"), mapRequest.get("albumName"));
-            mapResponse.put("success", response.getSuccess());
-            mapResponse.put("error", response.getError());
-            System.out.println("HTTP success: " + response.getSuccess());
-            System.out.println("HTTP error: " + response.getError());
+            HashMap<String, String> mapResponse = operations.createAlbum(Integer.valueOf(mapRequest.get("sessionId")), mapRequest.get("username"), mapRequest.get("albumName"));
+            System.out.println("HTTP success: " + mapResponse.get("success"));
+            System.out.println("HTTP error: " + mapResponse.get("error"));
             ctx.json(mapResponse);
             ctx.status(201);
         });
 
         app.put("/login", ctx -> {
             HashMap<String, String> mapRequest = ctx.bodyAsClass(HashMap.class);
-            HashMap<String, String> mapResponse = new HashMap<>();
-            AppResponse response = operations.logIn(mapRequest.get("username"), mapRequest.get("password"));
-            mapResponse.put("success", response.getSuccess());
-            mapResponse.put("error", response.getError());
-            mapResponse.put("sessionId", String.valueOf(response.getSessionId()));
-            System.out.println("HTTP success: " + response.getSuccess());
-            System.out.println("HTTP error: " + response.getError());
-            System.out.println("HTTP session id:" + response.getSessionId());
+            HashMap<String, String> mapResponse = operations.logIn(mapRequest.get("username"), mapRequest.get("password"));
+            System.out.println("HTTP success: " + mapResponse.get("success"));
+            System.out.println("HTTP error: " + mapResponse.get("error"));
+            System.out.println("HTTP session id:" + mapResponse.get("sessionId"));
             ctx.json(mapResponse);
             ctx.status(201);
         });
 
         app.delete("/logout", ctx -> {
             HashMap<String, String> mapRequest = ctx.bodyAsClass(HashMap.class);
-            HashMap<String, String> mapResponse = new HashMap<>();
-            AppResponse response = operations.logOut(Integer.valueOf(mapRequest.get("sessionId")));
-            mapResponse.put("success", response.getSuccess());
-            mapResponse.put("error", response.getError());
-            System.out.println("HTTP success: " + response.getSuccess());
-            System.out.println("HTTP error: " + response.getError());
+            HashMap<String, String> mapResponse = operations.logOut(Integer.valueOf(mapRequest.get("sessionId")));
+            System.out.println("HTTP success: " + mapResponse.get("success"));
+            System.out.println("HTTP error: " + mapResponse.get("error"));
             ctx.json(mapResponse);
             ctx.status(200);
         });

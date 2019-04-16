@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.HashMap;
 
 public class OperationsLogsAddsGetsTest {
 
@@ -30,19 +31,19 @@ public class OperationsLogsAddsGetsTest {
     @Test
     public void addValidLogTest() {
         try {
-            AppRequest appRequest = new AppRequest();
-            appRequest.setUsername("username");
-            appRequest.setPassword("password");
-            AppResponse appResponse = new AppResponse();
-            appResponse.setSuccess("Success");
+            HashMap<String, String> appRequest = new HashMap<>();
+            appRequest.put("username", "username");
+            appRequest.put("password", "password");
+            HashMap<String, String> appResponse = new HashMap<>();
+            appResponse.put("success", "Success");
 
             String response = operations.addLog("operation", appRequest, appResponse);
             Assert.assertEquals("Operation successfully logged", response);
             Assert.assertTrue(operations.getLogs().contains("Operation ID: 1"));
             Assert.assertTrue(operations.getLogs().contains("Operation name: operation"));
             Assert.assertTrue(operations.getLogs().contains("Operation time:"));
-            Assert.assertTrue(operations.getLogs().contains("Operation input: {\"username\":\"username\",\"password\":\"password\",\"sessionId\":0}"));
-            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"success\":\"Success\",\"sessionId\":0,\"albumId\":0}"));
+            Assert.assertTrue(operations.getLogs().contains("Operation input: {\"password\":\"password\",\"username\":\"username\"}"));
+            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"success\":\"Success\"}"));
 
             Assert.assertEquals(0, operations.getAlbumsLength());
             Assert.assertEquals(0, operations.getSessionsLength());
@@ -52,7 +53,7 @@ public class OperationsLogsAddsGetsTest {
             String jsonString = FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8");
             jsonString = jsonString.replace("\n", "").replace("\r", "");
             Assert.assertTrue(jsonString.contains("{\"albums\":{},\"users\":{},\"sessions\":{},\"logs\":\"Operation ID: 1\\nOperation name: operation\\nOperation time:"));
-            Assert.assertTrue(jsonString.contains("\\nOperation input: {\\\"username\\\":\\\"username\\\",\\\"password\\\":\\\"password\\\",\\\"sessionId\\\":0}\\nOperation output: {\\\"success\\\":\\\"Success\\\",\\\"sessionId\\\":0,\\\"albumId\\\":0}\\n---------------------------------------------------------------------------------------------------------------\\n\",\"counterAlbum\":0,\"counterLog\":1}"));
+            Assert.assertTrue(jsonString.contains("\\nOperation input: {\\\"password\\\":\\\"password\\\",\\\"username\\\":\\\"username\\\"}\\nOperation output: {\\\"success\\\":\\\"Success\\\"}\\n---------------------------------------------------------------------------------------------------------------\\n\",\"counterAlbum\":0,\"counterLog\":1}"));
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -62,11 +63,11 @@ public class OperationsLogsAddsGetsTest {
     @Test
     public void addNullOperationSessionTest() {
         try {
-            AppRequest appRequest = new AppRequest();
-            appRequest.setUsername("username");
-            appRequest.setPassword("password");
-            AppResponse appResponse = new AppResponse();
-            appResponse.setSuccess("Success");
+            HashMap<String, String> appRequest = new HashMap<>();
+            appRequest.put("username", "username");
+            appRequest.put("password", "password");
+            HashMap<String, String> appResponse = new HashMap<>();
+            appResponse.put("success", "Success");
 
             String response = operations.addLog(null, appRequest, appResponse);
             Assert.assertEquals("Operation name cannot be null", response);
@@ -89,8 +90,8 @@ public class OperationsLogsAddsGetsTest {
     @Test
     public void addNullRequestLogTest() {
         try {
-            AppResponse appResponse = new AppResponse();
-            appResponse.setSuccess("Success");
+            HashMap<String, String> appResponse = new HashMap<>();
+            appResponse.put("success", "Success");
 
             String response = operations.addLog("operation", null, appResponse);
             Assert.assertEquals("Operation request cannot be null", response);
@@ -113,9 +114,9 @@ public class OperationsLogsAddsGetsTest {
     @Test
     public void addNullResponseLogTest() {
         try {
-            AppRequest appRequest = new AppRequest();
-            appRequest.setUsername("username");
-            appRequest.setPassword("password");
+            HashMap<String, String> appRequest = new HashMap<>();
+            appRequest.put("username", "username");
+            appRequest.put("password", "password");
 
             String response = operations.addLog("operation", appRequest, null);
             Assert.assertEquals("Operation response cannot be null", response);
@@ -173,13 +174,13 @@ public class OperationsLogsAddsGetsTest {
     @Test
     public void getEmptyLogsServiceMethodTest() {
         try {
-            AppResponse response = operations.serviceGetLogs();
-            Assert.assertEquals(309, response.getLogs().length());
+            HashMap<String, String> response = operations.serviceGetLogs();
+            Assert.assertEquals(270, response.get("logs").length());
             Assert.assertTrue(operations.getLogs().contains("Operation ID: 1"));
             Assert.assertTrue(operations.getLogs().contains("Operation name: LOGS"));
             Assert.assertTrue(operations.getLogs().contains("Operation time:"));
-            Assert.assertTrue(operations.getLogs().contains("Operation input: {\"sessionId\":0}"));
-            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"success\":\"Logs correctly obtained\",\"sessionId\":0,\"albumId\":0}"));
+            Assert.assertTrue(operations.getLogs().contains("Operation input: {}"));
+            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"success\":\"Logs correctly obtained\"}"));
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -189,27 +190,27 @@ public class OperationsLogsAddsGetsTest {
     @Test
     public void getNotEmptyLogsServiceMethodTest() {
         try {
-            operations.signUp("username", "password", new byte[256]);
-            int sessionId = operations.logIn("username", "password").getSessionId();
+            operations.signUp("username", "password");
+            int sessionId = Integer.valueOf(operations.logIn("username", "password").get("sessionId"));
             operations.logOut(sessionId);
             Assert.assertEquals(3, operations.getLogsLength());
 
             Assert.assertTrue(operations.getLogs().contains("Operation ID: 1"));
             Assert.assertTrue(operations.getLogs().contains("Operation name: SIGNUP"));
             Assert.assertTrue(operations.getLogs().contains("Operation time:"));
-            Assert.assertTrue(operations.getLogs().contains("Operation input: {\"username\":\"username\",\"password\":\"password\",\"publicKey\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"sessionId\":0}"));
-            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"success\":\"User created successfully\",\"sessionId\":0,\"albumId\":0}"));
+            Assert.assertTrue(operations.getLogs().contains("Operation input: {\"password\":\"password\",\"username\":\"username\"}"));
+            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"success\":\"User created successfully\"}"));
             Assert.assertTrue(operations.getLogs().contains("---------------------------------------------------------------------------------------------------------------"));
             Assert.assertTrue(operations.getLogs().contains("Operation ID: 2"));
             Assert.assertTrue(operations.getLogs().contains("Operation name: LOGIN"));
             Assert.assertTrue(operations.getLogs().contains("Operation time:"));
-            Assert.assertTrue(operations.getLogs().contains("Operation input: {\"username\":\"username\",\"password\":\"password\",\"sessionId\":0}"));
+            Assert.assertTrue(operations.getLogs().contains("Operation input: {\"password\":\"password\",\"username\":\"username\"}"));
             Assert.assertTrue(operations.getLogs().contains("Operation output: {\"success\":\"Login successful\",\"sessionId\":"));
             Assert.assertTrue(operations.getLogs().contains("Operation ID: 3"));
             Assert.assertTrue(operations.getLogs().contains("Operation name: LOGOUT"));
             Assert.assertTrue(operations.getLogs().contains("Operation time:"));
             Assert.assertTrue(operations.getLogs().contains("Operation input: {\"sessionId\":"));
-            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"success\":\"Session successfully deleted\",\"sessionId\":0,\"albumId\":0}"));
+            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"success\":\"Session successfully deleted\"}"));
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();

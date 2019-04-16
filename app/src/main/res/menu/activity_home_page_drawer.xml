@@ -13,10 +13,6 @@
             android:icon="@drawable/ic_menu_gallery"
             android:title="Create Album" />
         <item
-            android:id="@+id/nav_findUsers"
-            android:icon="@drawable/ic_menu_camera"
-            android:title="Find Users" />
-        <item
             android:id="@+id/nav_logs"
             android:icon="@drawable/ic_menu_slideshow"
             android:title="Logs" />

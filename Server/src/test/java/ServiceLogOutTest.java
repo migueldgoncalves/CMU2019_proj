@@ -49,7 +49,7 @@ public class ServiceLogOutTest {
     @Test
     public void logOutValidSessionTest() {
         try {
-            User user = new User("username", "password", new byte[256]);
+            User user = new User("username", "password");
             operations.addUser(user);
             Session session = new Session("username", 5);
             operations.addSession(session);
@@ -77,7 +77,7 @@ public class ServiceLogOutTest {
     @Test
     public void logOutNonExistingSessionTest() {
         try {
-            User user = new User("username", "password", new byte[256]);
+            User user = new User("username", "password");
             operations.addUser(user);
             Session session = new Session("username", 5);
             operations.addSession(session);

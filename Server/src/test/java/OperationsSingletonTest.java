@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.HashMap;
 
 public class OperationsSingletonTest {
 
@@ -57,16 +58,16 @@ public class OperationsSingletonTest {
     public void singletonGetNonEmptyServerTest() {
         try {
             Session session = new Session("user1", 5);
-            AppRequest appRequest = new AppRequest();
-            appRequest.setUsername("username");
-            appRequest.setPassword("password");
-            AppResponse appResponse = new AppResponse();
-            appResponse.setSuccess("Success");
+            HashMap<String, String> appRequest = new HashMap<>();
+            appRequest.put("username", "username");
+            appRequest.put("password", "password");
+            HashMap<String, String> appResponse = new HashMap<>();
+            appResponse.put("success", "Success");
 
             operations = Operations.getServer();
-            operations.addUser(new User("user1", "password1", new byte[5]));
-            operations.addUser(new User("user2", "password2", new byte[10]));
-            operations.addUser(new User("user3", "password3", new byte[20]));
+            operations.addUser(new User("user1", "password1"));
+            operations.addUser(new User("user2", "password2"));
+            operations.addUser(new User("user3", "password3"));
             operations.addSession(session);
             operations.addSession(new Session("user2", 10));
             operations.addAlbum(new Album("album", 1), "user1");
@@ -79,14 +80,14 @@ public class OperationsSingletonTest {
             Assert.assertEquals(3, operations.getUsersLength());
             Assert.assertEquals("album", operations.getAlbumById(1).getName());
             Assert.assertEquals(5, operations.getSessionById(session.getSessionId()).getSessionDuration());
-            Assert.assertEquals(20, operations.getUserByUsername("user3").getPublicKey().length);
+            Assert.assertEquals("password3", operations.getUserByUsername("user3").getPassword());
 
             Assert.assertTrue(operations.getLogs().contains("Operation ID: 1"));
             Assert.assertFalse(operations.getLogs().contains("Operation ID: 2"));
             Assert.assertTrue(operations.getLogs().contains("Operation name: operation"));
             Assert.assertTrue(operations.getLogs().contains("Operation time:"));
-            Assert.assertTrue(operations.getLogs().contains("Operation input: {\"username\":\"username\",\"password\":\"password\",\"sessionId\":0}"));
-            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"success\":\"Success\",\"sessionId\":0"));
+            Assert.assertTrue(operations.getLogs().contains("Operation input: {\"password\":\"password\",\"username\":\"username\"}"));
+            Assert.assertTrue(operations.getLogs().contains("Operation output: {\"success\":\"Success\"}"));
 
             operations = null;
             Operations.cleanServer();

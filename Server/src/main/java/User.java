@@ -4,14 +4,12 @@ public class User {
 
     private String username; //Will serve as ID
     private String password;
-    private byte[] publicKey;
     private ArrayList<Integer> albums = new ArrayList<>();
     private int sessionId;
 
-    public User(String username, String password, byte[] publicKey) {
+    public User(String username, String password) {
         this.username = username;
         this.password = password;
-        this.publicKey = publicKey;
     }
 
     public String getUsername() {
@@ -28,14 +26,6 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public byte[] getPublicKey() {
-        return publicKey;
-    }
-
-    public void setPublicKey(byte[] publicKey) {
-        this.publicKey = publicKey;
     }
 
     public ArrayList<Integer> getAlbums() {

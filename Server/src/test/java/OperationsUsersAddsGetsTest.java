@@ -32,14 +32,14 @@ public class OperationsUsersAddsGetsTest {
     public void userAddNewTest() {
         try {
             Assert.assertEquals(0, operations.getUsersLength());
-            User user = new User("username", "password", new byte[5]);
+            User user = new User("username", "password");
             String returnString = operations.addUser(user);
             Assert.assertEquals("User successfully added", returnString);
             Assert.assertEquals(1, operations.getUsersLength());
 
             String jsonString = FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8");
             jsonString = jsonString.replace("\n", "").replace("\r", "");
-            Assert.assertEquals("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"publicKey\":[0,0,0,0,0],\"albums\":[],\"sessionId\":0}},\"sessions\":{},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}", jsonString);
+            Assert.assertEquals("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"albums\":[],\"sessionId\":0}},\"sessions\":{},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}", jsonString);
 
             operations = null;
             Operations.cleanServer();
@@ -63,7 +63,7 @@ public class OperationsUsersAddsGetsTest {
     public void userAddExistingTest() {
         try {
             Assert.assertEquals(0, operations.getUsersLength());
-            User user = new User("username", "password", new byte[5]);
+            User user = new User("username", "password");
             operations.addUser(user);
             String returnValue = operations.addUser(user);
 
@@ -75,7 +75,7 @@ public class OperationsUsersAddsGetsTest {
 
             String jsonString = FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8");
             jsonString = jsonString.replace("\n", "").replace("\r", "");
-            Assert.assertEquals("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"publicKey\":[0,0,0,0,0],\"albums\":[],\"sessionId\":0}},\"sessions\":{},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}", jsonString);
+            Assert.assertEquals("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"albums\":[],\"sessionId\":0}},\"sessions\":{},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}", jsonString);
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -96,7 +96,7 @@ public class OperationsUsersAddsGetsTest {
             jsonString = jsonString.replace("\n", "").replace("\r", "");
             Assert.assertEquals("{\"albums\":{},\"users\":{},\"sessions\":{},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}", jsonString);
 
-            returnString = operations.addUser(new User("username", "password", new byte[5]));
+            returnString = operations.addUser(new User("username", "password"));
             Assert.assertEquals("User successfully added", returnString);
             Assert.assertEquals(1, operations.getUsersLength());
         } catch (Exception e) {
@@ -110,7 +110,7 @@ public class OperationsUsersAddsGetsTest {
         try {
             Assert.assertEquals(0, operations.getUsers().size());
             Assert.assertEquals(0, operations.getUsersLength());
-            operations.addUser(new User("username", "password", new byte[5]));
+            operations.addUser(new User("username", "password"));
             Assert.assertEquals(1, operations.getUsers().size());
             Assert.assertEquals(1, operations.getUsersLength());
         } catch (Exception e) {
@@ -125,7 +125,7 @@ public class OperationsUsersAddsGetsTest {
             Assert.assertNull(operations.getUserByUsername(null));
             Assert.assertNull(operations.getUserByUsername("username"));
             Assert.assertNull(operations.getUserByUsername("anotherUsername"));
-            User user = new User("username", "password", new byte[5]);
+            User user = new User("username", "password");
             operations.addUser(user);
             Assert.assertNull(operations.getUserByUsername(null));
             Assert.assertEquals("password", operations.getUserByUsername("username").getPassword());

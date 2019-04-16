@@ -61,8 +61,8 @@ public class ServiceLogsTest {
             Assert.assertFalse(logs.contains("Operation ID: 2"));
             Assert.assertTrue(logs.contains("Operation name: LOGS"));
             Assert.assertTrue(logs.contains("Operation time:"));
-            Assert.assertTrue(logs.contains("Operation input: {\"sessionId\":0}"));
-            Assert.assertTrue(logs.contains("Operation output: {\"success\":\"Logs correctly obtained\",\"sessionId\":0,\"albumId\":0}"));
+            Assert.assertTrue(logs.contains("Operation input: {}"));
+            Assert.assertTrue(logs.contains("Operation output: {\"success\":\"Logs correctly obtained\"}"));
             Assert.assertTrue(logs.contains("---------------------------------------------------------------------------------------------------------------"));
             Assert.assertEquals(1, operations.getLogsLength());
         } catch (Exception e) {
@@ -97,19 +97,19 @@ public class ServiceLogsTest {
             Assert.assertTrue(logs.contains("Operation ID: 1"));
             Assert.assertTrue(logs.contains("Operation name: SIGNUP"));
             Assert.assertTrue(logs.contains("Operation time:"));
-            Assert.assertTrue(logs.contains("Operation input: {\"username\":\"username\",\"password\":\"password\",\"publicKey\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"sessionId\":0}"));
-            Assert.assertTrue(logs.contains("Operation output: {\"success\":\"User created successfully\",\"sessionId\":0,\"albumId\":0}"));
+            Assert.assertTrue(logs.contains("Operation input: {\"password\":\"password\",\"username\":\"username\"}"));
+            Assert.assertTrue(logs.contains("Operation output: {\"success\":\"User created successfully\"}"));
             Assert.assertTrue(logs.contains("---------------------------------------------------------------------------------------------------------------"));
             Assert.assertTrue(logs.contains("Operation ID: 2"));
             Assert.assertTrue(logs.contains("Operation name: LOGIN"));
             Assert.assertTrue(logs.contains("Operation time:"));
-            Assert.assertTrue(logs.contains("Operation input: {\"username\":\"username\",\"password\":\"password\",\"sessionId\":0}"));
+            Assert.assertTrue(logs.contains("Operation input: {\"password\":\"password\",\"username\":\"username\"}"));
             Assert.assertTrue(logs.contains("Operation output: {\"success\":\"Login successful\",\"sessionId\":"));
             Assert.assertTrue(logs.contains("Operation ID: 3"));
             Assert.assertTrue(logs.contains("Operation name: LOGS"));
             Assert.assertTrue(logs.contains("Operation time:"));
-            Assert.assertTrue(logs.contains("Operation input: {\"sessionId\":0}"));
-            Assert.assertTrue(logs.contains("Operation output: {\"success\":\"Logs correctly obtained\",\"sessionId\":0,\"albumId\":0}"));
+            Assert.assertTrue(logs.contains("Operation input: {}"));
+            Assert.assertTrue(logs.contains("Operation output: {\"success\":\"Logs correctly obtained\"}"));
             Assert.assertFalse(logs.contains("Operation ID: 4"));
             Assert.assertEquals(3, operations.getLogsLength());
         } catch (Exception e) {
