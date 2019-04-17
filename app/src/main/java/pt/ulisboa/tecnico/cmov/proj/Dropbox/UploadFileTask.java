@@ -2,12 +2,7 @@ package pt.ulisboa.tecnico.cmov.proj.Dropbox;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.widget.Toast;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.dropbox.core.DbxException;
 import com.dropbox.core.v2.DbxClientV2;
 import com.dropbox.core.v2.files.FileMetadata;
@@ -15,19 +10,12 @@ import com.dropbox.core.v2.files.WriteMode;
 import com.dropbox.core.v2.sharing.CreateSharedLinkWithSettingsErrorException;
 import com.dropbox.core.v2.sharing.SharedLinkMetadata;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
-import java.util.HashMap;
-
-import pt.ulisboa.tecnico.cmov.proj.HomePage;
 
 /**
  * Async task to upload a file to a directory
@@ -72,6 +60,7 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
             //PARAMS 0 ---> NOME DO FICHEIRO REMOTO
             //PARAMS 1 ---> NOME DA PASTA REMOTA ONDE VAMOS GUARDAR O FICHEIRO
             //PARAMS 2 ---> OPERACAO
+            //###############################ATENCAO###############################################
 
             File localFile = new File(mContext.getFilesDir().getPath() + "/" + params[0]);
             File file = new File(mContext.getFilesDir().getPath() + "/" + params[0] + "/" + params[0] + ".txt");
@@ -110,7 +99,7 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
                 System.out.println(sharedLinkMetadata);
 
                 //TODO: Send URL (ENCRYPTED) To Server
-                
+
                 //THIS IS IMPORTANT
 
                 return result;
@@ -129,6 +118,7 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
             //PARAMS 2 ---> OPERACAO
             //PARAMS 3 ---> PATH DA FOTO NA LOCAL STORAGE
             //PARAMS 4 ---> NOME DO ALBUM (SLICE) NA LOCAL STORAGE DO USER
+            //###############################ATENCAO###############################################
             File localFile = new File(params[3]);
 
             if (localFile != null) {

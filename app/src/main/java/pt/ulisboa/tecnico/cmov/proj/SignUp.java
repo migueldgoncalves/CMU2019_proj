@@ -42,7 +42,7 @@ public class SignUp extends AppCompatActivity {
         PasswordView = findViewById(R.id.password_signup);
 
         Button SignUpButton = findViewById(R.id.sign_up_button);
-        SignUpButton.setOnClickListener(view -> signUp(view));
+        SignUpButton.setOnClickListener(this::signUp);
     }
 
     private void httpRequest(String username, String password) {
@@ -85,14 +85,7 @@ public class SignUp extends AppCompatActivity {
         UsernameView.setError(null);
         PasswordView.setError(null);
 
-        // Store values at the time of the login attempt.
-        String username = UsernameView.getText().toString();
-        String password = PasswordView.getText().toString();
-
-        boolean cancel = false;
-        View focusView = null;
-
-        httpRequest(username, password);
+        httpRequest(UsernameView.getText().toString(), PasswordView.getText().toString());
     }
 
     private void setHTTPResponse(JSONObject json) {
