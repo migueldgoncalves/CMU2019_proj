@@ -98,15 +98,13 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
 
         loadAlbums();
 
-        albumTable.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View view,int position, long id) {
-                Intent intent = new Intent(HomePage.this, AlbumView.class);
-                Bundle b = new Bundle();
-                b.putString("AlbumName", albums.get(position).getAlbumName()); //Your id
-                intent.putExtras(b); //Put your id to your next Intent
-                startActivity(intent);
-                finish();
-            }
+        albumTable.setOnItemClickListener((parent, view, position, id) -> {
+            Intent intent = new Intent(HomePage.this, AlbumView.class);
+            Bundle b = new Bundle();
+            b.putString("AlbumName", albums.get(position).getAlbumName()); //Your id
+            intent.putExtras(b); //Put your id to your next Intent
+            startActivity(intent);
+            finish();
         });
 
         NavigationView navigationView = findViewById(R.id.nav_view);
@@ -252,35 +250,31 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
 
     private void createAlbum(){
         AlertDialog.Builder builder = new AlertDialog.Builder(HomePage.this);
-        builder.setTitle("Title");
+        builder.setTitle("Album Title");
 
-        // Set up the input
         final EditText input = new EditText(HomePage.this);
-        // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL);
         builder.setView(input);
 
-        //TODO: Verify if album name already exists
-
         // Set up the buttons
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                String albumName = input.getText().toString();
-                String sessionId = ((Peer2PhotoApp) getApplication()).getSessionId();
-                String username = ((Peer2PhotoApp) getApplication()).getUsername();
+        builder.setPositiveButton("OK", (dialog, which) -> {
+            String albumName = input.getText().toString();
+            String sessionId = ((Peer2PhotoApp) getApplication()).getSessionId();
+            String username = ((Peer2PhotoApp) getApplication()).getUsername();
 
-                //TODO: Ask server to create album in its local storage
+            //TODO: Ask server to create album in its local storage
+            if(new File(getApplicationContext().getFilesDir().getPath() + "/" + input.getText().toString()).exists()){
+                while (new File(getApplicationContext().getFilesDir().getPath() + "/" + input.getText().toString()).exists()){
+                    Toast.makeText(ctx, "An Album With The Name " + input.getText().toString() + " Already Exists!", Toast.LENGTH_SHORT).show();
+                    builder.setView(input);
+                }
+            }
 
-                httpRequest(albumName, username, sessionId);
-            }
+            httpRequest(albumName, username, sessionId);
+
         });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
+
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
 
         builder.show();
     }
@@ -323,17 +317,16 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
                             Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
                             //#####################################################
 
-                            //TODO: Create Cloud File corresponding to album file (TXT file) after server acknowledgment of album creation
                             new UploadFileTask(HomePage.this, DropboxClientFactory.getClient(), new UploadFileTask.Callback(){
 
                                 @Override
                                 public void onUploadComplete(FileMetadata result) {
-
+                                    Toast.makeText(ctx, "Upload Complete!", Toast.LENGTH_SHORT).show();
                                 }
 
                                 @Override
                                 public void onError(Exception e) {
-
+                                    //TODO: Remove Album From Local Storage and From Server Storage
                                 }
                             }).execute(albumName, "/Peer2Photo", "NEW_ALBUM");
                             //#####################################################

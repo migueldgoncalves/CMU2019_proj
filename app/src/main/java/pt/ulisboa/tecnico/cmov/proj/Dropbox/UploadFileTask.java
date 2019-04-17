@@ -60,6 +60,7 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
             //PARAMS 0 ---> NOME DO FICHEIRO REMOTO
             //PARAMS 1 ---> NOME DA PASTA REMOTA ONDE VAMOS GUARDAR O FICHEIRO
             //PARAMS 2 ---> OPERACAO
+            //###############################ATENCAO###############################################
 
             File localFile = new File(mContext.getFilesDir().getPath() + "/" + params[0]);
             File file = new File(mContext.getFilesDir().getPath() + "/" + params[0] + "/" + params[0] + ".txt");
@@ -86,30 +87,28 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
                 e.printStackTrace();
             }
 
-            if (file != null) {
+            String remoteFolderPath = params[1];
+            String remoteFileName = params[0] + ".txt";
 
-                String remoteFolderPath = params[1];
-                String remoteFileName = params[0] + ".txt";
+            try{
+                InputStream inputStream = new FileInputStream(file);
 
-                try{
-                    InputStream inputStream = new FileInputStream(file);
+                FileMetadata result = mDbxClient.files().uploadBuilder(remoteFolderPath + "/" + remoteFileName).withMode(WriteMode.OVERWRITE).uploadAndFinish(inputStream);
 
-                    FileMetadata result = mDbxClient.files().uploadBuilder(remoteFolderPath + "/" + remoteFileName).withMode(WriteMode.OVERWRITE).uploadAndFinish(inputStream);
+                SharedLinkMetadata sharedLinkMetadata = mDbxClient.sharing().createSharedLinkWithSettings("/Peer2Photo/" + remoteFileName);
+                System.out.println(sharedLinkMetadata);
 
-                    SharedLinkMetadata sharedLinkMetadata = mDbxClient.sharing().createSharedLinkWithSettings("/Peer2Photo/" + remoteFileName);
-                    System.out.println(sharedLinkMetadata);
+                //TODO: Send URL (ENCRYPTED) To Server
 
-                    //TODO: Send URL (ENCRYPTED) To Server
+                //THIS IS IMPORTANT
 
-                    return result;
+                return result;
 
-                }catch (CreateSharedLinkWithSettingsErrorException e){
-                    System.out.println("The File Already has a shared Link Associated with it!");
-                } catch (DbxException | IOException e) {
-                    mException = e;
-                    e.printStackTrace();
-                }
-
+            }catch (CreateSharedLinkWithSettingsErrorException e){
+                System.out.println("The File Already has a shared Link Associated with it!");
+            } catch (DbxException | IOException e) {
+                mException = e;
+                e.printStackTrace();
             }
         }else if (OPERATION_MODE.equals("NEW_PHOTO")) {
             //###############################ATENCAO###############################################
@@ -119,6 +118,7 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
             //PARAMS 2 ---> OPERACAO
             //PARAMS 3 ---> PATH DA FOTO NA LOCAL STORAGE
             //PARAMS 4 ---> NOME DO ALBUM (SLICE) NA LOCAL STORAGE DO USER
+            //###############################ATENCAO###############################################
             File localFile = new File(params[3]);
 
             if (localFile != null) {
