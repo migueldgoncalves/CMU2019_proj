@@ -34,7 +34,7 @@ public class OperationsSessionsAddsGetsTest {
             Assert.assertEquals(0, operations.getSessionsLength());
             User user = new User("username", "password");
             operations.addUser(user);
-            Session session = new Session("username", 5);
+            Session session = new Session("username", Operations.SESSION_DURATION);
             String returnString = operations.addSession(session);
             Assert.assertEquals("Session successfully added", returnString);
             Assert.assertEquals(1, operations.getSessionsLength());
@@ -45,7 +45,7 @@ public class OperationsSessionsAddsGetsTest {
             Assert.assertTrue(jsonString.contains("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"albums\":[],\"sessionId\":"));
             Assert.assertTrue(jsonString.contains("\":{\"username\":\"username\",\"sessionId\":"));
             Assert.assertTrue(jsonString.contains(",\"loginTime\":\""));
-            Assert.assertTrue(jsonString.contains("\",\"sessionDuration\":5}},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}"));
+            Assert.assertTrue(jsonString.contains("\",\"sessionDuration\":" + Operations.SESSION_DURATION + "}},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}"));
 
             operations = null;
             Operations.cleanServer();
@@ -80,7 +80,7 @@ public class OperationsSessionsAddsGetsTest {
             Assert.assertEquals("{\"albums\":{},\"users\":{},\"sessions\":{},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}", jsonString);
 
             operations.addUser(new User("username", "password"));
-            returnString = operations.addSession(new Session("username", 5));
+            returnString = operations.addSession(new Session("username", Operations.SESSION_DURATION));
             Assert.assertEquals("Session successfully added", returnString);
             Assert.assertEquals(1, operations.getSessionsLength());
         } catch (Exception e) {
@@ -94,7 +94,7 @@ public class OperationsSessionsAddsGetsTest {
         try {
             operations.addUser(new User("username", "password"));
             Assert.assertEquals(0, operations.getSessionsLength());
-            Session session = new Session("username", 5);
+            Session session = new Session("username", Operations.SESSION_DURATION);
             operations.addSession(session);
             String returnValue = operations.addSession(session);
 
@@ -109,7 +109,7 @@ public class OperationsSessionsAddsGetsTest {
             Assert.assertTrue(jsonString.contains("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"albums\":[],\"sessionId\":"));
             Assert.assertTrue(jsonString.contains("\":{\"username\":\"username\",\"sessionId\":"));
             Assert.assertTrue(jsonString.contains(",\"loginTime\":\""));
-            Assert.assertTrue(jsonString.contains("\",\"sessionDuration\":5}},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}"));
+            Assert.assertTrue(jsonString.contains("\",\"sessionDuration\":" + Operations.SESSION_DURATION + "}},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}"));
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -120,7 +120,7 @@ public class OperationsSessionsAddsGetsTest {
     public void sessionAddNonExistingUser() {
         try {
             Assert.assertEquals(0, operations.getSessionsLength());
-            Session session = new Session("username", 5);
+            Session session = new Session("username", Operations.SESSION_DURATION);
             String returnValue = operations.addSession(session);
             Assert.assertEquals("User does not exist", returnValue);
             Assert.assertEquals(0, operations.getAlbumsLength());
@@ -141,7 +141,7 @@ public class OperationsSessionsAddsGetsTest {
             Assert.assertTrue(jsonString.contains("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"albums\":[],\"sessionId\":"));
             Assert.assertTrue(jsonString.contains("\":{\"username\":\"username\",\"sessionId\":"));
             Assert.assertTrue(jsonString.contains(",\"loginTime\":\""));
-            Assert.assertTrue(jsonString.contains("\",\"sessionDuration\":5}},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}"));
+            Assert.assertTrue(jsonString.contains("\",\"sessionDuration\":" + Operations.SESSION_DURATION + "}},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}"));
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -153,11 +153,11 @@ public class OperationsSessionsAddsGetsTest {
         try {
             User user = new User("username", "password");
             operations.addUser(user);
-            Session session = new Session("username", 5);
-            Session session2 = new Session("username", 5);
+            Session session = new Session("username", Operations.SESSION_DURATION);
+            Session session2 = new Session("username", Operations.SESSION_DURATION);
             operations.addSession(session);
 
-            String returnValue = operations.addSession(new Session("username", 5));
+            String returnValue = operations.addSession(new Session("username", Operations.SESSION_DURATION));
             Assert.assertEquals(1, operations.getSessionsLength());
             Assert.assertEquals("User already has a session", returnValue);
             Assert.assertEquals(0, operations.getAlbumsLength());
@@ -170,7 +170,7 @@ public class OperationsSessionsAddsGetsTest {
             Assert.assertTrue(jsonString.contains("{\"albums\":{},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"albums\":[],\"sessionId\":"));
             Assert.assertTrue(jsonString.contains("\":{\"username\":\"username\",\"sessionId\":"));
             Assert.assertTrue(jsonString.contains(",\"loginTime\":\""));
-            Assert.assertTrue(jsonString.contains("\",\"sessionDuration\":5}},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}"));
+            Assert.assertTrue(jsonString.contains("\",\"sessionDuration\":" + Operations.SESSION_DURATION + "}},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}"));
 
             user.setSessionId(0);
             operations.addSession(session2);
@@ -187,7 +187,7 @@ public class OperationsSessionsAddsGetsTest {
             Assert.assertEquals(0, operations.getSessions().size());
             Assert.assertEquals(0, operations.getSessionsLength());
             operations.addUser(new User("username", "password"));
-            operations.addSession(new Session("username", 5));
+            operations.addSession(new Session("username", Operations.SESSION_DURATION));
             Assert.assertEquals(1, operations.getSessions().size());
             Assert.assertEquals(1, operations.getSessionsLength());
         } catch (Exception e) {
@@ -204,7 +204,7 @@ public class OperationsSessionsAddsGetsTest {
             Assert.assertNull(operations.getSessionById(Session.MAX_SESSION_ID - 2));
             Assert.assertNull((operations.getSessionById(Session.MAX_SESSION_ID - 1)));
             operations.addUser(new User("username", "password"));
-            Session session = new Session("username", 5);
+            Session session = new Session("username", Operations.SESSION_DURATION);
             operations.addSession(session);
             Assert.assertNull(operations.getSessionById(session.getSessionId() - 1));
             Assert.assertEquals("username", operations.getSessionById(session.getSessionId()).getUsername());
@@ -220,7 +220,7 @@ public class OperationsSessionsAddsGetsTest {
         try {
             User user = new User("username", "password");
             operations.addUser(user);
-            Session session = new Session("username", 5);
+            Session session = new Session("username", Operations.SESSION_DURATION);
             operations.addSession(session);
             Assert.assertEquals(1, operations.getSessionsLength());
             Assert.assertEquals(session.getSessionId(), user.getSessionId());
@@ -250,6 +250,24 @@ public class OperationsSessionsAddsGetsTest {
             String jsonString = FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8");
             jsonString = jsonString.replace("\n", "").replace("\r", "");
             Assert.assertEquals("{\"albums\":{},\"users\":{},\"sessions\":{},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}", jsonString);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
+    }
+
+    @Test
+    public void cleanExpiredSession() {
+        try {
+            User user = new User("username", "password");
+            operations.addUser(user);
+            Session session = new Session("username", 100);
+            operations.addSession(session);
+            Assert.assertEquals(1, operations.getSessionsLength());
+            Assert.assertEquals(session.getSessionId(), user.getSessionId());
+            Thread.sleep(500);
+            Assert.assertEquals(0, operations.getSessionsLength());
+            Assert.assertEquals(0, user.getSessionId());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();

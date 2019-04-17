@@ -51,7 +51,7 @@ public class ServiceLogOutTest {
         try {
             User user = new User("username", "password");
             operations.addUser(user);
-            Session session = new Session("username", 5);
+            Session session = new Session("username", Operations.SESSION_DURATION);
             operations.addSession(session);
 
             HashMap<String, String> mapRequest = new HashMap<>();
@@ -79,7 +79,7 @@ public class ServiceLogOutTest {
         try {
             User user = new User("username", "password");
             operations.addUser(user);
-            Session session = new Session("username", 5);
+            Session session = new Session("username", Operations.SESSION_DURATION);
             operations.addSession(session);
 
             HashMap<String, String> mapRequest = new HashMap<>();

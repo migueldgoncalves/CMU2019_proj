@@ -33,4 +33,8 @@ public class Session {
     public int getSessionDuration() {
         return sessionDuration;
     }
+
+    public boolean isSessionValid() {
+        return (new Date().getTime() < loginTime.getTime() + sessionDuration);
+    }
 }

@@ -57,7 +57,7 @@ public class OperationsSingletonTest {
     @Test
     public void singletonGetNonEmptyServerTest() {
         try {
-            Session session = new Session("user1", 5);
+            Session session = new Session("user1", Operations.SESSION_DURATION);
             HashMap<String, String> appRequest = new HashMap<>();
             appRequest.put("username", "username");
             appRequest.put("password", "password");
@@ -69,7 +69,7 @@ public class OperationsSingletonTest {
             operations.addUser(new User("user2", "password2"));
             operations.addUser(new User("user3", "password3"));
             operations.addSession(session);
-            operations.addSession(new Session("user2", 10));
+            operations.addSession(new Session("user2", Operations.SESSION_DURATION + 5));
             operations.addAlbum(new Album("album", 1), "user1");
             operations.addLog("operation", appRequest, appResponse);
 
@@ -79,7 +79,7 @@ public class OperationsSingletonTest {
             Assert.assertEquals(2, operations.getSessionsLength());
             Assert.assertEquals(3, operations.getUsersLength());
             Assert.assertEquals("album", operations.getAlbumById(1).getName());
-            Assert.assertEquals(5, operations.getSessionById(session.getSessionId()).getSessionDuration());
+            Assert.assertEquals(Operations.SESSION_DURATION, operations.getSessionById(session.getSessionId()).getSessionDuration());
             Assert.assertEquals("password3", operations.getUserByUsername("user3").getPassword());
 
             Assert.assertTrue(operations.getLogs().contains("Operation ID: 1"));

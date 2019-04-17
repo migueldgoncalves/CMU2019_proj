@@ -5,9 +5,9 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
@@ -19,7 +19,7 @@ public class Operations {
     protected static final int MIN_PASSWORD_LENGTH = 8;
     protected static final int MAX_PASSWORD_LENGTH = 30;
 
-    protected static final int SESSION_DURATION = 5; //Seconds
+    protected static final int SESSION_DURATION = 1000 * 60 * 1; //Milliseconds
 
     protected static final String TEMPORARY_BACKUP_NAME = "backups/ServerState.new";
     protected static final String STATE_BACKUP_NAME = "ServerState.old";
@@ -33,11 +33,14 @@ public class Operations {
 
     private static Operations operations;
 
-    private HashMap<Integer, Album> albums = new HashMap<>();
+    // Tells to the secondary thread if it must terminate or if it can continue running
+    private static AtomicBoolean shutdown = new AtomicBoolean(false);
+
+    private Map<Integer, Album> albums = new ConcurrentHashMap<>();
     //Username as KEY and USER value
-    private HashMap<String, User> users = new HashMap<>();
+    private Map<String, User> users = new ConcurrentHashMap<>();
     //Session ID as Key, SESSION object as value
-    private HashMap<Integer, Session> sessions = new HashMap<>();
+    private Map<Integer, Session> sessions = new ConcurrentHashMap<>();
     private String logs = "";
 
     protected AtomicInteger counterAlbum = new AtomicInteger(0);
@@ -54,6 +57,11 @@ public class Operations {
             return Operations.operations;
         Operations.operations = new Operations();
         Operations.readServerState();
+
+        // Create second thread to search for expired sessions and clean them
+        Runnable r = Operations.operations::cleanSessions;
+        new Thread(r).start();
+
         return Operations.operations;
     }
 
@@ -297,7 +305,7 @@ public class Operations {
         return "Operation name cannot be null";
     }
 
-    protected String deleteSession(int sessionId) {
+    protected synchronized String deleteSession(int sessionId) {
         if(isSessionCreated(sessionId)) {
             getUserByUsername(getSessionById(sessionId).getUsername()).setSessionId(0);
             sessions.remove(sessionId);
@@ -310,7 +318,7 @@ public class Operations {
     // Server state getters
 
     protected HashMap<Integer, Album> getAlbums() {
-        return albums;
+        return new HashMap<>(albums);
     }
 
     protected Album getAlbumById(int albumId) {
@@ -328,7 +336,7 @@ public class Operations {
     }
 
     protected HashMap<Integer, Session> getSessions() {
-        return sessions;
+        return new HashMap<>(sessions);
     }
 
     protected Session getSessionById(int sessionId) {
@@ -346,7 +354,7 @@ public class Operations {
     }
 
     protected HashMap<String, User> getUsers() {
-        return users;
+        return new HashMap<>(users);
     }
 
     protected User getUserByUsername(String username) {
@@ -356,6 +364,8 @@ public class Operations {
     }
 
     private boolean isUserCreated(String username) {
+        if(username==null)
+            return false;
         return users.containsKey(username);
     }
 
@@ -411,7 +421,7 @@ public class Operations {
         return false;
     }
 
-    private static void writeServerState() {
+    private synchronized static void writeServerState() {
         try {
             new File(Operations.TEMPORARY_BACKUP_NAME);
             PrintWriter writer = new PrintWriter(Operations.TEMPORARY_BACKUP_NAME);
@@ -428,16 +438,43 @@ public class Operations {
     // Server cleaner
 
     protected static void cleanServer() {
-        Operations.operations = null;
-        File backup = new File(Operations.STATE_BACKUP_PATH);
-        // Deletes backup file
-        if (backup.exists() && !backup.isDirectory()) {
-            try {
+        try {
+            Operations.shutdown.set(true);
+            while(Operations.shutdown.get()) {} //Waits for session cleaner thread to stop
+            Operations.operations = null;
+            File backup = new File(Operations.STATE_BACKUP_PATH);
+            // Deletes backup file
+            if (backup.exists() && !backup.isDirectory()) {
                 backup.delete();
                 System.out.println("Server backup file deleted");
-            } catch (Exception e) {
-                e.printStackTrace();
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Method to be run in a separate thread to delete expired sessions
+
+    protected void cleanSessions() {
+        try {
+            Session toCheck;
+            Iterator iterator;
+            Map.Entry pair;
+            while (!Operations.shutdown.get()) {
+                Thread.sleep(100);
+                iterator = new HashMap<>(sessions).entrySet().iterator();
+                while (iterator.hasNext()) {
+                    pair = (Map.Entry) iterator.next();
+                    toCheck = (Session) pair.getValue();
+                    if (!toCheck.isSessionValid()) {
+                        deleteSession(toCheck.getSessionId());
+                        System.out.println("Session " + toCheck.getSessionId() + " belonging to user " + toCheck.getUsername() + " expired and was cleaned");
+                    }
+                }
+            }
+            Operations.shutdown.set(false);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

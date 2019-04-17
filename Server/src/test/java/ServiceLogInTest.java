@@ -50,7 +50,7 @@ public class ServiceLogInTest {
     public void validLogInRequestWithPreviousSession() {
         try {
             operations.addUser(new User("username", "password"));
-            Session session = new Session("username", 5);
+            Session session = new Session("username", Operations.SESSION_DURATION);
             operations.addSession(session);
 
             HashMap<String, String> mapRequest = new HashMap<>();
