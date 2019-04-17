@@ -98,32 +98,28 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
                 e.printStackTrace();
             }
 
-            if (file != null) {
+            String remoteFolderPath = params[1];
+            String remoteFileName = params[0] + ".txt";
 
-                String remoteFolderPath = params[1];
-                String remoteFileName = params[0] + ".txt";
+            try{
+                InputStream inputStream = new FileInputStream(file);
 
-                try{
-                    InputStream inputStream = new FileInputStream(file);
+                FileMetadata result = mDbxClient.files().uploadBuilder(remoteFolderPath + "/" + remoteFileName).withMode(WriteMode.OVERWRITE).uploadAndFinish(inputStream);
 
-                    FileMetadata result = mDbxClient.files().uploadBuilder(remoteFolderPath + "/" + remoteFileName).withMode(WriteMode.OVERWRITE).uploadAndFinish(inputStream);
+                SharedLinkMetadata sharedLinkMetadata = mDbxClient.sharing().createSharedLinkWithSettings("/Peer2Photo/" + remoteFileName);
+                System.out.println(sharedLinkMetadata);
 
-                    SharedLinkMetadata sharedLinkMetadata = mDbxClient.sharing().createSharedLinkWithSettings("/Peer2Photo/" + remoteFileName);
-                    System.out.println(sharedLinkMetadata);
+                //TODO: Send URL (ENCRYPTED) To Server
+                
+                //THIS IS IMPORTANT
 
-                    //TODO: Send URL (ENCRYPTED) To Server
+                return result;
 
-                    //THIS IS IMPORTANT
-
-                    return result;
-
-                }catch (CreateSharedLinkWithSettingsErrorException e){
-                    System.out.println("The File Already has a shared Link Associated with it!");
-                } catch (DbxException | IOException e) {
-                    mException = e;
-                    e.printStackTrace();
-                }
-
+            }catch (CreateSharedLinkWithSettingsErrorException e){
+                System.out.println("The File Already has a shared Link Associated with it!");
+            } catch (DbxException | IOException e) {
+                mException = e;
+                e.printStackTrace();
             }
         }else if (OPERATION_MODE.equals("NEW_PHOTO")) {
             //###############################ATENCAO###############################################
