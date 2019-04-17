@@ -144,6 +144,88 @@ public class OperationsAlbumsAddsGetsTest {
     }
 
     @Test
+    public void addSliceURLtoExistingAlbum() {
+        try {
+            operations.addUser(new User("username", "password"));
+            Album album = new Album("album", 10);
+            operations.addAlbum(album, "username");
+
+            Assert.assertEquals("URL successfully set", operations.addSliceURLtoAlbum(10, "URL", "username"));
+            Assert.assertEquals("URL", album.getSliceURL("username"));
+
+            String jsonString = FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8");
+            jsonString = jsonString.replace("\n", "").replace("\r", "");
+            Assert.assertEquals("{\"albums\":{\"10\":{\"id\":10,\"slices\":{\"username\":\"URL\"},\"name\":\"album\"}},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"albums\":[10],\"sessionId\":0}},\"sessions\":{},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}", jsonString);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
+    }
+
+    @Test
+    public void addNullEmptySliceURLtoAlbum() {
+        try {
+            operations.addUser(new User("username", "password"));
+            Album album = new Album("album", 10);
+            operations.addAlbum(album, "username");
+
+            Assert.assertEquals("URL must not be null or empty", operations.addSliceURLtoAlbum(10, null, "username"));
+            Assert.assertEquals("URL must not be null or empty", operations.addSliceURLtoAlbum(10, "", "username"));
+            Assert.assertEquals("URL must not be null or empty", operations.addSliceURLtoAlbum(10, "    ", "username"));
+            Assert.assertNull(album.getSliceURL("username"));
+
+            String jsonString = FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8");
+            jsonString = jsonString.replace("\n", "").replace("\r", "");
+            Assert.assertEquals("{\"albums\":{\"10\":{\"id\":10,\"slices\":{},\"name\":\"album\"}},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"albums\":[10],\"sessionId\":0}},\"sessions\":{},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}", jsonString);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
+    }
+
+    @Test
+    public void addSliceURLtoAlbumUserDoesNotBelongTo() {
+        try {
+            operations.addUser(new User("username", "password"));
+            Album album = new Album("album", 10);
+            operations.addAlbum(album, "username");
+
+            Assert.assertEquals("User does not belong to the album", operations.addSliceURLtoAlbum(10, "URL", "username2"));
+            Assert.assertNull(album.getSliceURL("username"));
+            Assert.assertEquals("User is not in album", album.getSliceURL("username2"));
+
+            String jsonString = FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8");
+            jsonString = jsonString.replace("\n", "").replace("\r", "");
+            Assert.assertEquals("{\"albums\":{\"10\":{\"id\":10,\"slices\":{},\"name\":\"album\"}},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"albums\":[10],\"sessionId\":0}},\"sessions\":{},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}", jsonString);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
+    }
+
+    @Test
+    public void addSliceURLtoInvalidAlbum() {
+        try {
+            operations.addUser(new User("username", "password"));
+            Album album = new Album("album", 10);
+            operations.addAlbum(album, "username");
+
+            Assert.assertEquals("Album id is invalid or does not exist", operations.addSliceURLtoAlbum(-1, "URL", "username"));
+            Assert.assertEquals("Album id is invalid or does not exist", operations.addSliceURLtoAlbum(0, "URL", "username"));
+            Assert.assertEquals("Album id is invalid or does not exist", operations.addSliceURLtoAlbum(9, "URL", "username"));
+            Assert.assertEquals("Album id is invalid or does not exist", operations.addSliceURLtoAlbum(11, "URL", "username"));
+            Assert.assertNull(album.getSliceURL("username"));
+
+            String jsonString = FileUtils.readFileToString(new File(Operations.STATE_BACKUP_PATH), "UTF-8");
+            jsonString = jsonString.replace("\n", "").replace("\r", "");
+            Assert.assertEquals("{\"albums\":{\"10\":{\"id\":10,\"slices\":{},\"name\":\"album\"}},\"users\":{\"username\":{\"username\":\"username\",\"password\":\"password\",\"albums\":[10],\"sessionId\":0}},\"sessions\":{},\"logs\":\"\",\"counterAlbum\":0,\"counterLog\":0}", jsonString);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
+    }
+
+    @Test
     public void getAlbumsTest() {
         try {
             Assert.assertEquals(0, operations.getAlbums().size());

@@ -68,6 +68,15 @@ public class JavalinApp {
             ctx.status(201);
         });
 
+        app.put("/seturl", ctx -> {
+            HashMap<String, String> mapRequest = ctx.bodyAsClass(HashMap.class);
+            HashMap<String, String> mapResponse = operations.setSliceURL(Integer.valueOf(mapRequest.get("sessionId")), mapRequest.get("username"), mapRequest.get("URL"), Integer.valueOf(mapRequest.get("albumId")));
+            System.out.println("HTTP success: " + mapResponse.get("success"));
+            System.out.println("HTTP error: " + mapResponse.get("error"));
+            ctx.json(mapResponse);
+            ctx.status(201);
+        });
+
         app.delete("/logout", ctx -> {
             HashMap<String, String> mapRequest = ctx.bodyAsClass(HashMap.class);
             HashMap<String, String> mapResponse = operations.logOut(Integer.valueOf(mapRequest.get("sessionId")));

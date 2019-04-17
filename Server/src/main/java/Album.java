@@ -3,6 +3,7 @@ import java.util.HashMap;
 public class Album {
 
     private int id;
+    // Maps username to slice URL
     private HashMap<String, String> slices;
     private String name;
 
@@ -51,6 +52,7 @@ public class Album {
     }
 
     public void addUserToAlbum(String username, String sliceURL) {
-        slices.put(username, sliceURL);
+        if(username!=null && username.trim().length()>0)
+            slices.put(username, sliceURL);
     }
 }

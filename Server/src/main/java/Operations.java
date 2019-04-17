@@ -30,6 +30,7 @@ public class Operations {
     protected static final String LOGOUT_OPERATION = "LOGOUT";
     protected static final String LOGS_OPERATION = "LOGS";
     protected static final String CREATE_ALBUM_OPERATION = "CREATE_ALBUM";
+    protected static final String SET_SLICE_URL_OPERATION = "SET_SLICE_URL";
 
     private static Operations operations;
 
@@ -168,6 +169,24 @@ public class Operations {
         return response;
     }
 
+    public HashMap<String, String> setSliceURL(int sessionId, String username, String URL, int albumId) {
+        HashMap<String, String> request = new HashMap<>();
+        HashMap<String, String> response = new HashMap<>();
+        request.put("sessionId", String.valueOf(sessionId));
+        request.put("username", username);
+        request.put("URL", URL);
+        request.put("albumId", String.valueOf(albumId));
+        String result = addSliceURLtoAlbum(albumId, URL, username);
+        if(!result.equals("URL successfully set")) {
+            response.put("error", result);
+            addLog(SET_SLICE_URL_OPERATION, request, response);
+            return response;
+        }
+        response.put("success", result);
+        addLog(SET_SLICE_URL_OPERATION, request, response);
+        return response;
+    }
+
     // Business logic auxiliary methods
 
     protected String isUsernameValid(String username) {
@@ -219,6 +238,22 @@ public class Operations {
         }
         response[0] = "Album cannot be null";
         return response;
+    }
+
+    protected String addSliceURLtoAlbum(int albumId, String URL, String username) {
+        Album album = getAlbumById(albumId);
+        if(album!=null) {
+            if(album.isUserInAlbum(username)) {
+                if(URL!=null && URL.trim().length()!=0) {
+                    album.addUserToAlbum(username, URL); //User is already in album, so URL will be overwritten
+                    Operations.writeServerState();
+                    return "URL successfully set";
+                }
+                return "URL must not be null or empty";
+            }
+            return "User does not belong to the album";
+        }
+        return "Album id is invalid or does not exist";
     }
 
     protected String addUserToAlbum(String username, int albumId, String SliceURL){

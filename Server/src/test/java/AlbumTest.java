@@ -49,6 +49,66 @@ public class AlbumTest {
         }
     }
 
+    @Test
+    public void getSliceURLfromValidUser() {
+        try {
+            album.addUserToAlbum("username", "URL");
+            Assert.assertEquals("URL", album.getSliceURL("username"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
+    }
+
+    @Test
+    public void getSliceURLfromInvalidUser() {
+        try {
+            album.addUserToAlbum("username", "URL");
+            Assert.assertEquals("User is not in album", album.getSliceURL("username2"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
+    }
+
+    @Test
+    public void getSliceURLfromNullUser() {
+        try {
+            album.addUserToAlbum("username", "URL");
+            Assert.assertEquals("User is not in album", album.getSliceURL(null));
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
+    }
+
+    @Test
+    public void addNotEmptyUserToAlbum() {
+        try {
+            album.addUserToAlbum("username", null);
+            album.addUserToAlbum("username2", "URL");
+            Assert.assertEquals(2, album.getAlbumUserNumber());
+            Assert.assertNull(album.getSliceURL("username"));
+            Assert.assertEquals("URL", album.getSliceURL("username2"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
+    }
+
+    @Test
+    public void addNullEmptyUserToAlbum() {
+        try {
+            album.addUserToAlbum(null, "URL");
+            album.addUserToAlbum("", "URL");
+            album.addUserToAlbum("      ", "URL");
+            Assert.assertEquals(0, album.getAlbumUserNumber());
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
+    }
+
     @After
     public void tearDown() {
         album = null;
