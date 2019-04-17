@@ -139,6 +139,7 @@ public class AlbumView extends AppCompatActivity
             new UploadFileTask(AlbumView.this, DropboxClientFactory.getClient(), new UploadFileTask.Callback(){
                  @Override
                  public void onUploadComplete(FileMetadata result) {
+
                   }
 
                   @Override
