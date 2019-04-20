@@ -39,6 +39,17 @@ public class JavalinApp {
             ctx.json(mapResponse);
         });
 
+        app.get("/users", ctx -> {
+            HashMap<String, String> mapRequest = ctx.bodyAsClass(HashMap.class);
+            HashMap<String, String> mapResponse = operations.serviceGetUsers(Integer.valueOf(mapRequest.get("sessionId")), mapRequest.get("username"));
+            System.out.println("HTTP success: " + mapResponse.get("success"));
+            System.out.println("HTTP error: " + mapResponse.get("error"));
+            System.out.println("HTTP size: " + mapResponse.get("size"));
+            for(int i=0; i<Integer.valueOf(mapResponse.get("size")); i++)
+                System.out.println("HTTP user" + i + ": " + mapResponse.get("user" + i));
+            ctx.json(mapResponse);
+        });
+
         // POST requests to path /signup will invoke method signup with required parameters and receive its response
         app.post("/signup", ctx -> {
             HashMap<String, String> mapRequest = ctx.bodyAsClass(HashMap.class);

@@ -31,6 +31,7 @@ public class Operations {
     protected static final String LOGS_OPERATION = "LOGS";
     protected static final String CREATE_ALBUM_OPERATION = "CREATE_ALBUM";
     protected static final String SET_SLICE_URL_OPERATION = "SET_SLICE_URL";
+    protected static final String GET_USERS_OPERATION = "GET_USERS";
 
     private static Operations operations;
 
@@ -183,7 +184,7 @@ public class Operations {
         request.put("albumId", String.valueOf(albumId));
         if(!sessionVerifier(username, sessionId).equals("Valid session")) {
             response.put("error", sessionVerifier(username, sessionId));
-            addLog(CREATE_ALBUM_OPERATION, request, response);
+            addLog(SET_SLICE_URL_OPERATION, request, response);
             return response;
         }
         String result = addSliceURLtoAlbum(albumId, URL, username);
@@ -194,6 +195,22 @@ public class Operations {
         }
         response.put("success", result);
         addLog(SET_SLICE_URL_OPERATION, request, response);
+        return response;
+    }
+
+    public HashMap<String, String> serviceGetUsers(int sessionId, String username) {
+        HashMap<String, String> request = new HashMap<>();
+        HashMap<String, String> response = new HashMap<>();
+        request.put("sessionId", String.valueOf(sessionId));
+        request.put("username", username);
+        if(!sessionVerifier(username, sessionId).equals("Valid session")) {
+            response.put("error", sessionVerifier(username, sessionId));
+            addLog(GET_USERS_OPERATION, request, response);
+            return response;
+        }
+        response = getUsersHashMap();
+        response.put("success", "Users successfully obtained");
+        addLog(GET_USERS_OPERATION, request, response);
         return response;
     }
 
@@ -240,21 +257,41 @@ public class Operations {
         return "Invalid session id";
     }
 
+    protected HashMap<String, String> getUsersHashMap() {
+        HashMap<String, String> response = new HashMap<>();
+        int size = 0;
+        String username;
+        Iterator iterator = getUsers().entrySet().iterator();
+        Map.Entry pair;
+        while (iterator.hasNext()) {
+            size++;
+            pair = (Map.Entry) iterator.next();
+            username = (String) pair.getKey();
+            response.put("user" + size, username);
+        }
+        response.put("size", String.valueOf(size));
+        return response;
+    }
+
     // Server state setters
 
     protected String[] addAlbum(Album album, String username) {
         String[] response = new String[2];
         if (album != null) {
-            if(isUserCreated(username)) {
-                album.addUserToAlbum(username, null);
-                getUserByUsername(username).addAlbumUserIsIn(album.getId());
-                albums.put(album.getId(), album);
-                Operations.writeServerState();
-                response[0] = "Album successfully added";
-                response[1] = String.valueOf(album.getId());
+            if (!(album.getName()==null || album.getName().trim().length()==0)) {
+                if (isUserCreated(username)) {
+                    album.addUserToAlbum(username, null);
+                    getUserByUsername(username).addAlbumUserIsIn(album.getId());
+                    albums.put(album.getId(), album);
+                    Operations.writeServerState();
+                    response[0] = "Album successfully added";
+                    response[1] = String.valueOf(album.getId());
+                    return response;
+                }
+                response[0] = "Username does not exist or is invalid";
                 return response;
             }
-            response[0] = "Username does not exist or is invalid";
+            response[0] = "Album name cannot be empty or null";
             return response;
         }
         response[0] = "Album cannot be null";
@@ -286,10 +323,6 @@ public class Operations {
         }else{
             return "The user was already in The Album";
         }
-    }
-
-    protected ArrayList<String> getSystemUsers(){
-        return new ArrayList<>(users.keySet());
     }
 
     //Users must update the current member of an album and get their photographs as new ones are added to these albums;
