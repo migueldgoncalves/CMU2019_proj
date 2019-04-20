@@ -157,6 +157,11 @@ public class Operations {
         request.put("sessionId", String.valueOf(sessionId));
         request.put("username", username);
         request.put("albumName", albumName);
+        if(!sessionVerifier(username, sessionId).equals("Valid session")) {
+            response.put("error", sessionVerifier(username, sessionId));
+            addLog(CREATE_ALBUM_OPERATION, request, response);
+            return response;
+        }
         String[] result = addAlbum(new Album(albumName, counterAlbum.incrementAndGet()), username);
         if(!result[0].equals("Album successfully added")) {
             response.put("error", result[0]);
@@ -176,6 +181,11 @@ public class Operations {
         request.put("username", username);
         request.put("URL", URL);
         request.put("albumId", String.valueOf(albumId));
+        if(!sessionVerifier(username, sessionId).equals("Valid session")) {
+            response.put("error", sessionVerifier(username, sessionId));
+            addLog(CREATE_ALBUM_OPERATION, request, response);
+            return response;
+        }
         String result = addSliceURLtoAlbum(albumId, URL, username);
         if(!result.equals("URL successfully set")) {
             response.put("error", result);
@@ -217,6 +227,17 @@ public class Operations {
         if (password.length() > MAX_PASSWORD_LENGTH)
             return "Password must have at most " + MAX_PASSWORD_LENGTH + " characters";
         return "Password valid";
+    }
+
+    protected String sessionVerifier(String username, int sessionId) {
+        if(!isUserCreated(username))
+            return "Invalid username";
+        if(sessionId<=0) //A session id of 0 in a user means it has no session, 0 is not a valid session id
+            return "Invalid session id";
+        User user = getUserByUsername(username);
+        if(user.getSessionId() == sessionId)
+            return "Valid session";
+        return "Invalid session id";
     }
 
     // Server state setters
