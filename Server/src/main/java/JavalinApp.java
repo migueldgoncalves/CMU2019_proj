@@ -98,6 +98,7 @@ public class JavalinApp {
             HashMap<String, String> mapResponse = operations.createAlbum(Integer.valueOf(mapRequest.get("sessionId")), mapRequest.get("username"), mapRequest.get("albumName"));
             System.out.println("HTTP success: " + mapResponse.get("success"));
             System.out.println("HTTP error: " + mapResponse.get("error"));
+            System.out.println("HTTP album id: " + mapResponse.get("albumId"));
             ctx.json(mapResponse);
             ctx.status(201);
         });
