@@ -5,7 +5,10 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -32,6 +35,9 @@ public class Operations {
     protected static final String CREATE_ALBUM_OPERATION = "CREATE_ALBUM";
     protected static final String SET_SLICE_URL_OPERATION = "SET_SLICE_URL";
     protected static final String GET_USERS_OPERATION = "GET_USERS";
+    protected static final String ADD_USER_TO_ALBUM_OPERATION = "ADD_USER_TO_ALBUM";
+    protected static final String GET_USER_ALBUMS_OPERATION = "GET_USER_ALBUMS";
+    protected static final String VIEW_ALBUM = "VIEW_ALBUM";
 
     private static Operations operations;
 
@@ -214,6 +220,72 @@ public class Operations {
         return response;
     }
 
+    public HashMap<String, String> serviceAddUserToAlbum(int sessionId, String requestingUsername, int albumId, String usernameToAdd) {
+        HashMap<String, String> request = new HashMap<>();
+        HashMap<String, String> response = new HashMap<>();
+        request.put("sessionId", String.valueOf(sessionId));
+        request.put("username", requestingUsername);
+        request.put("albumId", String.valueOf(albumId));
+        request.put("usernameToAdd", usernameToAdd);
+        if(!sessionVerifier(requestingUsername, sessionId).equals("Valid session")) {
+            response.put("error", sessionVerifier(requestingUsername, sessionId));
+            addLog(ADD_USER_TO_ALBUM_OPERATION, request, response);
+            return response;
+        }
+        String result = addUserToAlbum(albumId, requestingUsername, usernameToAdd);
+        if(!result.equals("User successfully added to album")) {
+            response.put("error", result);
+            addLog(ADD_USER_TO_ALBUM_OPERATION, request, response);
+            return response;
+        }
+        response.put("success", result);
+        addLog(ADD_USER_TO_ALBUM_OPERATION, request, response);
+        return response;
+    }
+
+    public HashMap<String, String> serviceGetUserAlbums(int sessionId, String username) {
+        HashMap<String, String> request = new HashMap<>();
+        HashMap<String, String> response = new HashMap<>();
+        request.put("sessionId", String.valueOf(sessionId));
+        request.put("username", username);
+        if(!sessionVerifier(username, sessionId).equals("Valid session")) {
+            response.put("error", sessionVerifier(username, sessionId));
+            addLog(GET_USER_ALBUMS_OPERATION, request, response);
+            return response;
+        }
+        response = getUserAlbumsHashMap(username);
+        if(response==null) {
+            response = new HashMap<>();
+            response.put("error", "Invalid username");
+            addLog(GET_USER_ALBUMS_OPERATION, request, response);
+            return response;
+        }
+        response.put("success", "User albums successfully obtained");
+        addLog(GET_USER_ALBUMS_OPERATION, request, response);
+        return response;
+    }
+
+    public HashMap<String, String> viewAlbum(int sessionId, String username, int albumId) {
+        HashMap<String, String> request = new HashMap<>();
+        HashMap<String, String> response = new HashMap<>();
+        request.put("sessionId", String.valueOf(sessionId));
+        request.put("username", username);
+        if(!sessionVerifier(username, sessionId).equals("Valid session")) {
+            response.put("error", sessionVerifier(username, sessionId));
+            addLog(VIEW_ALBUM, request, response);
+            return response;
+        }
+        response = getAlbumHashMap(username, albumId);
+        if(response==null) {
+            response.put("error", "Invalid username or album id");
+            addLog(VIEW_ALBUM, request, response);
+            return response;
+        }
+        response.put("success", "Album successfully obtained");
+        addLog(VIEW_ALBUM, request, response);
+        return response;
+    }
+
     // Business logic auxiliary methods
 
     protected String isUsernameValid(String username) {
@@ -259,17 +331,75 @@ public class Operations {
 
     protected HashMap<String, String> getUsersHashMap() {
         HashMap<String, String> response = new HashMap<>();
-        int size = 0;
         String username;
+        String users = "";
         Iterator iterator = getUsers().entrySet().iterator();
         Map.Entry pair;
         while (iterator.hasNext()) {
-            size++;
             pair = (Map.Entry) iterator.next();
             username = (String) pair.getKey();
-            response.put("user" + size, username);
+            users+=username;
+            if(iterator.hasNext())
+                users+=",";
         }
-        response.put("size", String.valueOf(size));
+        response.put("size", String.valueOf(getUsersLength()));
+        response.put("users", users);
+        return response;
+    }
+
+    protected HashMap<String, String> getUserAlbumsHashMap(String username) {
+        if(!isUserCreated(username))
+            return null;
+        HashMap<String, String> response = new HashMap<>();
+        int albumId;
+        String albums = "";
+        Iterator iterator = getUserByUsername(username).getAlbums().iterator();
+        while (iterator.hasNext()) {
+            albumId = (Integer) iterator.next();
+            albums+=albumId;
+            if(iterator.hasNext())
+                albums+=",";
+            //If user has not set slice URL in album (for example if user was just added to album),
+            // server will not send album name and user will know it has to set slice URL in that album
+            if(getAlbumById(albumId).getSliceURL(username)!=null) {
+                response.put(String.valueOf(albumId), getAlbumById(albumId).getName());
+            }
+            else {
+                response.put(String.valueOf(albumId), "");
+            }
+        }
+        response.put("size", String.valueOf(getUserByUsername(username).getUserAlbumNumber()));
+        response.put("albums", albums);
+        return response;
+    }
+
+    protected HashMap<String, String> getAlbumHashMap(String username, int albumId) {
+        if(!isUserCreated(username))
+            return null;
+        Album album = getAlbumById(albumId);
+        if(album==null)
+            return null;
+        if(!album.isUserInAlbum(username))
+            return null;
+        HashMap<String, String> response = new HashMap<>();
+        response.put("id", String.valueOf(album.getId()));
+        response.put("name", album.getName());
+        response.put("size", String.valueOf(album.getAlbumUserNumber()));
+
+        String sliceURL;
+        String users = "";
+        Map.Entry pair;
+        Iterator iterator = album.getSlices().entrySet().iterator();
+        while (iterator.hasNext()) {
+            pair = (Map.Entry) iterator.next();
+            username = (String) pair.getKey();
+            sliceURL = (String) pair.getValue();
+            users+=username;
+            if(iterator.hasNext())
+                users+=",";
+            response.put(username, sliceURL);
+        }
+        response.put("users", users);
         return response;
     }
 
@@ -314,30 +444,21 @@ public class Operations {
         return "Album id is invalid or does not exist";
     }
 
-    protected String addUserToAlbum(String username, int albumId, String SliceURL){
-        Album temp = albums.get(albumId);
-        if(!temp.isUserInAlbum(username)){
-            temp.addUserToAlbum(username, SliceURL);
-            albums.replace(albumId, temp);
-            return "User Successfully Added To Album";
-        }else{
-            return "The user was already in The Album";
-        }
-    }
-
-    //Users must update the current member of an album and get their photographs as new ones are added to these albums;
-    //TODO: Implement timed updates issued by the client in order to keep updating the albums they are in
-    //TODO: In client create this method
-
-    protected ArrayList<Album> listAlbum(String username){
-        ArrayList<Album> result = new ArrayList<Album>();
-        for(Album i : albums.values()){
-            if(i.isUserInAlbum(username)){
-                result.add(i);
+    protected String addUserToAlbum(int albumId, String requestUsername, String usernameToAdd) {
+        Album album = getAlbumById(albumId);
+        if(album!=null) {
+            if(album.isUserInAlbum(requestUsername)) {
+                if(!album.isUserInAlbum(usernameToAdd)) {
+                    album.addUserToAlbum(usernameToAdd, null);
+                    getUserByUsername(usernameToAdd).addAlbumUserIsIn(album.getId());
+                    Operations.writeServerState();
+                    return "User successfully added to album";
+                }
+                return "User is already in the album";
             }
+            return "Requesting user does not belong to the album";
         }
-        //Verifacar no cliente se o tamanho do array é maior que zero, caso seja 0 nao apresentar nenhum album
-        return result;
+        return "Album id is invalid or does not exist";
     }
 
     protected String addUser(User user) {

@@ -45,8 +45,41 @@ public class JavalinApp {
             System.out.println("HTTP success: " + mapResponse.get("success"));
             System.out.println("HTTP error: " + mapResponse.get("error"));
             System.out.println("HTTP size: " + mapResponse.get("size"));
-            for(int i=0; i<Integer.valueOf(mapResponse.get("size")); i++)
-                System.out.println("HTTP user" + i + ": " + mapResponse.get("user" + i));
+            String[] users = mapResponse.get("users").split(",");
+            for(int i=0; i<users.length; i++) {
+                System.out.println("HTTP user" + i + " has name: " + mapResponse.get(users[i]));
+            }
+            ctx.json(mapResponse);
+        });
+
+        app.get("/useralbums", ctx -> {
+            HashMap<String, String> mapRequest = ctx.bodyAsClass(HashMap.class);
+            HashMap<String, String> mapResponse = operations.serviceGetUserAlbums(Integer.valueOf(mapRequest.get("sessionId")), mapRequest.get("username"));
+            System.out.println("HTTP success: " + mapResponse.get("success"));
+            System.out.println("HTTP error: " + mapResponse.get("error"));
+            System.out.println("HTTP size: " + mapResponse.get("size"));
+            System.out.println("HTTP albums: " + mapResponse.get("albums"));
+            String[] albums = mapResponse.get("albums").split(",");
+            for(int i=0; i<albums.length; i++) {
+                System.out.println("HTTP album" + i + " has id: " + albums[i]);
+                System.out.println("HTTP album" + i + " has name: " + mapResponse.get(String.valueOf(albums[i])));
+            }
+            ctx.json(mapResponse);
+        });
+
+        app.get("/album", ctx -> {
+            HashMap<String, String> mapRequest = ctx.bodyAsClass(HashMap.class);
+            HashMap<String, String> mapResponse = operations.viewAlbum(Integer.valueOf(mapRequest.get("sessionId")), mapRequest.get("username"), Integer.valueOf(mapRequest.get("albumId")));
+            System.out.println("HTTP success: " + mapResponse.get("success"));
+            System.out.println("HTTP error: " + mapResponse.get("error"));
+            System.out.println("HTTP size: " + mapResponse.get("size"));
+            System.out.println("HTTP album id: " + mapResponse.get("id"));
+            System.out.println("HTTP album name: " + mapResponse.get("name"));
+            System.out.println("HTTP users: " + mapResponse.get("users"));
+            String[] users = mapResponse.get("users").split(",");
+            for(int i=0; i<users.length; i++) {
+                System.out.println("HTTP album user " + users[i] + " has slice URL " + mapResponse.get(users[i]));
+            }
             ctx.json(mapResponse);
         });
 
@@ -82,6 +115,15 @@ public class JavalinApp {
         app.put("/seturl", ctx -> {
             HashMap<String, String> mapRequest = ctx.bodyAsClass(HashMap.class);
             HashMap<String, String> mapResponse = operations.setSliceURL(Integer.valueOf(mapRequest.get("sessionId")), mapRequest.get("username"), mapRequest.get("URL"), Integer.valueOf(mapRequest.get("albumId")));
+            System.out.println("HTTP success: " + mapResponse.get("success"));
+            System.out.println("HTTP error: " + mapResponse.get("error"));
+            ctx.json(mapResponse);
+            ctx.status(201);
+        });
+
+        app.put("/adduser", ctx -> {
+            HashMap<String, String> mapRequest = ctx.bodyAsClass(HashMap.class);
+            HashMap<String, String> mapResponse = operations.serviceAddUserToAlbum(Integer.valueOf(mapRequest.get("sessionId")), mapRequest.get("username"), Integer.valueOf(mapRequest.get("albumId")), mapRequest.get("usernameToAdd"));
             System.out.println("HTTP success: " + mapResponse.get("success"));
             System.out.println("HTTP error: " + mapResponse.get("error"));
             ctx.json(mapResponse);
