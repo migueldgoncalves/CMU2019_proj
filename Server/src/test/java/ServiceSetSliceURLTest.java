@@ -10,9 +10,9 @@ import org.junit.Test;
 import java.io.File;
 import java.util.HashMap;
 
-public class ServiceLogOutTest {
+public class ServiceSetSliceURLTest {
 
-    private static final int OK = 200;
+    private static final int CREATED = 201;
 
     private static final int PORT = JavalinApp.PORT;
 
@@ -26,7 +26,9 @@ public class ServiceLogOutTest {
     private File temporary = null;
 
     private static final String URL_BASE = "http://localhost:" + PORT;
-    private static final String URL_LOGOUT = URL_BASE + "/logout";
+    private static final String URL_SET_URL = URL_BASE + "/seturl";
+
+    Session session;
 
     @Before
     public void setUp() {
@@ -44,57 +46,32 @@ public class ServiceLogOutTest {
         this.app = javalinApp.init();
         this.client = new OkHttpClient();
         operations = Operations.getServer();
+
+        operations.addUser(new User("username", "password"));
+        session = new Session("username", Operations.SESSION_DURATION);
+        operations.addSession(session);
+        operations.addAlbum(new Album("album", 1), "username");
     }
 
     @Test
-    public void logOutValidSessionTest() {
+    public void successSetSliceURLTest() {
         try {
-            User user = new User("username", "password");
-            operations.addUser(user);
-            Session session = new Session("username", Operations.SESSION_DURATION);
-            operations.addSession(session);
-
             HashMap<String, String> mapRequest = new HashMap<>();
             mapRequest.put("sessionId", String.valueOf(session.getSessionId()));
+            mapRequest.put("username", "username");
+            mapRequest.put("URL", "http://www.url.com");
+            mapRequest.put("albumId", "1");
 
             RequestBody body = RequestBody.create(JSON, new Gson().toJson(mapRequest));
-            Request request = new Request.Builder().url(URL_LOGOUT).delete(body).build();
+            Request request = new Request.Builder().url(URL_SET_URL).put(body).build();
             Response response = client.newCall(request).execute();
 
-            Assert.assertEquals(OK, response.code());
+            Assert.assertEquals(CREATED, response.code());
             HashMap<String, String> mapResponse = new Gson().fromJson(response.body().string(), HashMap.class);
-            Assert.assertEquals("Session successfully deleted", mapResponse.get("success"));
+            Assert.assertEquals("URL successfully set", mapResponse.get("success"));
             Assert.assertNull(mapResponse.get("error"));
-            Assert.assertEquals(0, operations.getSessionsLength());
-            Assert.assertEquals(0, user.getSessionId());
-            Assert.assertEquals(1, operations.getLogsLength());
-        } catch (Exception e) {
-            e.printStackTrace();
-            Assert.fail();
-        }
-    }
 
-    @Test
-    public void logOutNonExistingSessionTest() {
-        try {
-            User user = new User("username", "password");
-            operations.addUser(user);
-            Session session = new Session("username", Operations.SESSION_DURATION);
-            operations.addSession(session);
-
-            HashMap<String, String> mapRequest = new HashMap<>();
-            mapRequest.put("sessionId", "1");
-
-            RequestBody body = RequestBody.create(JSON, new Gson().toJson(mapRequest));
-            Request request = new Request.Builder().url(URL_LOGOUT).delete(body).build();
-            Response response = client.newCall(request).execute();
-
-            Assert.assertEquals(OK, response.code());
-            HashMap<String, String> mapResponse = new Gson().fromJson(response.body().string(), HashMap.class);
-            Assert.assertEquals("Session does not exist", mapResponse.get("error"));
-            Assert.assertEquals(1, operations.getSessionsLength());
-            Assert.assertEquals(1, operations.getUsersLength());
-            Assert.assertEquals(1, operations.getLogsLength());
+            Assert.assertEquals("http://www.url.com", operations.getAlbumById(1).getSliceURL("username"));
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -103,6 +80,8 @@ public class ServiceLogOutTest {
 
     @After
     public void tearDown() {
+        session = null;
+
         this.app.stop();
         Operations.cleanServer(); //Also deletes server backup file
         operations = null;

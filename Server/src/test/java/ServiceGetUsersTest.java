@@ -1,5 +1,7 @@
 import com.google.gson.Gson;
-import com.squareup.okhttp.*;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
 import io.javalin.Javalin;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -10,13 +12,11 @@ import org.junit.Test;
 import java.io.File;
 import java.util.HashMap;
 
-public class ServiceLogOutTest {
+public class ServiceGetUsersTest {
 
     private static final int OK = 200;
 
     private static final int PORT = JavalinApp.PORT;
-
-    private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
     private Javalin app = null;
     private OkHttpClient client = null;
@@ -26,7 +26,9 @@ public class ServiceLogOutTest {
     private File temporary = null;
 
     private static final String URL_BASE = "http://localhost:" + PORT;
-    private static final String URL_LOGOUT = URL_BASE + "/logout";
+    private static final String URL_GET_USERS = URL_BASE + "/users";
+
+    Session session;
 
     @Before
     public void setUp() {
@@ -44,30 +46,27 @@ public class ServiceLogOutTest {
         this.app = javalinApp.init();
         this.client = new OkHttpClient();
         operations = Operations.getServer();
+
+        operations.addUser(new User("username", "password"));
+        session = new Session("username", Operations.SESSION_DURATION);
+        operations.addSession(session);
+        operations.addAlbum(new Album("album", 10), "username");
+        operations.setSliceURL(session.getSessionId(), "username", "http://www.url.com", 10);
     }
 
     @Test
-    public void logOutValidSessionTest() {
+    public void getUsersOneUserTest() {
         try {
-            User user = new User("username", "password");
-            operations.addUser(user);
-            Session session = new Session("username", Operations.SESSION_DURATION);
-            operations.addSession(session);
-
-            HashMap<String, String> mapRequest = new HashMap<>();
-            mapRequest.put("sessionId", String.valueOf(session.getSessionId()));
-
-            RequestBody body = RequestBody.create(JSON, new Gson().toJson(mapRequest));
-            Request request = new Request.Builder().url(URL_LOGOUT).delete(body).build();
+            String URL = URL_GET_USERS + "/" + session.getSessionId() + "/username";
+            Request request = new Request.Builder().url(URL).get().build();
             Response response = client.newCall(request).execute();
 
             Assert.assertEquals(OK, response.code());
             HashMap<String, String> mapResponse = new Gson().fromJson(response.body().string(), HashMap.class);
-            Assert.assertEquals("Session successfully deleted", mapResponse.get("success"));
+            Assert.assertEquals("Users successfully obtained", mapResponse.get("success"));
             Assert.assertNull(mapResponse.get("error"));
-            Assert.assertEquals(0, operations.getSessionsLength());
-            Assert.assertEquals(0, user.getSessionId());
-            Assert.assertEquals(1, operations.getLogsLength());
+            Assert.assertEquals("1", mapResponse.get("size"));
+            Assert.assertEquals("username", mapResponse.get("users"));
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -75,26 +74,20 @@ public class ServiceLogOutTest {
     }
 
     @Test
-    public void logOutNonExistingSessionTest() {
+    public void getUsersTwoUsers() {
         try {
-            User user = new User("username", "password");
-            operations.addUser(user);
-            Session session = new Session("username", Operations.SESSION_DURATION);
-            operations.addSession(session);
+            operations.addUser(new User("username2", "password"));
 
-            HashMap<String, String> mapRequest = new HashMap<>();
-            mapRequest.put("sessionId", "1");
-
-            RequestBody body = RequestBody.create(JSON, new Gson().toJson(mapRequest));
-            Request request = new Request.Builder().url(URL_LOGOUT).delete(body).build();
+            String URL = URL_GET_USERS + "/" + session.getSessionId() + "/username";
+            Request request = new Request.Builder().url(URL).get().build();
             Response response = client.newCall(request).execute();
 
             Assert.assertEquals(OK, response.code());
             HashMap<String, String> mapResponse = new Gson().fromJson(response.body().string(), HashMap.class);
-            Assert.assertEquals("Session does not exist", mapResponse.get("error"));
-            Assert.assertEquals(1, operations.getSessionsLength());
-            Assert.assertEquals(1, operations.getUsersLength());
-            Assert.assertEquals(1, operations.getLogsLength());
+            Assert.assertEquals("Users successfully obtained", mapResponse.get("success"));
+            Assert.assertNull(mapResponse.get("error"));
+            Assert.assertEquals("2", mapResponse.get("size"));
+            Assert.assertEquals("username2,username", mapResponse.get("users"));
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -103,6 +96,8 @@ public class ServiceLogOutTest {
 
     @After
     public void tearDown() {
+        session = null;
+
         this.app.stop();
         Operations.cleanServer(); //Also deletes server backup file
         operations = null;
