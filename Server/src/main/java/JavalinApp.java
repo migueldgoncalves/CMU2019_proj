@@ -39,46 +39,49 @@ public class JavalinApp {
             ctx.json(mapResponse);
         });
 
-        app.get("/users", ctx -> {
-            HashMap<String, String> mapRequest = ctx.bodyAsClass(HashMap.class);
-            HashMap<String, String> mapResponse = operations.serviceGetUsers(Integer.valueOf(mapRequest.get("sessionId")), mapRequest.get("username"));
+        app.get("/users/:session-id/:username", ctx -> {
+            HashMap<String, String> mapResponse = operations.serviceGetUsers(Integer.valueOf(ctx.pathParam("session-id")), ctx.pathParam("username"));
             System.out.println("HTTP success: " + mapResponse.get("success"));
             System.out.println("HTTP error: " + mapResponse.get("error"));
             System.out.println("HTTP size: " + mapResponse.get("size"));
-            String[] users = mapResponse.get("users").split(",");
-            for(int i=0; i<users.length; i++) {
-                System.out.println("HTTP user" + i + " has name: " + mapResponse.get(users[i]));
+            if(mapResponse.get("users")!=null) {
+                String[] users = mapResponse.get("users").split(",");
+                for (int i = 0; i < users.length; i++) {
+                    System.out.println("HTTP user" + i + " has name: " + users[i]);
+                }
             }
             ctx.json(mapResponse);
         });
 
-        app.get("/useralbums", ctx -> {
-            HashMap<String, String> mapRequest = ctx.bodyAsClass(HashMap.class);
-            HashMap<String, String> mapResponse = operations.serviceGetUserAlbums(Integer.valueOf(mapRequest.get("sessionId")), mapRequest.get("username"));
+        app.get("/useralbums/:session-id/:username", ctx -> {
+            HashMap<String, String> mapResponse = operations.serviceGetUserAlbums(Integer.valueOf(ctx.pathParam("session-id")), ctx.pathParam("username"));
             System.out.println("HTTP success: " + mapResponse.get("success"));
             System.out.println("HTTP error: " + mapResponse.get("error"));
             System.out.println("HTTP size: " + mapResponse.get("size"));
             System.out.println("HTTP albums: " + mapResponse.get("albums"));
-            String[] albums = mapResponse.get("albums").split(",");
-            for(int i=0; i<albums.length; i++) {
-                System.out.println("HTTP album" + i + " has id: " + albums[i]);
-                System.out.println("HTTP album" + i + " has name: " + mapResponse.get(String.valueOf(albums[i])));
+            if(mapResponse.get("albums")!=null && mapResponse.get("albums")!="") {
+                String[] albums = mapResponse.get("albums").split(",");
+                for (int i = 0; i < albums.length; i++) {
+                    System.out.println("HTTP album" + i + " has id: " + albums[i]);
+                    System.out.println("HTTP album" + i + " has name: " + mapResponse.get(String.valueOf(albums[i])));
+                }
             }
             ctx.json(mapResponse);
         });
 
-        app.get("/album", ctx -> {
-            HashMap<String, String> mapRequest = ctx.bodyAsClass(HashMap.class);
-            HashMap<String, String> mapResponse = operations.viewAlbum(Integer.valueOf(mapRequest.get("sessionId")), mapRequest.get("username"), Integer.valueOf(mapRequest.get("albumId")));
+        app.get("/album/:session-id/:username/:album-id", ctx -> {
+            HashMap<String, String> mapResponse = operations.viewAlbum(Integer.valueOf(ctx.pathParam("session-id")), ctx.pathParam("username"), Integer.valueOf(ctx.pathParam("album-id")));
             System.out.println("HTTP success: " + mapResponse.get("success"));
             System.out.println("HTTP error: " + mapResponse.get("error"));
             System.out.println("HTTP size: " + mapResponse.get("size"));
             System.out.println("HTTP album id: " + mapResponse.get("id"));
             System.out.println("HTTP album name: " + mapResponse.get("name"));
             System.out.println("HTTP users: " + mapResponse.get("users"));
-            String[] users = mapResponse.get("users").split(",");
-            for(int i=0; i<users.length; i++) {
-                System.out.println("HTTP album user " + users[i] + " has slice URL " + mapResponse.get(users[i]));
+            if(mapResponse.get("users")!=null) {
+                String[] users = mapResponse.get("users").split(",");
+                for(int i=0; i<users.length; i++) {
+                    System.out.println("HTTP album user " + users[i] + " has slice URL " + mapResponse.get(users[i]));
+                }
             }
             ctx.json(mapResponse);
         });

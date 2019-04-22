@@ -277,6 +277,7 @@ public class Operations {
         }
         response = getAlbumHashMap(username, albumId);
         if(response==null) {
+            response = new HashMap<>();
             response.put("error", "Invalid username or album id");
             addLog(VIEW_ALBUM, request, response);
             return response;
