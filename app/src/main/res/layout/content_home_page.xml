@@ -12,7 +12,8 @@
         android:id="@+id/album_grid"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:numColumns="2">
+        android:numColumns="2"
+        app:layout_constraintTop_toTopOf="parent">
 
     </GridView>
 
