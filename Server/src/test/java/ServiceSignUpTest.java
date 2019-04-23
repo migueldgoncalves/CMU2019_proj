@@ -92,6 +92,39 @@ public class ServiceSignUpTest {
     }
 
     @Test
+    public void repeatedUsernameSignUpRequestTest() {
+        try {
+            HashMap<String, String> mapRequest = new HashMap<>();
+            mapRequest.put("username", "username");
+            mapRequest.put("password", "password");
+
+            RequestBody body = RequestBody.create(JSON, new Gson().toJson(mapRequest));
+            Request request = new Request.Builder().url(URL_SIGNUP).post(body).build();
+            Response response = client.newCall(request).execute();
+
+            Assert.assertEquals(CREATED, response.code());
+            HashMap<String, String> mapResponse = new Gson().fromJson(response.body().string(), HashMap.class);
+            Assert.assertEquals("User created successfully", mapResponse.get("success"));
+            Assert.assertNull(mapResponse.get("error"));
+            Assert.assertEquals(1, operations.getUsersLength());
+            Assert.assertEquals(1, operations.getLogsLength());
+
+            request = new Request.Builder().url(URL_SIGNUP).post(body).build();
+            response = client.newCall(request).execute();
+
+            Assert.assertEquals(CREATED, response.code());
+            mapResponse = new Gson().fromJson(response.body().string(), HashMap.class);
+            Assert.assertEquals("Username already exists", mapResponse.get("error"));
+            Assert.assertNull(mapResponse.get("success"));
+            Assert.assertEquals(1, operations.getUsersLength());
+            Assert.assertEquals(2, operations.getLogsLength());
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail();
+        }
+    }
+
+    @Test
     public void invalidPasswordSignUpRequestTest() {
         try {
             HashMap<String, String> mapRequest = new HashMap<>();

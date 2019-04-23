@@ -301,7 +301,7 @@ public class Operations {
             return "Username must have at least " + MIN_USERNAME_LENGTH + " characters";
         if (username.length() > MAX_USERNAME_LENGTH)
             return "Username must have at most " + MAX_USERNAME_LENGTH + " characters";
-        username = username.toLowerCase();
+        //username = username.toLowerCase();
         if (isUserCreated(username))
             return "Username already exists";
         return "Username valid";
@@ -506,7 +506,7 @@ public class Operations {
                     log+="---------------------------------------------------------------------------------------------------------------\n";
                     logs+=log;
                     Operations.writeServerState();
-                    System.out.println(logs);
+                    System.out.println(log);
                     return "Operation successfully logged";
                 }
                 return "Operation response cannot be null";
@@ -638,7 +638,7 @@ public class Operations {
             PrintWriter writer = new PrintWriter(Operations.TEMPORARY_BACKUP_NAME);
             writer.println(new Gson().toJson(Operations.getServer()));
             writer.close();
-            System.out.println(new Gson().toJson(Operations.getServer()));
+            //System.out.println(new Gson().toJson(Operations.getServer()));
             Files.move(Paths.get(TEMPORARY_BACKUP_NAME), Paths.get(STATE_BACKUP_PATH), ATOMIC_MOVE);
             System.out.println("Backup file created");
         } catch (Exception e) {
