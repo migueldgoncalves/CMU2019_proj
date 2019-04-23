@@ -99,7 +99,7 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
                 System.out.println(sharedLinkMetadata);
 
                 //TODO: Send URL (ENCRYPTED) To Server
-
+                
                 //THIS IS IMPORTANT
 
                 return result;
@@ -181,4 +181,7 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
         void onUploadComplete(FileMetadata result);
         void onError(Exception e);
     }
+
+
+
 }

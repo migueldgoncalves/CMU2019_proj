@@ -62,7 +62,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
     private RequestQueue queue = null;
     private JSONObject httpResponse = null;
 
-    private static ArrayList<Album> albums = new ArrayList<Album>();
+    private static ArrayList<Album> albums = new ArrayList<>();
     private static ArrayAdapter<Album> albumAdapter = null;
 
     @Override
@@ -77,12 +77,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         albums.clear();
 
         FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                createAlbum();
-            }
-        });
+        fab.setOnClickListener(view -> createAlbum());
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -142,15 +137,13 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         albumAdapter.notifyDataSetChanged();
 
         GridView albumTable = findViewById(R.id.album_grid);
-        albumTable.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View view,int position, long id) {
-                Intent intent = new Intent(HomePage.this, AlbumView.class);
-                Bundle b = new Bundle();
-                b.putString("AlbumName", albums.get(position).getAlbumName()); //Your id
-                intent.putExtras(b); //Put your id to your next Intent
-                startActivity(intent);
-                finish();
-            }
+        albumTable.setOnItemClickListener((parent, view, position, id) -> {
+            Intent intent = new Intent(HomePage.this, AlbumView.class);
+            Bundle b = new Bundle();
+            b.putString("AlbumName", albums.get(position).getAlbumName()); //Your id
+            intent.putExtras(b); //Put your id to your next Intent
+            startActivity(intent);
+            finish();
         });
     }
 
