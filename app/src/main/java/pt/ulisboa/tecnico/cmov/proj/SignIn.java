@@ -13,7 +13,6 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Date;
@@ -25,7 +24,7 @@ import pt.ulisboa.tecnico.cmov.proj.Data.Peer2PhotoApp;
 public class SignIn extends AppCompatActivity {
 
     //public static final String URL_BASE = "http://localhost:8080";
-    public static final String URL_BASE = "http://192.168.43.165:8080";
+    public static final String URL_BASE = "http://192.168.42.51:8080";
     public static final String URL_SIGNIN = URL_BASE + "/login";
 
     Context ctx = this;
@@ -35,6 +34,8 @@ public class SignIn extends AppCompatActivity {
     private EditText usernameView;
     private EditText passwordView;
 
+    String success;
+    String error;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,21 +59,27 @@ public class SignIn extends AppCompatActivity {
                 httpResponse -> {
                     try {
                         setHTTPResponse(httpResponse);
-                        String success = httpResponse.getString("success");
-                        String error = httpResponse.getString("error");
                         android.util.Log.d("debug", httpResponse.toString());
-                        android.util.Log.d("debug", success);
-                        android.util.Log.d("debug", error);
-                        if(!error.equals("null")) {
+                        if(httpResponse.has("error")) {
+                            error = httpResponse.getString("error");
+                            android.util.Log.d("debug", "Error");
+                            android.util.Log.d("debug", error);
                             Toast.makeText(ctx, error, Toast.LENGTH_SHORT).show();
                         }
-                        else {
+                        else if(httpResponse.has("success")) {
+                            success = httpResponse.getString("success");
+                            android.util.Log.d("debug", "Success");
+                            android.util.Log.d("debug", success);
                             Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
-                            Intent intent = new Intent(ctx, HomePage.class);
                             InitialVariableSetup(httpResponse.getString("sessionId"));
+                            Intent intent = new Intent(ctx, HomePage.class);
                             startActivity(intent);
                         }
-                    } catch (JSONException e) {
+                        else {
+                            Toast.makeText(ctx, "No adequate response received", Toast.LENGTH_SHORT).show();
+                            throw new Exception("No adequate response received", new Exception());
+                        }
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                     cleanHTTPResponse();
@@ -97,6 +104,8 @@ public class SignIn extends AppCompatActivity {
     }
 
     private void cleanHTTPResponse() {
+        success = null;
+        error = null;
         this.httpResponse = null;
         android.util.Log.d("debug", "Cleaned " + new Date().getTime());
     }

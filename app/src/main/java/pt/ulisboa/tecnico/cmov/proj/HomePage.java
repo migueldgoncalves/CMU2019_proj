@@ -2,7 +2,6 @@ package pt.ulisboa.tecnico.cmov.proj;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -17,7 +16,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -34,7 +32,6 @@ import com.android.volley.toolbox.Volley;
 import com.dropbox.core.android.Auth;
 import com.dropbox.core.v2.files.FileMetadata;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -55,8 +52,8 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
     private final static String ACCESS_SECRET = "wurqteptiyuh9s2";
 
     //public static final String URL_BASE = "http://localhost:8080";
-    public static final String URL_BASE = "http://192.168.43.165:8080";
-    public static final String URL_SIGNUP = URL_BASE + "/createalbum";
+    public static final String URL_BASE = "http://192.168.42.51:8080";
+    public static final String URL_CREATE_ALBUM = URL_BASE + "/createalbum";
 
     Context ctx = this;
     private RequestQueue queue = null;
@@ -64,6 +61,9 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
 
     private static ArrayList<Album> albums = new ArrayList<>();
     private static ArrayAdapter<Album> albumAdapter = null;
+
+    String success;
+    String error;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -288,25 +288,27 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
     }
 
     private void httpRequest(String albumName, String username, String sessionId) {
-        android.util.Log.d("debug", "Starting POST request to URL " + URL_SIGNUP);
+        android.util.Log.d("debug", "Starting POST request to URL " + URL_CREATE_ALBUM);
         createHTTPQueue();
         HashMap<String, String> mapRequest = new HashMap<>();
         mapRequest.put("albumName", albumName);
         mapRequest.put("username", username);
         mapRequest.put("sessionId", sessionId);
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, URL_SIGNUP, new JSONObject(mapRequest),
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, URL_CREATE_ALBUM, new JSONObject(mapRequest),
                 httpResponse -> {
                     try {
                         setHTTPResponse(httpResponse);
-                        String success = httpResponse.getString("success");
-                        String error = httpResponse.getString("error");
                         android.util.Log.d("debug", httpResponse.toString());
-                        android.util.Log.d("debug", success);
-                        android.util.Log.d("debug", error);
-                        if(!error.equals("null")) {
+                        if(httpResponse.has("error")) {
+                            error = httpResponse.getString("error");
+                            android.util.Log.d("debug", "Error");
+                            android.util.Log.d("debug", error);
                             Toast.makeText(ctx, error, Toast.LENGTH_SHORT).show();
                         }
-                        else {
+                        else if(httpResponse.has("success")) {
+                            success = httpResponse.getString("success");
+                            android.util.Log.d("debug", "Success");
+                            android.util.Log.d("debug", success);
                             Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
                             //#####################################################
 
@@ -326,7 +328,11 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
 
                             addNewAlbum(albumName);
                         }
-                    } catch (JSONException e) {
+                        else {
+                            Toast.makeText(ctx, "No adequate response received", Toast.LENGTH_SHORT).show();
+                            throw new Exception("No adequate response received", new Exception());
+                        }
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                     cleanHTTPResponse();
@@ -343,6 +349,8 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
     }
 
     private void cleanHTTPResponse() {
+        success = null;
+        error = null;
         this.httpResponse = null;
         android.util.Log.d("debug", "Cleaned " + new Date().getTime());
     }
