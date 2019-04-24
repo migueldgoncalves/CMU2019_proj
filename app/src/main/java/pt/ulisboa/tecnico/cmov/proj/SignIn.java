@@ -24,7 +24,7 @@ import pt.ulisboa.tecnico.cmov.proj.Data.Peer2PhotoApp;
 public class SignIn extends AppCompatActivity {
 
     //public static final String URL_BASE = "http://localhost:8080";
-    public static final String URL_BASE = "http://192.168.42.51:8080";
+    public static final String URL_BASE = "http://192.168.43.151:8080";
     public static final String URL_SIGNIN = URL_BASE + "/login";
 
     Context ctx = this;
@@ -120,6 +120,7 @@ public class SignIn extends AppCompatActivity {
         ((Peer2PhotoApp) this.getApplication()).setUsername(((EditText)findViewById(R.id.username_login)).getText().toString());
         ((Peer2PhotoApp) this.getApplication()).setPassword(((EditText)findViewById(R.id.password_login)).getText().toString());
         ((Peer2PhotoApp) this.getApplication()).setSessionId(sessionId);
+        ((Peer2PhotoApp) this.getApplication()).getAlbums(getApplicationContext().getFilesDir().getPath() + "/albums.txt");
     }
 
 }
