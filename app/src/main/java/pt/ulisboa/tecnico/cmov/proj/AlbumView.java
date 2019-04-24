@@ -82,8 +82,7 @@ public class AlbumView extends AppCompatActivity
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(view -> {
-            Intent i = new Intent(Intent.ACTION_PICK,
-                    MediaStore.Images.Media.INTERNAL_CONTENT_URI);
+            Intent i = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
             final int ACTIVITY_SELECT_IMAGE = 1234;
             startActivityForResult(i, ACTIVITY_SELECT_IMAGE);
         });
@@ -176,9 +175,10 @@ public class AlbumView extends AppCompatActivity
                   public void onError(Exception e) {
 
                  }
-            }).execute(PhotoName, "/Peer2Photo", "NEW_PHOTO", filePath, value);
+            }).execute(PhotoName, "/Peer2Photo", "NEW_PHOTO", filePath, value, ((Peer2PhotoApp) getApplication()).getSessionId(), ((Peer2PhotoApp) getApplication()).getUsername(), ((Peer2PhotoApp) getApplication()).getAlbumId(value));
 
             imageScalingAndPosting(filePath);
+
         }
     }
 

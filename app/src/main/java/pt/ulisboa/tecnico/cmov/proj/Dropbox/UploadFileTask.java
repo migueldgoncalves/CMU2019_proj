@@ -29,6 +29,7 @@ import java.util.HashMap;
 
 import pt.ulisboa.tecnico.cmov.proj.Data.Peer2PhotoApp;
 import pt.ulisboa.tecnico.cmov.proj.HomePage;
+import pt.ulisboa.tecnico.cmov.proj.R;
 
 /**
  * Async task to upload a file to a directory
@@ -41,8 +42,8 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
     private Exception mException;
 
     //public static final String URL_BASE = "http://localhost:8080";
-    public static final String URL_BASE = "http://192.168.43.151:8080";
-    public static final String URL_SIGNIN = URL_BASE + "/seturl";
+    public String URL_BASE;
+    public String URL_SIGNIN;
 
     private RequestQueue queue = null;
     private JSONObject httpResponse = null;
@@ -54,6 +55,10 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
         mContext = context;
         mDbxClient = dbxClient;
         mCallback = callback;
+
+        URL_BASE = mContext.getString(R.string.serverIP);
+        URL_SIGNIN = URL_BASE + "/seturl";
+
     }
 
     @Override
@@ -145,6 +150,9 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
             //PARAMS 2 ---> OPERACAO
             //PARAMS 3 ---> PATH DA FOTO NA LOCAL STORAGE
             //PARAMS 4 ---> NOME DO ALBUM (SLICE) NA LOCAL STORAGE DO USER
+            //PARAMS 5 ---> SESSION ID
+            //PARAMS 6 ---> USERNAME
+            //PARAMS 7 ---> ALBUM NAME
             //###############################ATENCAO###############################################
             File localFile = new File(params[3]);
 
@@ -184,7 +192,7 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
                             public void onError(Exception e) {
 
                             }
-                        }).execute(params[4], "/Peer2Photo", "NEW_ALBUM");
+                        }).execute(params[4], "/Peer2Photo", "NEW_ALBUM", params[5], params[6], params[7]);
 
                         return result;
 
