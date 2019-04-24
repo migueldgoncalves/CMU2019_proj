@@ -22,8 +22,8 @@ import java.util.HashMap;
 public class SignUp extends AppCompatActivity {
 
     //public static final String URL_BASE = "http://localhost:8080";
-    public static final String URL_BASE = "http://192.168.42.51:8080";
-    public static final String URL_SIGNUP = URL_BASE + "/signup";
+    public String URL_BASE;
+    public String URL_SIGNUP;
 
     Context ctx = this;
     private RequestQueue queue = null;
@@ -39,6 +39,9 @@ public class SignUp extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
+
+        URL_BASE = getString(R.string.serverIP);
+        URL_SIGNUP = URL_BASE + "/signup";
 
         UsernameView = findViewById(R.id.username_signup);
         PasswordView = findViewById(R.id.password_signup);

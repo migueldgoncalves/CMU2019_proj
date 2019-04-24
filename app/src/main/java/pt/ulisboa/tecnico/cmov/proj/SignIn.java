@@ -26,8 +26,8 @@ import pt.ulisboa.tecnico.cmov.proj.Data.Peer2PhotoApp;
 public class SignIn extends AppCompatActivity {
 
     //public static final String URL_BASE = "http://localhost:8080";
-    public static final String URL_BASE = "http://192.168.43.151:8080";
-    public static final String URL_SIGNIN = URL_BASE + "/login";
+    public String URL_BASE;
+    public String URL_SIGNIN;
 
     Context ctx = this;
     private RequestQueue queue = null;
@@ -43,6 +43,9 @@ public class SignIn extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_in);
+
+        URL_BASE = getString(R.string.serverIP);
+        URL_SIGNIN = URL_BASE + "/login";
 
         usernameView = findViewById(R.id.username_login);
         passwordView = findViewById(R.id.password_login);

@@ -52,8 +52,9 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
     private final static String ACCESS_SECRET = "wurqteptiyuh9s2";
 
     //public static final String URL_BASE = "http://localhost:8080";
-    public static final String URL_BASE = "http://192.168.42.51:8080";
-    public static final String URL_CREATE_ALBUM = URL_BASE + "/createalbum";
+    public String URL_BASE;
+    public String URL_CREATE_ALBUM;
+    public String URL_LOAD_ALBUMS;
 
     Context ctx = this;
     private RequestQueue queue = null;
@@ -69,6 +70,10 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_page);
+
+        URL_BASE = getString(R.string.serverIP);
+        URL_CREATE_ALBUM = URL_BASE + "/createalbum";
+        URL_LOAD_ALBUMS = URL_BASE + "/useralbums";
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -283,8 +288,77 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
             addNewAlbum(i.getName());
         }
 
+        httpRequestForAlbumLoading(((Peer2PhotoApp)getApplication()).getUsername(), ((Peer2PhotoApp)getApplication()).getSessionId());
+
         return true;
 
+    }
+
+    private void httpRequestForAlbumLoading(String username, String sessionId) {
+        android.util.Log.d("debug", "Starting POST request to URL " + URL_LOAD_ALBUMS);
+        createHTTPQueue();
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, URL_LOAD_ALBUMS + "/" + sessionId + "/" + username, null,
+                httpResponse -> {
+                    try {
+                        setHTTPResponse(httpResponse);
+                        android.util.Log.d("debug", httpResponse.toString());
+                        if(httpResponse.has("error")) {
+                            error = httpResponse.getString("error");
+                            android.util.Log.d("debug", "Error");
+                            android.util.Log.d("debug", error);
+                            Toast.makeText(ctx, error, Toast.LENGTH_SHORT).show();
+                        }
+                        else if(httpResponse.has("success")) {
+                            success = httpResponse.getString("success");
+                            android.util.Log.d("debug", "Success");
+                            android.util.Log.d("debug", success);
+                            Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
+
+                            if(!httpResponse.getString("size").equals("0")){
+                                String[] albumIds = httpResponse.getString("albums").split(",");
+                                parseAlbumNames(albumIds, httpResponse);
+                            }
+                        }
+                        else {
+                            Toast.makeText(ctx, "No adequate response received", Toast.LENGTH_SHORT).show();
+                            throw new Exception("No adequate response received", new Exception());
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    cleanHTTPResponse();
+                }, error -> {
+            cleanHTTPResponse();
+            android.util.Log.d("debug", "POST error");
+        }
+        );
+        queue.add(request);
+    }
+
+    private void parseAlbumNames(String[] albumIds, JSONObject httpResponse) {
+        try{
+            for(int i = 0; i < albumIds.length; i++){
+                String albumName = httpResponse.getString(albumIds[i]);
+                if(!((Peer2PhotoApp)getApplication()).getAlbumId(albumName).equals(albumIds[i]) && ((Peer2PhotoApp)getApplication()).getAlbumId(albumName) != null){
+                    String newName = albumName + "_" + httpResponse.getString(albumIds[i]);
+                    createAlbum(newName);
+                }else if(((Peer2PhotoApp)getApplication()).getAlbumId(albumName) == null){
+                    createAlbum(albumName);
+                }else{
+                    //TODO: No Caso de O Album Remoto ja existir previamente na diretoria da aplicacao
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
+    private void createAlbum(String albumName){
+            String sessionId = ((Peer2PhotoApp) getApplication()).getSessionId();
+            String username = ((Peer2PhotoApp) getApplication()).getUsername();
+
+            httpRequest(albumName, username, sessionId);
     }
 
     private void httpRequest(String albumName, String username, String sessionId) {
@@ -307,6 +381,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
                         }
                         else if(httpResponse.has("success")) {
                             success = httpResponse.getString("success");
+                            String albumId = httpResponse.getString("albumId");
                             android.util.Log.d("debug", "Success");
                             android.util.Log.d("debug", success);
                             Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
@@ -317,13 +392,14 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
                                 @Override
                                 public void onUploadComplete(FileMetadata result) {
                                     Toast.makeText(ctx, "Upload Complete!", Toast.LENGTH_SHORT).show();
+                                    ((Peer2PhotoApp) getApplication()).addAlbum(albumId, albumName, getApplicationContext().getFilesDir().getPath() + "/albums.txt");
                                 }
 
                                 @Override
                                 public void onError(Exception e) {
                                     //TODO: Remove Album From Local Storage and From Server Storage
                                 }
-                            }).execute(albumName, "/Peer2Photo", "NEW_ALBUM");
+                            }).execute(albumName, "/Peer2Photo", "NEW_ALBUM", ((Peer2PhotoApp) getApplication()).getSessionId(), ((Peer2PhotoApp) getApplication()).getUsername(), albumId);
                             //#####################################################
 
                             addNewAlbum(albumName);
