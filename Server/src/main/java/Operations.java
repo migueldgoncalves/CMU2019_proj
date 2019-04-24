@@ -22,7 +22,7 @@ public class Operations {
     protected static final int MIN_PASSWORD_LENGTH = 8;
     protected static final int MAX_PASSWORD_LENGTH = 30;
 
-    protected static final int SESSION_DURATION = 1000 * 60 * 1; //Milliseconds
+    protected static final int SESSION_DURATION = 1000 * 60 * 60 * 4; //Milliseconds
 
     protected static final String TEMPORARY_BACKUP_NAME = "backups/ServerState.new";
     protected static final String STATE_BACKUP_NAME = "ServerState.old";
