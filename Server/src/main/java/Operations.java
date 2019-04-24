@@ -360,14 +360,7 @@ public class Operations {
             albums+=albumId;
             if(iterator.hasNext())
                 albums+=",";
-            //If user has not set slice URL in album (for example if user was just added to album),
-            // server will not send album name and user will know it has to set slice URL in that album
-            if(getAlbumById(albumId).getSliceURL(username)!=null) {
-                response.put(String.valueOf(albumId), getAlbumById(albumId).getName());
-            }
-            else {
-                response.put(String.valueOf(albumId), "");
-            }
+            response.put(String.valueOf(albumId), getAlbumById(albumId).getName());
         }
         response.put("size", String.valueOf(getUserByUsername(username).getUserAlbumNumber()));
         response.put("albums", albums);
