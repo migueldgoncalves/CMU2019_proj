@@ -3,6 +3,7 @@ package pt.ulisboa.tecnico.cmov.proj;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Button;
 import android.widget.EditText;
@@ -15,6 +16,7 @@ import com.android.volley.toolbox.Volley;
 
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -72,6 +74,7 @@ public class SignIn extends AppCompatActivity {
                             android.util.Log.d("debug", success);
                             Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
                             InitialVariableSetup(httpResponse.getString("sessionId"));
+                            createImageFolder();
                             Intent intent = new Intent(ctx, HomePage.class);
                             startActivity(intent);
                         }
@@ -89,6 +92,18 @@ public class SignIn extends AppCompatActivity {
                 }
         );
         queue.add(request);
+    }
+
+    private void createImageFolder() {
+        try {
+            String rootPhotoDirectoryPath = getString(R.string.app_directory_name);
+            File rootPhotoDirectory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), rootPhotoDirectoryPath);
+            if (!rootPhotoDirectory.exists() || !rootPhotoDirectory.isDirectory()) {
+                rootPhotoDirectory.mkdir();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void signIn() {

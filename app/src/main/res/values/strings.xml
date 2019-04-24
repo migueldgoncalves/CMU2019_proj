@@ -28,4 +28,5 @@
     <string name="title_activity_album_view">AlbumView</string>
     <string name="title_activity_log_view">LogView</string>
     <string name="title_activity_find_users">Find Users</string>
+    <string name="app_directory_name">P2Photo</string>
 </resources>
