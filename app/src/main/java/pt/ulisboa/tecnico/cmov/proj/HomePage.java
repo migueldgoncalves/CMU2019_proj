@@ -17,8 +17,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.GridView;
@@ -82,7 +80,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         albums.clear();
 
         FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(view -> createAlbum());
+        fab.setOnClickListener(view -> createAlbumByUser());
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -196,7 +194,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         if (id == R.id.nav_home) {
             startActivity(new Intent(HomePage.this, HomePage.class));
         } else if (id == R.id.nav_createAlbum) {
-            createAlbum();
+            createAlbumByUser();
         } else if (id == R.id.nav_logs) {
             startActivity(new Intent(HomePage.this, LogView.class));
         } else if (id == R.id.nav_dropbox) {
@@ -246,7 +244,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         albumAdapter.notifyDataSetChanged();
     }
 
-    private void createAlbum(){
+    private void createAlbumByUser(){
         AlertDialog.Builder builder = new AlertDialog.Builder(HomePage.this);
         builder.setTitle("Album Title");
 
@@ -260,7 +258,6 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
             String sessionId = ((Peer2PhotoApp) getApplication()).getSessionId();
             String username = ((Peer2PhotoApp) getApplication()).getUsername();
 
-            //TODO: Ask server to create album in its local storage
             if(new File(getApplicationContext().getFilesDir().getPath() + "/" + input.getText().toString()).exists()){
                 while (new File(getApplicationContext().getFilesDir().getPath() + "/" + input.getText().toString()).exists()){
                     Toast.makeText(ctx, "An Album With The Name " + input.getText().toString() + " Already Exists!", Toast.LENGTH_SHORT).show();
@@ -268,7 +265,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
                 }
             }
 
-            httpRequest(albumName, username, sessionId);
+            httpRequestCreateAlbum(albumName, username, sessionId);
 
         });
 
@@ -277,25 +274,36 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         builder.show();
     }
 
-    private boolean loadAlbums(){
+    private void createAlbumInCloud(String albumName, String albumId){
+        new UploadFileTask(HomePage.this, DropboxClientFactory.getClient(), new UploadFileTask.Callback(){
+
+            @Override
+            public void onUploadComplete(FileMetadata result) {
+                Toast.makeText(ctx, "Upload Complete!", Toast.LENGTH_SHORT).show();
+                ((Peer2PhotoApp) getApplication()).addAlbum(albumId, albumName, getApplicationContext().getFilesDir().getPath() + "/albums.txt");
+            }
+
+            @Override
+            public void onError(Exception e) {
+                //TODO: Remove Album From Local Storage and From Server Storage
+            }
+        }).execute(albumName, "/Peer2Photo", "NEW_ALBUM", ((Peer2PhotoApp) getApplication()).getSessionId(), ((Peer2PhotoApp) getApplication()).getUsername(), albumId);
+    }
+
+    private void loadAlbums() {
         File[] directories = new File(getApplicationContext().getFilesDir().getPath()).listFiles(File::isDirectory);
 
-        if(directories.length == 0){
-            return false;
-        }
-
-        for (File i : directories){
-            addNewAlbum(i.getName());
+        if(!(directories.length == 0)){
+            for (File i : directories){
+                addNewAlbum(i.getName());
+            }
         }
 
         httpRequestForAlbumLoading(((Peer2PhotoApp)getApplication()).getUsername(), ((Peer2PhotoApp)getApplication()).getSessionId());
-
-        return true;
-
     }
 
     private void httpRequestForAlbumLoading(String username, String sessionId) {
-        android.util.Log.d("debug", "Starting POST request to URL " + URL_LOAD_ALBUMS);
+        android.util.Log.d("debug", "Starting GET request to URL " + URL_LOAD_ALBUMS + "/" + sessionId + "/" + username);
         createHTTPQueue();
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, URL_LOAD_ALBUMS + "/" + sessionId + "/" + username, null,
                 httpResponse -> {
@@ -329,23 +337,31 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
                     cleanHTTPResponse();
                 }, error -> {
             cleanHTTPResponse();
-            android.util.Log.d("debug", "POST error");
+            android.util.Log.d("debug", "GET error");
         }
         );
         queue.add(request);
     }
 
     private void parseAlbumNames(String[] albumIds, JSONObject httpResponse) {
+        // 3 cases - User was not added to third party albums;
+        // User was added to album with same name as another album user already has;
+        // User was added to album with a name different of all user's albums
         try{
             for(int i = 0; i < albumIds.length; i++){
                 String albumName = httpResponse.getString(albumIds[i]);
-                if(!((Peer2PhotoApp)getApplication()).getAlbumId(albumName).equals(albumIds[i]) && ((Peer2PhotoApp)getApplication()).getAlbumId(albumName) != null){
-                    String newName = albumName + "_" + httpResponse.getString(albumIds[i]);
-                    createAlbum(newName);
-                }else if(((Peer2PhotoApp)getApplication()).getAlbumId(albumName) == null){
-                    createAlbum(albumName);
+                if(((Peer2PhotoApp)getApplication()).getAlbumId(albumName) == null) {
+                    createAlbumInCloud(albumName, albumIds[i]);
+                    addNewAlbum(albumName);
+                    android.util.Log.d("debug", "User has been added to album of other user and its name does not exist in user's albums");
+                }
+                else if(!((Peer2PhotoApp)getApplication()).getAlbumId(albumName).equals(albumIds[i])){
+                    String newName = albumName + "_" + albumIds[i];
+                    createAlbumInCloud(newName, albumIds[i]);
+                    addNewAlbum(newName);
+                    android.util.Log.d("debug", "User has been added to album of other user with name equal to one of user's albums");
                 }else{
-                    //TODO: No Caso de O Album Remoto ja existir previamente na diretoria da aplicacao
+                    android.util.Log.d("debug", "User either created this album or has already set slice in it");
                 }
             }
         }catch (Exception e){
@@ -354,14 +370,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
 
     }
 
-    private void createAlbum(String albumName){
-            String sessionId = ((Peer2PhotoApp) getApplication()).getSessionId();
-            String username = ((Peer2PhotoApp) getApplication()).getUsername();
-
-            httpRequest(albumName, username, sessionId);
-    }
-
-    private void httpRequest(String albumName, String username, String sessionId) {
+    private void httpRequestCreateAlbum(String albumName, String username, String sessionId) {
         android.util.Log.d("debug", "Starting POST request to URL " + URL_CREATE_ALBUM);
         createHTTPQueue();
         HashMap<String, String> mapRequest = new HashMap<>();
@@ -385,23 +394,8 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
                             android.util.Log.d("debug", "Success");
                             android.util.Log.d("debug", success);
                             Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
-                            //#####################################################
 
-                            new UploadFileTask(HomePage.this, DropboxClientFactory.getClient(), new UploadFileTask.Callback(){
-
-                                @Override
-                                public void onUploadComplete(FileMetadata result) {
-                                    Toast.makeText(ctx, "Upload Complete!", Toast.LENGTH_SHORT).show();
-                                    ((Peer2PhotoApp) getApplication()).addAlbum(albumId, albumName, getApplicationContext().getFilesDir().getPath() + "/albums.txt");
-                                }
-
-                                @Override
-                                public void onError(Exception e) {
-                                    //TODO: Remove Album From Local Storage and From Server Storage
-                                }
-                            }).execute(albumName, "/Peer2Photo", "NEW_ALBUM", ((Peer2PhotoApp) getApplication()).getSessionId(), ((Peer2PhotoApp) getApplication()).getUsername(), albumId);
-                            //#####################################################
-
+                            createAlbumInCloud(albumName, albumId);
                             addNewAlbum(albumName);
                         }
                         else {

@@ -1,7 +1,6 @@
 package pt.ulisboa.tecnico.cmov.proj.Dropbox;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.widget.Toast;
 
@@ -27,8 +26,6 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.HashMap;
 
-import pt.ulisboa.tecnico.cmov.proj.Data.Peer2PhotoApp;
-import pt.ulisboa.tecnico.cmov.proj.HomePage;
 import pt.ulisboa.tecnico.cmov.proj.R;
 
 /**
@@ -43,7 +40,7 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
 
     //public static final String URL_BASE = "http://localhost:8080";
     public String URL_BASE;
-    public String URL_SIGNIN;
+    public String URL_SETURL;
 
     private RequestQueue queue = null;
     private JSONObject httpResponse = null;
@@ -57,7 +54,7 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
         mCallback = callback;
 
         URL_BASE = mContext.getString(R.string.serverIP);
-        URL_SIGNIN = URL_BASE + "/seturl";
+        URL_SETURL = URL_BASE + "/seturl";
 
     }
 
@@ -218,14 +215,14 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
     }
 
     private void httpRequest(String sessionId, String username, String url, String albumId){
-        android.util.Log.d("debug", "Starting POST request to URL " + URL_SIGNIN);
+        android.util.Log.d("debug", "Starting PUT request to URL " + URL_SETURL);
         createHTTPQueue();
         HashMap<String, String> mapRequest = new HashMap<>();
         mapRequest.put("sessionId", sessionId);
         mapRequest.put("username", username);
         mapRequest.put("URL", url);
         mapRequest.put("albumId", albumId);
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.PUT, URL_SIGNIN, new JSONObject(mapRequest),
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.PUT, URL_SETURL, new JSONObject(mapRequest),
                 httpResponse -> {
                     try {
                         setHTTPResponse(httpResponse);
@@ -252,7 +249,7 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
                     cleanHTTPResponse();
                 }, error -> {
             cleanHTTPResponse();
-            android.util.Log.d("debug", "POST error");
+            android.util.Log.d("debug", "PUT error");
         }
         );
         queue.add(request);

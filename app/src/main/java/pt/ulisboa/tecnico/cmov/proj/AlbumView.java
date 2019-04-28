@@ -7,7 +7,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -30,23 +29,19 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.dropbox.core.v2.files.FileMetadata;
 
-import org.apache.commons.io.FileUtils;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Random;
 
 import pt.ulisboa.tecnico.cmov.proj.Adapters.PhotoAdapter;
 import pt.ulisboa.tecnico.cmov.proj.Data.Peer2PhotoApp;
 import pt.ulisboa.tecnico.cmov.proj.Data.Photo;
+import pt.ulisboa.tecnico.cmov.proj.Dropbox.DownloadFileTask;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.DropboxClientFactory;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.UploadFileTask;
 
@@ -182,7 +177,7 @@ public class AlbumView extends AppCompatActivity
         }
     }
 
-    private void imageScalingAndPosting(String filePath){
+    public void imageScalingAndPosting(String filePath){
         Bitmap yourSelectedImage = BitmapFactory.decodeFile(filePath);
 
         final int maxSize = 628;
@@ -311,7 +306,7 @@ public class AlbumView extends AppCompatActivity
     }
 
     private void httpRequest(String albumId, String username, String sessionId){
-        android.util.Log.d("debug", "Starting POST request to URL " + URL_ALBUM);
+        android.util.Log.d("debug", "Starting GET request to URL " + URL_ALBUM + "/" + sessionId + "/" + username + "/" + albumId);
         createHTTPQueue();
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, URL_ALBUM + "/" + sessionId + "/" + username + "/" + albumId, null,
                 httpResponse -> {
@@ -330,7 +325,7 @@ public class AlbumView extends AppCompatActivity
                             android.util.Log.d("debug", success);
                             Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
 
-                            urlParser(httpResponse.getString("users").split(","), httpResponse);
+                            urlParser(httpResponse.getString("users"), httpResponse);
 
                         }
                         else {
@@ -343,69 +338,26 @@ public class AlbumView extends AppCompatActivity
                     cleanHTTPResponse();
                 }, error -> {
             cleanHTTPResponse();
-            android.util.Log.d("debug", "POST error");
+            android.util.Log.d("debug", "GET error");
         }
         );
         queue.add(request);
     }
 
-    private void urlParser(String[] users, JSONObject mapResponse){
-        try{
-            //The Array List that will have all the URLs for the slices
-            ArrayList<String> URLs = new ArrayList<>();
+    private void urlParser(String usersString, JSONObject mapResponse){
 
-            for(int i = 0; i < users.length; i++){
-                if(!users[i].equals(((Peer2PhotoApp)getApplication()).getUsername())){
-                    if (mapResponse.getString(users[i]) != null) {
-                        URLs.add(mapResponse.getString(users[i]));
-                    } else {
-                        System.out.println("Null Slice");
-                    }
-                }
+        new DownloadFileTask(AlbumView.this, DropboxClientFactory.getClient(), new DownloadFileTask.Callback(){
+            @Override
+            public void onDownloadComplete(File file) {
+
             }
 
-            Bundle b = getIntent().getExtras();
-            String value = "ERROR"; // or other values
-            if(b != null)
-                value = b.getString("AlbumName");
+            @Override
+            public void onError(Exception e) {
 
-
-            for (int i = 0; i < URLs.size(); i++){
-                //Saving the obtained slice from the cloud in a file to later remove the file
-                FileUtils.copyURLToFile(new URL(URLs.get(i).replaceAll("\u003d", "=")), new File(getApplicationContext().getFilesDir().getPath() + "/" + value + "/" + users[i] + "_SLICE.txt"));
-                //The Recently Saved Slice
-                File Slice = new File(getApplicationContext().getFilesDir().getPath() + "/" + value + "/" + users[i] + "_SLICE.txt");
-
-                if(Slice.exists()){
-                    //The Local File That Contains the Paths of The Photos Downloaded in Local Storage
-                    File RemotePhotosPath = new File(getApplicationContext().getFilesDir().getPath() + "/" + value + "/" + users[i] + "_REMOTE.txt");
-
-                    if(!RemotePhotosPath.exists()){
-                        RemotePhotosPath.createNewFile();
-                    }
-                    //The URLs for The Photos of the current slice being processed
-                    List<String> contents = FileUtils.readLines(Slice);
-
-                    //The Path For The Galery Directory of The App
-                    File imageRoot = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), getString(R.string.app_directory_name));
-
-                    for(int x = 0; x < contents.size(); x++){
-                        //Downloading a photo and saving it to the galery inside the album created for the app with the Nomeclature USERNAME + _PHOTO + NUMBER_OF_PHOTO + EXTENSION
-                        FileUtils.copyURLToFile(new URL(contents.get(x)), new File(imageRoot, users[i] + "_PHOTO" + x + ".jpg"));
-                        //Saving the path of the downloaded photo to a file to load the images and later remove them
-                        FileUtils.writeStringToFile(RemotePhotosPath, new File(imageRoot, users[i] + "_PHOTO" + x).getPath());
-
-                        imageScalingAndPosting(new File(imageRoot, users[i] + "_PHOTO" + x).getPath());
-                    }
-
-                    Slice.delete();
-
-                }
             }
+        }).execute(usersString, ((Peer2PhotoApp)getApplication()).getUsername(), mapResponse.toString(), getApplicationContext().getFilesDir().getPath(), getString(R.string.app_directory_name));
 
-        }catch (Exception e){
-            e.printStackTrace();
-        }
     }
 
     private void setHTTPResponse(JSONObject json) {

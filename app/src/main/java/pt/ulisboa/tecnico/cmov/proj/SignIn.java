@@ -55,7 +55,7 @@ public class SignIn extends AppCompatActivity {
     }
 
     private void httpRequest(String username, String password){
-        android.util.Log.d("debug", "Starting POST request to URL " + URL_SIGNIN);
+        android.util.Log.d("debug", "Starting PUT request to URL " + URL_SIGNIN);
         createHTTPQueue();
         HashMap<String, String> mapRequest = new HashMap<>();
         mapRequest.put("username", username);
@@ -78,7 +78,7 @@ public class SignIn extends AppCompatActivity {
                             Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
                             InitialVariableSetup(httpResponse.getString("sessionId"));
                             createImageFolder();
-                            Intent intent = new Intent(ctx, HomePage.class);
+                            Intent intent = new Intent(ctx, ModeChoosing.class);
                             startActivity(intent);
                         }
                         else {
@@ -91,7 +91,7 @@ public class SignIn extends AppCompatActivity {
                     cleanHTTPResponse();
                 }, error -> {
                     cleanHTTPResponse();
-                    android.util.Log.d("debug", "POST error");
+                    android.util.Log.d("debug", "PUT error");
                 }
         );
         queue.add(request);

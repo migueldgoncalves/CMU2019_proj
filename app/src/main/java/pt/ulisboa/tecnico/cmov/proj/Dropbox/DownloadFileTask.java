@@ -1,24 +1,26 @@
 package pt.ulisboa.tecnico.cmov.proj.Dropbox;
 
 import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Environment;
 
-import com.dropbox.core.DbxException;
 import com.dropbox.core.v2.DbxClientV2;
-import com.dropbox.core.v2.files.FileMetadata;
+
+import org.apache.commons.io.FileUtils;
+import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+import pt.ulisboa.tecnico.cmov.proj.AlbumView;
 
 /**
  * Task to download a file from Dropbox and put it in the Downloads folder
  */
 
-public class DownloadFileTask extends AsyncTask<String, Void, File> {
+public class DownloadFileTask extends AsyncTask<String, String, File> {
 
     private final Context mContext;
     private final DbxClientV2 mDbxClient;
@@ -43,42 +45,72 @@ public class DownloadFileTask extends AsyncTask<String, Void, File> {
 
     @Override
     protected File doInBackground(String... params) {
-        FileMetadata metadata = null;
-        try {
-            metadata = (FileMetadata) mDbxClient.files().getMetadata("/Peer2Photo/" + params[0]);
-        } catch (DbxException e) {
-            e.printStackTrace();
-        }
-        try {
-            File path = new File(mContext.getFilesDir().getPath());
-            File file = new File(path, metadata.getName());
+        //###############################ATENCAO###############################################
+        //A SINTAXE DOS PARAMETROS E A SEGUINTE
+        //PARAMS 0 ---> String com os users do album
+        //PARAMS 1 ---> Username
+        //PARAMS 2 ---> JSONObject obtido com o pedido HTTP para obter os URLs das slices do album
+        //PARAMS 3 ---> Application Directory
+        //PARAMS 4 ---> Application Photo Directory
+        //###############################ATENCAO###############################################
 
-            // Make sure the Downloads directory exists.
-            if (!path.exists()) {
-                if (!path.mkdirs()) {
-                    mException = new RuntimeException("Unable to create directory: " + path);
+        try {
+            String[] users = params[0].split(",");
+            String mUsername = params[1];
+            JSONObject mapResponse = new JSONObject(params[2]);
+            String albumName = mapResponse.getString("name");
+            String applicationDirectory = params[3];
+            String applicationPhotoDirectory = params[4];
+
+            //The Array List that will have all the URLs for the slices
+            ArrayList<String> URLs = new ArrayList<>();
+
+            for (int i = 0; i < users.length; i++) {
+                if (!users[i].equals(mUsername)) { //User will ignore its own slice
+                    if (mapResponse.getString(users[i]) != null && mapResponse.getString(users[i]).trim().length() > 0) {
+                        URLs.add(mapResponse.getString(users[i]));
+                    } else {
+                        android.util.Log.d("debug","Null Slice");
+                    }
                 }
-            } else if (!path.isDirectory()) {
-                mException = new IllegalStateException("Download path is not a directory: " + path);
-                return null;
             }
+            //Toast.makeText(mContext, "Downloading photos from " + URLs.size() + " users", Toast.LENGTH_SHORT).show();
+            for (int i = 0; i < URLs.size(); i++){
+                //Saving the obtained slice from the cloud in a file to later remove the file
+                FileUtils.copyURLToFile(new URL(URLs.get(i).replaceAll("\u003d", "=")), new File(applicationDirectory + "/" + albumName + "/" + users[i] + "_SLICE.txt"));
+                //The Recently Saved Slice
+                File Slice = new File(params[3] + "/" + albumName + "/" + users[i] + "_SLICE.txt");
 
-            // Download the file.
-            try {
-                OutputStream outputStream = new FileOutputStream(file);
-                mDbxClient.files().download(metadata.getPathLower(), metadata.getRev())
-                        .download(outputStream);
+                if(Slice.exists()){
+                    //The Local File That Contains the Paths of The Photos Downloaded in Local Storage
+                    File RemotePhotosPath = new File(params[3] + "/" + albumName + "/" + users[i] + "_REMOTE.txt");
 
-                // Tell android about the file
-                Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-                intent.setData(Uri.fromFile(file));
-                mContext.sendBroadcast(intent);
+                    if(!RemotePhotosPath.exists()){
+                        RemotePhotosPath.createNewFile();
+                    }
+                    //The URLs for The Photos of the current slice being processed
+                    List<String> contents = FileUtils.readLines(Slice);
 
-                return file;
-            } catch (DbxException | IOException e) {
-                mException = e;
-                e.printStackTrace();
+                    //The Path For The Galery Directory of The App
+                    File imageRoot = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), applicationPhotoDirectory);
+
+                    for(int x = 0; x < contents.size(); x++){
+                        //Downloading a photo and saving it to the galery inside the album created for the app with the Nomeclature USERNAME + _PHOTO + NUMBER_OF_PHOTO + EXTENSION
+                        FileUtils.copyURLToFile(new URL(contents.get(x)), new File(imageRoot, users[i] + "_PHOTO" + x + ".jpg"));
+                        //Saving the path of the downloaded photo to a file to load the images and later remove them
+                        FileUtils.writeStringToFile(RemotePhotosPath, new File(imageRoot, users[i] + "_PHOTO" + x + ".jpg").getPath());
+
+                        ((AlbumView) mContext).imageScalingAndPosting(new File(imageRoot, users[i] + "_PHOTO" + x + ".jpg").getPath());
+
+                        //Toast.makeText(mContext, x + "/" + contents.size() + " photos obtained", Toast.LENGTH_SHORT).show();
+                    }
+
+                    Slice.delete();
+
+                }
+                //Toast.makeText(mContext, "Photos obtained from " + i + "/" + URLs.size() + " users", Toast.LENGTH_SHORT).show();
             }
+            //Toast.makeText(mContext, "All photos obtained for album " + albumName, Toast.LENGTH_SHORT).show();
 
         }catch (Exception e){
             e.printStackTrace();
@@ -87,8 +119,14 @@ public class DownloadFileTask extends AsyncTask<String, Void, File> {
         return null;
     }
 
+    /*@Override
+    protected void onProgressUpdate(String... sentence) {
+        Toast.makeText(mContext, sentence[0], Toast.LENGTH_SHORT).show();
+    }*/
+
     public interface Callback {
         void onDownloadComplete(File result);
         void onError(Exception e);
     }
+
 }
