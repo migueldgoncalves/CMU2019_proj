@@ -339,7 +339,8 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         try{
             for(int i = 0; i < albumIds.length; i++){
                 String albumName = httpResponse.getString(albumIds[i]);
-                if(!((Peer2PhotoApp)getApplication()).getAlbumId(albumName).equals(albumIds[i]) && ((Peer2PhotoApp)getApplication()).getAlbumId(albumName) != null){
+                String albumId = ((Peer2PhotoApp)getApplication()).getAlbumId(albumName);
+                if(albumId != null && !(albumId.equals(albumIds[i]))){
                     String newName = albumName + "_" + httpResponse.getString(albumIds[i]);
                     createAlbum(newName);
                 }else if(((Peer2PhotoApp)getApplication()).getAlbumId(albumName) == null){
