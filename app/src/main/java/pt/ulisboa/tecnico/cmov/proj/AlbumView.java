@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -19,8 +20,6 @@ import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.GridView;
@@ -101,12 +100,10 @@ public class AlbumView extends AppCompatActivity
         GridView photoTable = findViewById(R.id.photo_grid);
         photoTable.setAdapter(photoAdapter);
 
-        photoTable.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View view,int position, long id) {
-                //TODO: O que fazer quando clico numa foto??
-                //SUGESTAO: Nada!
-                //Só Sei Que Nada Fará
-            }
+        photoTable.setOnItemClickListener((parent, view, position, id) -> {
+            //TODO: O que fazer quando clico numa foto??
+            //SUGESTAO: Nada!
+            //Só Sei Que Nada Fará
         });
 
         NavigationView navigationView = findViewById(R.id.nav_view);
@@ -355,8 +352,10 @@ public class AlbumView extends AppCompatActivity
                 return false;
             }
         }
+        else {
+            android.util.Log.d("debug", "IT IS NOT A FILE!!");
+        }
 
-        System.out.println("IT IS NOT A FILE!!");
         return false;
 
     }
@@ -370,6 +369,19 @@ public class AlbumView extends AppCompatActivity
         String AlbumId = ((Peer2PhotoApp) (getApplication())).getAlbumId(value);
         String SessionId = ((Peer2PhotoApp) (getApplication())).getSessionId();
         String Username = ((Peer2PhotoApp) (getApplication())).getUsername();
+
+        File imageRoot = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), getString(R.string.app_directory_name) + "/" + value);
+
+        if(imageRoot.exists() && imageRoot.isDirectory()){
+            try{
+                File[] files = imageRoot.listFiles();
+                for(int i=0; i<files.length; i++) {
+                    imageScalingAndPosting(files[i].getPath());
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
 
         httpRequest(AlbumId, Username, SessionId);
 
