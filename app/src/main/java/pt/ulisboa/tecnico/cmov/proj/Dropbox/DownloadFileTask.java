@@ -11,10 +11,10 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-
-import pt.ulisboa.tecnico.cmov.proj.AlbumView;
+import java.util.Map;
 
 /**
  * Task to download a file from Dropbox and put it in the Downloads folder
@@ -63,27 +63,35 @@ public class DownloadFileTask extends AsyncTask<String, String, File> {
             String applicationPhotoDirectory = params[4];
 
             //The Array List that will have all the URLs for the slices
-            ArrayList<String> URLs = new ArrayList<>();
+            HashMap<String, String> URLs = new HashMap<>();
 
             for (int i = 0; i < users.length; i++) {
                 if (!users[i].equals(mUsername)) { //User will ignore its own slice
                     if (mapResponse.getString(users[i]) != null && mapResponse.getString(users[i]).trim().length() > 0) {
-                        URLs.add(mapResponse.getString(users[i]));
+                        URLs.put(users[i], mapResponse.getString(users[i]));
                     } else {
                         android.util.Log.d("debug","Null Slice");
                     }
                 }
             }
             //Toast.makeText(mContext, "Downloading photos from " + URLs.size() + " users", Toast.LENGTH_SHORT).show();
-            for (int i = 0; i < URLs.size(); i++){
+            String url;
+            String username;
+            Iterator iterator = URLs.entrySet().iterator();
+            Map.Entry pair;
+            while (iterator.hasNext()){
+                pair = (Map.Entry) iterator.next();
+                username = (String) pair.getKey();
+                url = (String) pair.getValue();
+
                 //Saving the obtained slice from the cloud in a file to later remove the file
-                FileUtils.copyURLToFile(new URL(URLs.get(i).replaceAll("\u003d", "=")), new File(applicationDirectory + "/" + albumName + "/" + users[i] + "_SLICE.txt"));
+                FileUtils.copyURLToFile(new URL(url.replaceAll("\u003d", "=")), new File(applicationDirectory + "/" + albumName + "/" + username + "_SLICE.txt"));
                 //The Recently Saved Slice
-                File Slice = new File(params[3] + "/" + albumName + "/" + users[i] + "_SLICE.txt");
+                File Slice = new File(params[3] + "/" + albumName + "/" + username + "_SLICE.txt");
 
                 if(Slice.exists()){
                     //The Local File That Contains the Paths of The Photos Downloaded in Local Storage
-                    File RemotePhotosPath = new File(params[3] + "/" + albumName + "/" + users[i] + "_REMOTE.txt");
+                    File RemotePhotosPath = new File(params[3] + "/" + albumName + "/" + username + "_REMOTE.txt");
 
                     if(!RemotePhotosPath.exists()){
                         RemotePhotosPath.createNewFile();
@@ -92,15 +100,15 @@ public class DownloadFileTask extends AsyncTask<String, String, File> {
                     List<String> contents = FileUtils.readLines(Slice);
 
                     //The Path For The Galery Directory of The App
-                    File imageRoot = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), applicationPhotoDirectory);
+                    File imageRoot = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), applicationPhotoDirectory + "/" + albumName);
 
                     for(int x = 0; x < contents.size(); x++){
                         //Downloading a photo and saving it to the galery inside the album created for the app with the Nomeclature USERNAME + _PHOTO + NUMBER_OF_PHOTO + EXTENSION
-                        FileUtils.copyURLToFile(new URL(contents.get(x)), new File(imageRoot, users[i] + "_PHOTO" + x + ".jpg"));
+                        FileUtils.copyURLToFile(new URL(contents.get(x)), new File(imageRoot, username + "_PHOTO" + x + ".jpg"));
                         //Saving the path of the downloaded photo to a file to load the images and later remove them
-                        FileUtils.writeStringToFile(RemotePhotosPath, new File(imageRoot, users[i] + "_PHOTO" + x + ".jpg").getPath());
+                        FileUtils.writeStringToFile(RemotePhotosPath, new File(imageRoot, username + "_PHOTO" + x + ".jpg").getPath());
 
-                        ((AlbumView) mContext).imageScalingAndPosting(new File(imageRoot, users[i] + "_PHOTO" + x + ".jpg").getPath());
+                        //((AlbumView) mContext).imageScalingAndPosting(new File(imageRoot, users[i] + "_PHOTO" + x + ".jpg").getPath());
 
                         //Toast.makeText(mContext, x + "/" + contents.size() + " photos obtained", Toast.LENGTH_SHORT).show();
                     }
