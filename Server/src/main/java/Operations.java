@@ -443,10 +443,13 @@ public class Operations {
         if(album!=null) {
             if(album.isUserInAlbum(requestUsername)) {
                 if(!album.isUserInAlbum(usernameToAdd)) {
-                    album.addUserToAlbum(usernameToAdd, null);
-                    getUserByUsername(usernameToAdd).addAlbumUserIsIn(album.getId());
-                    Operations.writeServerState();
-                    return "User successfully added to album";
+                    if(isUserCreated(usernameToAdd)) {
+                        album.addUserToAlbum(usernameToAdd, null);
+                        getUserByUsername(usernameToAdd).addAlbumUserIsIn(album.getId());
+                        Operations.writeServerState();
+                        return "User successfully added to album";
+                    }
+                    return "User not found";
                 }
                 return "User is already in the album";
             }
