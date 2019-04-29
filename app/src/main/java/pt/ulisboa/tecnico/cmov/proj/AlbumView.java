@@ -13,13 +13,16 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.Toast;
 
@@ -36,9 +39,11 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Random;
 
 import pt.ulisboa.tecnico.cmov.proj.Adapters.PhotoAdapter;
+import pt.ulisboa.tecnico.cmov.proj.Data.Album;
 import pt.ulisboa.tecnico.cmov.proj.Data.Peer2PhotoApp;
 import pt.ulisboa.tecnico.cmov.proj.Data.Photo;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.DownloadFileTask;
@@ -53,6 +58,7 @@ public class AlbumView extends AppCompatActivity
 
     public String URL_BASE;
     public String URL_ALBUM;
+    public String URL_ADD_USER_TO_ALBUM;
 
     Context ctx = this;
     private RequestQueue queue = null;
@@ -68,6 +74,7 @@ public class AlbumView extends AppCompatActivity
 
         URL_BASE = getString(R.string.serverIP);
         URL_ALBUM = URL_BASE + "/album";
+        URL_ADD_USER_TO_ALBUM = "/adduser";
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -224,11 +231,33 @@ public class AlbumView extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.add_user) {
-            Intent intent = new Intent(AlbumView.this, FindUsers.class);
-            startActivityForResult(intent, 0);
-            finish();
-            //TODO: Receive user response
-            return true;
+            AlertDialog.Builder builder = new AlertDialog.Builder(AlbumView.this);
+            builder.setTitle("Username To Add");
+
+            final EditText input = new EditText(AlbumView.this);
+            input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL);
+            builder.setView(input);
+
+            // Set up the buttons
+            builder.setPositiveButton("OK", (dialog, which) -> {
+                String usernameToAdd = input.getText().toString();
+                String sessionId = ((Peer2PhotoApp) getApplication()).getSessionId();
+                String username = ((Peer2PhotoApp) getApplication()).getUsername();
+
+                Bundle b = getIntent().getExtras();
+                String value = "ERROR"; // or other values
+                if(b != null)
+                    value = b.getString("AlbumName");
+
+                String albumId = ((Peer2PhotoApp) getApplication()).getAlbumId(value);
+
+                httpRequestForUserAddition(albumId, username, sessionId, usernameToAdd);
+
+            });
+
+            builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+            builder.show();
         }
         else if (id == R.id.add_photo) {
             //TODO: Adicionar
@@ -236,6 +265,47 @@ public class AlbumView extends AppCompatActivity
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void httpRequestForUserAddition(String albumId, String username, String sessionId, String usernameToAdd){
+        android.util.Log.d("debug", "Starting POST request to URL " + URL_ADD_USER_TO_ALBUM);
+        createHTTPQueue();
+        HashMap<String, String> mapRequest = new HashMap<>();
+        mapRequest.put("username", username);
+        mapRequest.put("sessionId", sessionId);
+        mapRequest.put("albumId", albumId);
+        mapRequest.put("usernameToAdd", usernameToAdd);
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.PUT, URL_ADD_USER_TO_ALBUM, new JSONObject(mapRequest),
+                httpResponse -> {
+                    try {
+                        setHTTPResponse(httpResponse);
+                        android.util.Log.d("debug", httpResponse.toString());
+                        if(httpResponse.has("error")) {
+                            error = httpResponse.getString("error");
+                            android.util.Log.d("debug", "Error");
+                            android.util.Log.d("debug", error);
+                            Toast.makeText(ctx, error, Toast.LENGTH_SHORT).show();
+                        }
+                        else if(httpResponse.has("success")) {
+                            success = httpResponse.getString("success");
+                            android.util.Log.d("debug", "Success");
+                            android.util.Log.d("debug", success);
+                            Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
+                        }
+                        else {
+                            Toast.makeText(ctx, "No adequate response received", Toast.LENGTH_SHORT).show();
+                            throw new Exception("No adequate response received", new Exception());
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    cleanHTTPResponse();
+                }, error -> {
+            cleanHTTPResponse();
+            android.util.Log.d("debug", "POST error");
+        }
+        );
+        queue.add(request);
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
