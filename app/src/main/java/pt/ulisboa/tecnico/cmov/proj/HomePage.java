@@ -350,7 +350,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         try{
             for(int i = 0; i < albumIds.length; i++){
                 String albumName = httpResponse.getString(albumIds[i]);
-                if(((Peer2PhotoApp)getApplication()).getAlbumId(albumName) == null) {
+                if(((Peer2PhotoApp)getApplication()).getAlbumId(albumName) == null && !(new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName).exists())) {
                     createAlbumInCloud(albumName, albumIds[i]);
                     addNewAlbum(albumName);
                     android.util.Log.d("debug", "User has been added to album of other user and its name does not exist in user's albums");
