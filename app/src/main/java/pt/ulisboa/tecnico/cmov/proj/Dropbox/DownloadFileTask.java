@@ -55,6 +55,7 @@ public class DownloadFileTask extends AsyncTask<String, String, File> {
         //###############################ATENCAO###############################################
 
         try {
+            android.util.Log.d("debug", "Starting Async Task: Download File Task");
             String[] users = params[0].split(",");
             String mUsername = params[1];
             JSONObject mapResponse = new JSONObject(params[2]);
