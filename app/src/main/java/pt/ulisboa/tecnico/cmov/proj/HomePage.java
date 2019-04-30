@@ -262,6 +262,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
                 while (new File(getApplicationContext().getFilesDir().getPath() + "/" + input.getText().toString()).exists()){
                     Toast.makeText(ctx, "An Album With The Name " + input.getText().toString() + " Already Exists!", Toast.LENGTH_SHORT).show();
                     builder.setView(input);
+                    builder.show();
                 }
             }
 
@@ -344,24 +345,35 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
     }
 
     private void parseAlbumNames(String[] albumIds, JSONObject httpResponse) {
-        // 3 cases - User was not added to third party albums;
+        // 3\\ cases - User was not added to third party albums;
         // User was added to album with same name as another album user already has;
         // User was added to album with a name different of all user's albums
         try{
             for(int i = 0; i < albumIds.length; i++){
                 String albumName = httpResponse.getString(albumIds[i]);
-                if(((Peer2PhotoApp)getApplication()).getAlbumId(albumName) == null && !(new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName).exists())) {
-                    createAlbumInCloud(albumName, albumIds[i]);
-                    addNewAlbum(albumName);
-                    android.util.Log.d("debug", "User has been added to album of other user and its name does not exist in user's albums");
-                }
-                else if(!((Peer2PhotoApp)getApplication()).getAlbumId(albumName).equals(albumIds[i])){
-                    String newName = albumName + "_" + albumIds[i];
-                    createAlbumInCloud(newName, albumIds[i]);
-                    addNewAlbum(newName);
-                    android.util.Log.d("debug", "User has been added to album of other user with name equal to one of user's albums");
+                if(((Peer2PhotoApp)getApplication()).getAlbumId(albumName) == null){
+                    if(!(new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName).exists())) {
+                        createAlbumInCloud(albumName, albumIds[i]);
+                        addNewAlbum(albumName);
+                        android.util.Log.d("debug", "User has been added to album of other user and its name does not exist in user's albums");
+                    }
+                    else{
+                        File fileToDelete = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName);
+                        if(fileToDelete.delete()){
+                            createAlbumInCloud(albumName, albumIds[i]);
+                            addNewAlbum(albumName);
+                            android.util.Log.d("debug", "User has been added to album of other user and its name does not exist in user's albums");
+                        }
+                    }
                 }else{
-                    android.util.Log.d("debug", "User either created this album or has already set slice in it");
+                    if(!((Peer2PhotoApp)getApplication()).getAlbumId(albumName).equals(albumIds[i])){
+                        String newName = albumName + "_" + albumIds[i];
+                        createAlbumInCloud(newName, albumIds[i]);
+                        addNewAlbum(newName);
+                        android.util.Log.d("debug", "User has been added to album of other user with name equal to one of user's albums");
+                    }else{
+                        //TODO: Prever Caso em que ja existe associacao os ids sao iguais mas por acaso o user eliminou o ficheiro local
+                    }
                 }
             }
         }catch (Exception e){

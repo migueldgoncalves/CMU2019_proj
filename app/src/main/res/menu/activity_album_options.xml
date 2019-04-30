@@ -4,9 +4,14 @@
     android:layout_height="match_parent">
 
     <item android:id="@+id/add_photo"
-        android:title="Add Photo"></item>
+        android:title="Add Photo">
+
+    </item>
 
     <item android:id="@+id/add_user"
-        android:title="Add User"></item>
+        android:title="Add User"
+        android:titleCondensed="Add User">
+
+    </item>
 
 </menu>

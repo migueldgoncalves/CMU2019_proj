@@ -42,7 +42,6 @@ import java.util.HashMap;
 import java.util.Random;
 
 import pt.ulisboa.tecnico.cmov.proj.Adapters.PhotoAdapter;
-import pt.ulisboa.tecnico.cmov.proj.Data.Album;
 import pt.ulisboa.tecnico.cmov.proj.Data.Peer2PhotoApp;
 import pt.ulisboa.tecnico.cmov.proj.Data.Photo;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.DownloadFileTask;
@@ -73,7 +72,7 @@ public class AlbumView extends AppCompatActivity
 
         URL_BASE = getString(R.string.serverIP);
         URL_ALBUM = URL_BASE + "/album";
-        URL_ADD_USER_TO_ALBUM = "/adduser";
+        URL_ADD_USER_TO_ALBUM = URL_BASE + "/adduser";
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -225,9 +224,10 @@ public class AlbumView extends AppCompatActivity
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
+        String option = (String) item.getTitleCondensed();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.add_user) {
+        if (option.equals("Add User")) {
             AlertDialog.Builder builder = new AlertDialog.Builder(AlbumView.this);
             builder.setTitle("Username To Add");
 
