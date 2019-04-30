@@ -35,7 +35,6 @@ import org.json.JSONObject;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 
 import pt.ulisboa.tecnico.cmov.proj.Adapters.AlbumAdapter;
 import pt.ulisboa.tecnico.cmov.proj.Data.Album;
@@ -43,6 +42,7 @@ import pt.ulisboa.tecnico.cmov.proj.Data.Peer2PhotoApp;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.DropboxActivity;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.DropboxClientFactory;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.UploadFileTask;
+import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequestPost;
 
 public class HomePage extends DropboxActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -70,7 +70,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         setContentView(R.layout.activity_home_page);
 
         URL_BASE = getString(R.string.serverIP);
-        URL_CREATE_ALBUM = URL_BASE + "/createalbum";
+        URL_CREATE_ALBUM = "/createalbum";
         URL_LOAD_ALBUMS = URL_BASE + "/useralbums";
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -239,7 +239,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
 
     }
 
-    private void addNewAlbum(String albumName) {
+    public void addNewAlbum(String albumName) {
         albums.add(new Album(albumName, R.drawable.empty_thumbnail));
         albumAdapter.notifyDataSetChanged();
     }
@@ -266,7 +266,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
                 }
             }
 
-            httpRequestCreateAlbum(albumName, username, sessionId);
+            new HttpRequestPost(this).httpRequest(URL_BASE, URL_CREATE_ALBUM, albumName, username, sessionId);
 
         });
 
@@ -275,7 +275,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         builder.show();
     }
 
-    private void createAlbumInCloud(String albumName, String albumId){
+    public void createAlbumInCloud(String albumName, String albumId){
         new UploadFileTask(HomePage.this, DropboxClientFactory.getClient(), new UploadFileTask.Callback(){
 
             @Override
@@ -382,7 +382,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
 
     }
 
-    private void httpRequestCreateAlbum(String albumName, String username, String sessionId) {
+/*    private void httpRequestCreateAlbum(String albumName, String username, String sessionId) {
         android.util.Log.d("debug", "Starting POST request to URL " + URL_CREATE_ALBUM);
         createHTTPQueue();
         HashMap<String, String> mapRequest = new HashMap<>();
@@ -424,7 +424,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         }
         );
         queue.add(request);
-    }
+    }*/
 
     private void setHTTPResponse(JSONObject json) {
         this.httpResponse = json;
