@@ -54,11 +54,9 @@ public class ServiceLogOutTest {
             Session session = new Session("username", Operations.SESSION_DURATION);
             operations.addSession(session);
 
-            HashMap<String, String> mapRequest = new HashMap<>();
-            mapRequest.put("sessionId", String.valueOf(session.getSessionId()));
+            String sessionId = String.valueOf(session.getSessionId());
 
-            RequestBody body = RequestBody.create(JSON, new Gson().toJson(mapRequest));
-            Request request = new Request.Builder().url(URL_LOGOUT).delete(body).build();
+            Request request = new Request.Builder().url(URL_LOGOUT + "/" + sessionId).delete().build();
             Response response = client.newCall(request).execute();
 
             Assert.assertEquals(OK, response.code());
@@ -82,11 +80,7 @@ public class ServiceLogOutTest {
             Session session = new Session("username", Operations.SESSION_DURATION);
             operations.addSession(session);
 
-            HashMap<String, String> mapRequest = new HashMap<>();
-            mapRequest.put("sessionId", "1");
-
-            RequestBody body = RequestBody.create(JSON, new Gson().toJson(mapRequest));
-            Request request = new Request.Builder().url(URL_LOGOUT).delete(body).build();
+            Request request = new Request.Builder().url(URL_LOGOUT + "/1").delete().build();
             Response response = client.newCall(request).execute();
 
             Assert.assertEquals(OK, response.code());

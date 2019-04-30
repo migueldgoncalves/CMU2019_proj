@@ -134,9 +134,8 @@ public class JavalinApp {
             ctx.status(201);
         });
 
-        app.delete("/logout", ctx -> {
-            HashMap<String, String> mapRequest = ctx.bodyAsClass(HashMap.class);
-            HashMap<String, String> mapResponse = operations.logOut(Integer.valueOf(mapRequest.get("sessionId")));
+        app.delete("/logout/:session-id", ctx -> {
+            HashMap<String, String> mapResponse = operations.logOut(Integer.valueOf(ctx.pathParam("session-id")));
             System.out.println("HTTP success: " + mapResponse.get("success"));
             System.out.println("HTTP error: " + mapResponse.get("error"));
             ctx.json(mapResponse);

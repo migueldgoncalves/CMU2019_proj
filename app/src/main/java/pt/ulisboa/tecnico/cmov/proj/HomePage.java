@@ -53,6 +53,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
     public String URL_BASE;
     public String URL_CREATE_ALBUM;
     public String URL_LOAD_ALBUMS;
+    public String URL_SIGNOUT;
 
     Context ctx = this;
     private RequestQueue queue = null;
@@ -72,6 +73,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         URL_BASE = getString(R.string.serverIP);
         URL_CREATE_ALBUM = URL_BASE + "/createalbum";
         URL_LOAD_ALBUMS = URL_BASE + "/useralbums";
+        URL_SIGNOUT = URL_BASE + "/logout";
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -207,7 +209,8 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
             }
 
         } else if (id == R.id.nav_signOut) {
-            startActivity(new Intent(HomePage.this, MainActivity.class));
+            String sessionId = ((Peer2PhotoApp) this.getApplication()).getSessionId();
+            httpRequestSignOut(sessionId);
         } else if (id == R.id.nav_settings){
 
         }
@@ -409,6 +412,44 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
                 }, error -> {
             cleanHTTPResponse();
             android.util.Log.d("debug", "POST error");
+        }
+        );
+        queue.add(request);
+    }
+
+    private void httpRequestSignOut(String sessionId) {
+        android.util.Log.d("debug", "Starting DELETE request to URL " + URL_SIGNOUT + "/" + sessionId);
+        createHTTPQueue();
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.DELETE, URL_SIGNOUT + "/" + sessionId, null,
+                httpResponse -> {
+                    try {
+                        setHTTPResponse(httpResponse);
+                        android.util.Log.d("debug", httpResponse.toString());
+                        if(httpResponse.has("error")) {
+                            error = httpResponse.getString("error");
+                            android.util.Log.d("debug", "Error");
+                            android.util.Log.d("debug", error);
+                            Toast.makeText(ctx, error, Toast.LENGTH_SHORT).show();
+                        }
+                        else if(httpResponse.has("success")) {
+                            success = httpResponse.getString("success");
+                            android.util.Log.d("debug", "Success");
+                            android.util.Log.d("debug", success);
+                            Toast.makeText(ctx, "Sign out successful", Toast.LENGTH_SHORT).show();
+
+                            startActivity(new Intent(HomePage.this, MainActivity.class));
+                        }
+                        else {
+                            Toast.makeText(ctx, "No adequate response received", Toast.LENGTH_SHORT).show();
+                            throw new Exception("No adequate response received", new Exception());
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    cleanHTTPResponse();
+                }, error -> {
+            cleanHTTPResponse();
+            android.util.Log.d("debug", "DELETE error");
         }
         );
         queue.add(request);
