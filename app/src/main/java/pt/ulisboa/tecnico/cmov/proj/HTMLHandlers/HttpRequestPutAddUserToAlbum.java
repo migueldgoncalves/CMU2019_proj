@@ -11,6 +11,8 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 
+import pt.ulisboa.tecnico.cmov.proj.AlbumView;
+
 public class HttpRequestPutAddUserToAlbum extends HttpRequest {
 
     public HttpRequestPutAddUserToAlbum(Context context) {
@@ -35,12 +37,14 @@ public class HttpRequestPutAddUserToAlbum extends HttpRequest {
                             android.util.Log.d("debug", "Error");
                             android.util.Log.d("debug", error);
                             Toast.makeText(ctx, error, Toast.LENGTH_SHORT).show();
+                            ((AlbumView)ctx).updateApplicationLogs(error, "Add User To Album");
                         }
                         else if(httpResponse.has("success")) {
                             success = httpResponse.getString("success");
                             android.util.Log.d("debug", "Success");
                             android.util.Log.d("debug", success);
                             Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
+                            ((AlbumView)ctx).updateApplicationLogs(success, "Add User To Album");
                         }
                         else {
                             Toast.makeText(ctx, "No adequate response received", Toast.LENGTH_SHORT).show();

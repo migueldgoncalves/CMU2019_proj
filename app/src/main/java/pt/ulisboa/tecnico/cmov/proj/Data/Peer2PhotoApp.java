@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.cmov.proj.Data;
 
 import android.app.Application;
+import android.support.annotation.NonNull;
 
 import com.google.gson.Gson;
 
@@ -8,19 +9,22 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Peer2PhotoApp extends Application {
 
-    public static enum MODE {
-        CLOUD, DIRECT
-    }
+    private ArrayList<String> logs = new ArrayList<>();
 
     private String username;
     private String password;
     private String sessionId;
     private String mode;
     private HashMap<String, String> albums = new HashMap<>();
+
+    public void updateLog(@NonNull String log){
+        logs.add(log);
+    }
 
     public String getUsername() {
         return username;
@@ -117,6 +121,10 @@ public class Peer2PhotoApp extends Application {
             e.printStackTrace();
             android.util.Log.d("debug", "Could not set albums file");
         }
+    }
+
+    public enum MODE {
+        CLOUD, DIRECT
     }
 
 }

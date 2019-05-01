@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -31,6 +32,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Random;
 
 import pt.ulisboa.tecnico.cmov.proj.Adapters.PhotoAdapter;
@@ -42,10 +44,9 @@ import pt.ulisboa.tecnico.cmov.proj.Dropbox.UploadFileTask;
 import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequestGetAlbumPhotos;
 import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequestPutAddUserToAlbum;
 
-public class AlbumView extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+public class AlbumView extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-    private static ArrayList<Photo> photos = new ArrayList<Photo>();
+    private static ArrayList<Photo> photos = new ArrayList<>();
     private static ArrayAdapter<Photo> photoAdapter = null;
 
     public String URL_BASE;
@@ -121,6 +122,7 @@ public class AlbumView extends AppCompatActivity
     private void addNewPhoto(Bitmap photoBitmap) {
         photos.add(new Photo(photoBitmap));
         photoAdapter.notifyDataSetChanged();
+        updateApplicationLogs("Photo Successfully Added to Album", "Add Photo To Album");
     }
 
     @Override
@@ -344,6 +346,15 @@ public class AlbumView extends AppCompatActivity
 
             }
         }).execute(usersString, ((Peer2PhotoApp)getApplication()).getUsername(), mapResponse.toString(), getApplicationContext().getFilesDir().getPath(), getString(R.string.app_directory_name));
+
+    }
+
+    public void updateApplicationLogs(@NonNull String operationResult, @NonNull String operation){
+        String Operation = "OPERATION: " + operation + "\n";
+        String timeStamp = "TIMESTAMP: " + new Date().toString() + "\n";
+        String result = "RESULT: " + operationResult + "\n";
+
+        ((Peer2PhotoApp)getApplication()).updateLog(Operation + timeStamp + result);
 
     }
 

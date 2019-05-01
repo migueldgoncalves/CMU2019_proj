@@ -29,6 +29,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Date;
 
 import pt.ulisboa.tecnico.cmov.proj.Adapters.AlbumAdapter;
 import pt.ulisboa.tecnico.cmov.proj.Data.Album;
@@ -186,6 +187,8 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
             startActivity(new Intent(HomePage.this, HomePage.class));
         } else if (id == R.id.nav_createAlbum) {
             createAlbumByUser();
+        }else if (id == R.id.nav_findUsers){
+            startActivity(new Intent(HomePage.this, FindUsers.class));
         } else if (id == R.id.nav_logs) {
             startActivity(new Intent(HomePage.this, LogView.class));
         } else if (id == R.id.nav_dropbox) {
@@ -294,6 +297,8 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
             }
         }
 
+        updateApplicationLogs("List User Albums", "Local Albums Loaded Successfully");
+
         new HttpRequestGetUserAlbums(this);
         HttpRequestGetUserAlbums.httpRequest(((Peer2PhotoApp)getApplication()).getUsername(), ((Peer2PhotoApp)getApplication()).getSessionId(), URL_LOAD_ALBUMS);
     }
@@ -333,6 +338,15 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         }catch (Exception e){
             e.printStackTrace();
         }
+
+    }
+
+    public void updateApplicationLogs(@NonNull String operation, @NonNull String operationResult){
+        String Operation = "OPERATION: " + operation + "\n";
+        String timeStamp = "TIMESTAMP: " + new Date().toString() + "\n";
+        String result = "RESULT: " + operationResult + "\n";
+
+        ((Peer2PhotoApp)getApplication()).updateLog(Operation + timeStamp + result);
 
     }
 

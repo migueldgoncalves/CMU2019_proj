@@ -8,6 +8,7 @@ import android.widget.Toast;
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
 
+import pt.ulisboa.tecnico.cmov.proj.HomePage;
 import pt.ulisboa.tecnico.cmov.proj.MainActivity;
 
 public class HttpRequestDeleteSession extends HttpRequest {
@@ -29,13 +30,14 @@ public class HttpRequestDeleteSession extends HttpRequest {
                             android.util.Log.d("debug", "Error");
                             android.util.Log.d("debug", error);
                             Toast.makeText(ctx, error, Toast.LENGTH_SHORT).show();
+                            ((HomePage) ctx).updateApplicationLogs("Sign Out", error);
                         }
                         else if(httpResponse.has("success")) {
                             success = httpResponse.getString("success");
                             android.util.Log.d("debug", "Success");
                             android.util.Log.d("debug", success);
                             Toast.makeText(ctx, "Sign out successful", Toast.LENGTH_SHORT).show();
-
+                            ((HomePage) ctx).updateApplicationLogs("Sign Out", success);
                             ctx.startActivity(new Intent(ctx, MainActivity.class));
                         }
                         else {

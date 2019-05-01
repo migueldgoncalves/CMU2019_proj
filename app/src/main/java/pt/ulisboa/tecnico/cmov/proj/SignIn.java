@@ -3,11 +3,13 @@ package pt.ulisboa.tecnico.cmov.proj;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Button;
 import android.widget.EditText;
 
 import java.io.File;
+import java.util.Date;
 
 import pt.ulisboa.tecnico.cmov.proj.Data.Peer2PhotoApp;
 import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequestPutSignIn;
@@ -64,6 +66,15 @@ public class SignIn extends AppCompatActivity {
 
         Intent intent = new Intent(this, ModeChoosing.class);
         startActivity(intent);
+
+    }
+
+    public void updateApplicationLogs(@NonNull String operationResult){
+        String Operation = "OPERATION: Sign In" + "\n";
+        String timeStamp = "TIMESTAMP: " + new Date().toString() + "\n";
+        String result = "RESULT: " + operationResult + "\n";
+
+        ((Peer2PhotoApp)getApplication()).updateLog(Operation + timeStamp + result);
 
     }
 

@@ -28,13 +28,15 @@ public class HttpRequestGetUserAlbums extends HttpRequest {
                             android.util.Log.d("debug", "Error");
                             android.util.Log.d("debug", error);
                             Toast.makeText(ctx, error, Toast.LENGTH_SHORT).show();
+                            ((HomePage)ctx).updateApplicationLogs("List User Albums", error);
+
                         }
                         else if(httpResponse.has("success")) {
                             success = httpResponse.getString("success");
                             android.util.Log.d("debug", "Success");
                             android.util.Log.d("debug", success);
                             Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
-
+                            ((HomePage)ctx).updateApplicationLogs("List User Albums", success);
                             if(!httpResponse.getString("size").equals("0")){
                                 String[] albumIds = httpResponse.getString("albums").split(",");
                                 ((HomePage)ctx).parseAlbumNames(albumIds, httpResponse);

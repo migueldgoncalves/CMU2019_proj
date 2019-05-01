@@ -28,13 +28,14 @@ public class HttpRequestGetAlbumPhotos extends HttpRequest {
                             android.util.Log.d("debug", "Error");
                             android.util.Log.d("debug", error);
                             Toast.makeText(ctx, error, Toast.LENGTH_SHORT).show();
+                            ((AlbumView)ctx).updateApplicationLogs(error, "View Album");
                         }
                         else if(httpResponse.has("success")) {
                             success = httpResponse.getString("success");
                             android.util.Log.d("debug", "Success");
                             android.util.Log.d("debug", success);
                             Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
-
+                            ((AlbumView)ctx).updateApplicationLogs(success, "View Album");
                             ((AlbumView)ctx).urlParser(httpResponse.getString("users"), httpResponse);
 
                         }
