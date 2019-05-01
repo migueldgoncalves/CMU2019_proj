@@ -2,12 +2,7 @@ package pt.ulisboa.tecnico.cmov.proj.Dropbox;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.widget.Toast;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.dropbox.core.DbxException;
 import com.dropbox.core.v2.DbxClientV2;
 import com.dropbox.core.v2.files.FileMetadata;
@@ -15,18 +10,13 @@ import com.dropbox.core.v2.files.WriteMode;
 import com.dropbox.core.v2.sharing.CreateSharedLinkWithSettingsErrorException;
 import com.dropbox.core.v2.sharing.SharedLinkMetadata;
 
-import org.json.JSONObject;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
-import java.util.HashMap;
 
-import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequest;
 import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequestPutSetUrl;
 import pt.ulisboa.tecnico.cmov.proj.R;
 
@@ -124,7 +114,7 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
                 System.out.println(sharedLinkMetadata.getUrl());
 
                 new HttpRequestPutSetUrl(mContext);
-                HttpRequestPutSetUrl.httpRequest(params[3], params[4], sharedLinkMetadata.getUrl().replaceAll("dl=0", "dl=1"), params[5], mContext);
+                HttpRequestPutSetUrl.httpRequest(params[3], params[4], sharedLinkMetadata.getUrl().replaceAll("dl=0", "dl=1"), params[5], mContext, URL_SETURL);
 
                 return result;
 

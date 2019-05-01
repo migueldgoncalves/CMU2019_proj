@@ -17,13 +17,13 @@ public class HttpRequestPutSetUrl extends HttpRequest {
         super(context);
     }
 
-    public static void httpRequest(@NonNull String sessionId,@NonNull String username,@NonNull String url,@NonNull String albumId, @NonNull Context mContext){
+    public static void httpRequest(@NonNull String sessionId,@NonNull String username,@NonNull String Sliceurl,@NonNull String albumId, @NonNull Context mContext, @NonNull String url){
         android.util.Log.d("debug", "Starting PUT request to URL " + url);
         createHTTPQueue();
         HashMap<String, String> mapRequest = new HashMap<>();
         mapRequest.put("sessionId", sessionId);
         mapRequest.put("username", username);
-        mapRequest.put("URL", url);
+        mapRequest.put("URL", Sliceurl);
         mapRequest.put("albumId", albumId);
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.PUT, url, new JSONObject(mapRequest),
                 httpResponse -> {

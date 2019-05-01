@@ -23,10 +23,7 @@ import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.dropbox.core.android.Auth;
 import com.dropbox.core.v2.files.FileMetadata;
 
@@ -34,7 +31,6 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Date;
 
 import pt.ulisboa.tecnico.cmov.proj.Adapters.AlbumAdapter;
 import pt.ulisboa.tecnico.cmov.proj.Data.Album;
@@ -42,7 +38,7 @@ import pt.ulisboa.tecnico.cmov.proj.Data.Peer2PhotoApp;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.DropboxActivity;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.DropboxClientFactory;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.UploadFileTask;
-import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequest;
+import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequestDeleteSession;
 import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequestGetUserAlbums;
 import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequestPostCreateAlbum;
 
@@ -212,7 +208,8 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
 
         } else if (id == R.id.nav_signOut) {
             String sessionId = ((Peer2PhotoApp) this.getApplication()).getSessionId();
-            httpRequestSignOut(sessionId);
+            new HttpRequestDeleteSession(this);
+            HttpRequestDeleteSession.httpRequest(sessionId, URL_SIGNOUT);
         } else if (id == R.id.nav_settings){
 
         }
@@ -449,59 +446,59 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         queue.add(request);
     }*/
 
-    private void httpRequestSignOut(String sessionId) {
-        android.util.Log.d("debug", "Starting DELETE request to URL " + URL_SIGNOUT + "/" + sessionId);
-        createHTTPQueue();
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.DELETE, URL_SIGNOUT + "/" + sessionId, null,
-                httpResponse -> {
-                    try {
-                        setHTTPResponse(httpResponse);
-                        android.util.Log.d("debug", httpResponse.toString());
-                        if(httpResponse.has("error")) {
-                            error = httpResponse.getString("error");
-                            android.util.Log.d("debug", "Error");
-                            android.util.Log.d("debug", error);
-                            Toast.makeText(ctx, error, Toast.LENGTH_SHORT).show();
-                        }
-                        else if(httpResponse.has("success")) {
-                            success = httpResponse.getString("success");
-                            android.util.Log.d("debug", "Success");
-                            android.util.Log.d("debug", success);
-                            Toast.makeText(ctx, "Sign out successful", Toast.LENGTH_SHORT).show();
+//    private void httpRequestSignOut(String sessionId) {
+//        android.util.Log.d("debug", "Starting DELETE request to URL " + URL_SIGNOUT + "/" + sessionId);
+//        createHTTPQueue();
+//        JsonObjectRequest request = new JsonObjectRequest(Request.Method.DELETE, URL_SIGNOUT + "/" + sessionId, null,
+//                httpResponse -> {
+//                    try {
+//                        setHTTPResponse(httpResponse);
+//                        android.util.Log.d("debug", httpResponse.toString());
+//                        if(httpResponse.has("error")) {
+//                            error = httpResponse.getString("error");
+//                            android.util.Log.d("debug", "Error");
+//                            android.util.Log.d("debug", error);
+//                            Toast.makeText(ctx, error, Toast.LENGTH_SHORT).show();
+//                        }
+//                        else if(httpResponse.has("success")) {
+//                            success = httpResponse.getString("success");
+//                            android.util.Log.d("debug", "Success");
+//                            android.util.Log.d("debug", success);
+//                            Toast.makeText(ctx, "Sign out successful", Toast.LENGTH_SHORT).show();
+//
+//                            startActivity(new Intent(HomePage.this, MainActivity.class));
+//                        }
+//                        else {
+//                            Toast.makeText(ctx, "No adequate response received", Toast.LENGTH_SHORT).show();
+//                            throw new Exception("No adequate response received", new Exception());
+//                        }
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    }
+//                    cleanHTTPResponse();
+//                }, error -> {
+//            cleanHTTPResponse();
+//            android.util.Log.d("debug", "DELETE error");
+//        }
+//        );
+//        queue.add(request);
+//    }
 
-                            startActivity(new Intent(HomePage.this, MainActivity.class));
-                        }
-                        else {
-                            Toast.makeText(ctx, "No adequate response received", Toast.LENGTH_SHORT).show();
-                            throw new Exception("No adequate response received", new Exception());
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    cleanHTTPResponse();
-                }, error -> {
-            cleanHTTPResponse();
-            android.util.Log.d("debug", "DELETE error");
-        }
-        );
-        queue.add(request);
-    }
-
-    private void setHTTPResponse(JSONObject json) {
-        this.httpResponse = json;
-    }
-
-    private void cleanHTTPResponse() {
-        success = null;
-        error = null;
-        this.httpResponse = null;
-        android.util.Log.d("debug", "Cleaned " + new Date().getTime());
-    }
-
-    private void createHTTPQueue() {
-        if(this.queue == null) {
-            this.queue = Volley.newRequestQueue(ctx);
-        }
-    }
+//    private void setHTTPResponse(JSONObject json) {
+//        this.httpResponse = json;
+//    }
+//
+//    private void cleanHTTPResponse() {
+//        success = null;
+//        error = null;
+//        this.httpResponse = null;
+//        android.util.Log.d("debug", "Cleaned " + new Date().getTime());
+//    }
+//
+//    private void createHTTPQueue() {
+//        if(this.queue == null) {
+//            this.queue = Volley.newRequestQueue(ctx);
+//        }
+//    }
 
 }
