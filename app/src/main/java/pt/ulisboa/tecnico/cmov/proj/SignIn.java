@@ -58,7 +58,11 @@ public class SignIn extends AppCompatActivity {
             String rootPhotoDirectoryPath = getString(R.string.app_directory_name);
             File rootPhotoDirectory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), rootPhotoDirectoryPath);
             if (!rootPhotoDirectory.exists() || !rootPhotoDirectory.isDirectory()) {
-                rootPhotoDirectory.mkdir();
+                if (rootPhotoDirectory.mkdir()) {
+                    System.out.println("Directory Created Successfully");
+                } else {
+                    throw new Exception("Failed to Create Photos Directory");
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -134,9 +134,10 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
             Uri selectedImage = data.getData();
             String[] filePathColumn = {MediaStore.Images.Media.DATA};
 
+            assert selectedImage != null;
             Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
+            assert cursor != null;
             cursor.moveToFirst();
-
             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
             String filePath = cursor.getString(columnIndex);
             cursor.close();
@@ -252,7 +253,7 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
@@ -275,7 +276,7 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
         return true;
     }
 
-    private boolean loadLocalPhotos(){
+    private void loadLocalPhotos(){
 
         Bundle b = getIntent().getExtras();
         String value = "ERROR"; // or other values
@@ -291,17 +292,13 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
                 while ((line = br.readLine()) != null) {
                     imageScalingAndPosting(line);
                 }
-                return true;
             }catch (Exception e){
                 e.printStackTrace();
-                return false;
             }
         }
         else {
             android.util.Log.d("debug", "IT IS NOT A FILE!!");
         }
-
-        return false;
 
     }
 
@@ -320,8 +317,8 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
         if(imageRoot.exists() && imageRoot.isDirectory()){
             try{
                 File[] files = imageRoot.listFiles();
-                for(int i=0; i<files.length; i++) {
-                    imageScalingAndPosting(files[i].getPath());
+                for (File file : files) {
+                    imageScalingAndPosting(file.getPath());
                 }
             }catch (Exception e){
                 e.printStackTrace();

@@ -31,9 +31,8 @@ import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequestGetAllUsers;
 public class FindUsers extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private static ArrayList<User> users = new ArrayList<>();
+    //TODO: Gonaçalo vê se não podes converter este arrayadapter para uma variavel local como o InteliJ esta a recomendar
     private static ArrayAdapter<User> userAdapter = null;
-    private String URL_BASE;
-    private String URL_GET_ALL_USERS;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,8 +52,8 @@ public class FindUsers extends AppCompatActivity implements NavigationView.OnNav
 
         users.clear();
 
-        URL_BASE = getString(R.string.serverIP);
-        URL_GET_ALL_USERS = URL_BASE + "/users";
+        String URL_BASE = getString(R.string.serverIP);
+        String URL_GET_ALL_USERS = URL_BASE + "/users";
 
 
         String sessionId = ((Peer2PhotoApp)getApplication()).getSessionId();
@@ -95,7 +94,7 @@ public class FindUsers extends AppCompatActivity implements NavigationView.OnNav
     }
 
     protected void sendServerRequest(String userName) {
-
+        //TODO: Gonçalo este metodo ainda e necessario ?
     }
 
     @Override
@@ -132,7 +131,7 @@ public class FindUsers extends AppCompatActivity implements NavigationView.OnNav
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
