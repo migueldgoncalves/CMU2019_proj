@@ -1,7 +1,6 @@
 package pt.ulisboa.tecnico.cmov.proj;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -23,7 +22,6 @@ import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.RequestQueue;
 import com.dropbox.core.android.Auth;
 import com.dropbox.core.v2.files.FileMetadata;
 
@@ -53,15 +51,8 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
     public String URL_LOAD_ALBUMS;
     public String URL_SIGNOUT;
 
-    Context ctx = this;
-    private RequestQueue queue = null;
-    private JSONObject httpResponse = null;
-
     private static ArrayList<Album> albums = new ArrayList<>();
     private static ArrayAdapter<Album> albumAdapter = null;
-
-    String success;
-    String error;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -262,7 +253,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
 
             if(new File(getApplicationContext().getFilesDir().getPath() + "/" + input.getText().toString()).exists()){
                 while (new File(getApplicationContext().getFilesDir().getPath() + "/" + input.getText().toString()).exists()){
-                    Toast.makeText(ctx, "An Album With The Name " + input.getText().toString() + " Already Exists!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "An Album With The Name " + input.getText().toString() + " Already Exists!", Toast.LENGTH_SHORT).show();
                     builder.setView(input);
                     builder.show();
                 }
@@ -283,7 +274,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
 
             @Override
             public void onUploadComplete(FileMetadata result) {
-                Toast.makeText(ctx, "Upload Complete!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(HomePage.this, "Upload Complete!", Toast.LENGTH_SHORT).show();
                 ((Peer2PhotoApp) getApplication()).addAlbum(albumId, albumName, getApplicationContext().getFilesDir().getPath() + "/albums.txt");
             }
 
@@ -306,47 +297,6 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         new HttpRequestGetUserAlbums(this);
         HttpRequestGetUserAlbums.httpRequest(((Peer2PhotoApp)getApplication()).getUsername(), ((Peer2PhotoApp)getApplication()).getSessionId(), URL_LOAD_ALBUMS);
     }
-
-//    private void httpRequestForAlbumLoading(String username, String sessionId) {
-//        android.util.Log.d("debug", "Starting GET request to URL " + URL_LOAD_ALBUMS + "/" + sessionId + "/" + username);
-//        createHTTPQueue();
-//        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, URL_LOAD_ALBUMS + "/" + sessionId + "/" + username, null,
-//                httpResponse -> {
-//                    try {
-//                        setHTTPResponse(httpResponse);
-//                        android.util.Log.d("debug", httpResponse.toString());
-//                        if(httpResponse.has("error")) {
-//                            error = httpResponse.getString("error");
-//                            android.util.Log.d("debug", "Error");
-//                            android.util.Log.d("debug", error);
-//                            Toast.makeText(ctx, error, Toast.LENGTH_SHORT).show();
-//                        }
-//                        else if(httpResponse.has("success")) {
-//                            success = httpResponse.getString("success");
-//                            android.util.Log.d("debug", "Success");
-//                            android.util.Log.d("debug", success);
-//                            Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
-//
-//                            if(!httpResponse.getString("size").equals("0")){
-//                                String[] albumIds = httpResponse.getString("albums").split(",");
-//                                parseAlbumNames(albumIds, httpResponse);
-//                            }
-//                        }
-//                        else {
-//                            Toast.makeText(ctx, "No adequate response received", Toast.LENGTH_SHORT).show();
-//                            throw new Exception("No adequate response received", new Exception());
-//                        }
-//                    } catch (Exception e) {
-//                        e.printStackTrace();
-//                    }
-//                    cleanHTTPResponse();
-//                }, error -> {
-//            cleanHTTPResponse();
-//            android.util.Log.d("debug", "GET error");
-//        }
-//        );
-//        queue.add(request);
-//    }
 
     public void parseAlbumNames(String[] albumIds, JSONObject httpResponse) {
         // 3\\ cases - User was not added to third party albums;
@@ -385,120 +335,5 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         }
 
     }
-
-//    private void setHTTPResponse(JSONObject json) {
-//        this.httpResponse = json;
-//    }
-//
-//    private void cleanHTTPResponse() {
-//        success = null;
-//        error = null;
-//        this.httpResponse = null;
-//        android.util.Log.d("debug", "Cleaned " + new Date().getTime());
-//    }
-//
-//    private void createHTTPQueue() {
-//        if(this.queue == null) {
-//            this.queue = Volley.newRequestQueue(ctx);
-//        }
-//    }
-/*    private void httpRequestCreateAlbum(String albumName, String username, String sessionId) {
-        android.util.Log.d("debug", "Starting POST request to URL " + URL_CREATE_ALBUM);
-        createHTTPQueue();
-        HashMap<String, String> mapRequest = new HashMap<>();
-        mapRequest.put("albumName", albumName);
-        mapRequest.put("username", username);
-        mapRequest.put("sessionId", sessionId);
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, URL_CREATE_ALBUM, new JSONObject(mapRequest),
-                httpResponse -> {
-                    try {
-                        setHTTPResponse(httpResponse);
-                        android.util.Log.d("debug", httpResponse.toString());
-                        if(httpResponse.has("error")) {
-                            error = httpResponse.getString("error");
-                            android.util.Log.d("debug", "Error");
-                            android.util.Log.d("debug", error);
-                            Toast.makeText(ctx, error, Toast.LENGTH_SHORT).show();
-                        }
-                        else if(httpResponse.has("success")) {
-                            success = httpResponse.getString("success");
-                            String albumId = httpResponse.getString("albumId");
-                            android.util.Log.d("debug", "Success");
-                            android.util.Log.d("debug", success);
-                            Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
-
-                            createAlbumInCloud(albumName, albumId);
-                            addNewAlbum(albumName);
-                        }
-                        else {
-                            Toast.makeText(ctx, "No adequate response received", Toast.LENGTH_SHORT).show();
-                            throw new Exception("No adequate response received", new Exception());
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    cleanHTTPResponse();
-                }, error -> {
-            cleanHTTPResponse();
-            android.util.Log.d("debug", "POST error");
-        }
-        );
-        queue.add(request);
-    }*/
-
-//    private void httpRequestSignOut(String sessionId) {
-//        android.util.Log.d("debug", "Starting DELETE request to URL " + URL_SIGNOUT + "/" + sessionId);
-//        createHTTPQueue();
-//        JsonObjectRequest request = new JsonObjectRequest(Request.Method.DELETE, URL_SIGNOUT + "/" + sessionId, null,
-//                httpResponse -> {
-//                    try {
-//                        setHTTPResponse(httpResponse);
-//                        android.util.Log.d("debug", httpResponse.toString());
-//                        if(httpResponse.has("error")) {
-//                            error = httpResponse.getString("error");
-//                            android.util.Log.d("debug", "Error");
-//                            android.util.Log.d("debug", error);
-//                            Toast.makeText(ctx, error, Toast.LENGTH_SHORT).show();
-//                        }
-//                        else if(httpResponse.has("success")) {
-//                            success = httpResponse.getString("success");
-//                            android.util.Log.d("debug", "Success");
-//                            android.util.Log.d("debug", success);
-//                            Toast.makeText(ctx, "Sign out successful", Toast.LENGTH_SHORT).show();
-//
-//                            startActivity(new Intent(HomePage.this, MainActivity.class));
-//                        }
-//                        else {
-//                            Toast.makeText(ctx, "No adequate response received", Toast.LENGTH_SHORT).show();
-//                            throw new Exception("No adequate response received", new Exception());
-//                        }
-//                    } catch (Exception e) {
-//                        e.printStackTrace();
-//                    }
-//                    cleanHTTPResponse();
-//                }, error -> {
-//            cleanHTTPResponse();
-//            android.util.Log.d("debug", "DELETE error");
-//        }
-//        );
-//        queue.add(request);
-//    }
-
-//    private void setHTTPResponse(JSONObject json) {
-//        this.httpResponse = json;
-//    }
-//
-//    private void cleanHTTPResponse() {
-//        success = null;
-//        error = null;
-//        this.httpResponse = null;
-//        android.util.Log.d("debug", "Cleaned " + new Date().getTime());
-//    }
-//
-//    private void createHTTPQueue() {
-//        if(this.queue == null) {
-//            this.queue = Volley.newRequestQueue(ctx);
-//        }
-//    }
 
 }

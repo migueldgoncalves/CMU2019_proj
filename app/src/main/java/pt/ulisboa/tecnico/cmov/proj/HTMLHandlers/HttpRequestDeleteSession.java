@@ -16,7 +16,6 @@ public class HttpRequestDeleteSession extends HttpRequest {
         super(context);
     }
 
-
     public static void httpRequest(@NonNull String sessionId, @NonNull String URL_SIGNOUT){
         android.util.Log.d("debug", "Starting DELETE request to URL " + URL_SIGNOUT + "/" + sessionId);
         createHTTPQueue();
