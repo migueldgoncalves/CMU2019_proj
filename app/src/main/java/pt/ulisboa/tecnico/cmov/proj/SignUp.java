@@ -1,11 +1,12 @@
 package pt.ulisboa.tecnico.cmov.proj;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Button;
 import android.widget.EditText;
 
-import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequestPost;
+import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequestPostSignUp;
 
 public class SignUp extends AppCompatActivity {
 
@@ -22,7 +23,7 @@ public class SignUp extends AppCompatActivity {
         setContentView(R.layout.activity_sign_up);
 
         URL_BASE = getString(R.string.serverIP);
-        URL_SIGNUP = "/signup";
+        URL_SIGNUP = URL_BASE + "/signup";
 
         UsernameView = findViewById(R.id.username_signup);
         PasswordView = findViewById(R.id.password_signup);
@@ -32,7 +33,14 @@ public class SignUp extends AppCompatActivity {
             UsernameView.setError(null);
             PasswordView.setError(null);
 
-            new HttpRequestPost(getApplicationContext()).httpRequest(URL_BASE, URL_SIGNUP, UsernameView.getText().toString(), PasswordView.getText().toString());            });
+            new HttpRequestPostSignUp(this);
+            HttpRequestPostSignUp.httpRequest(UsernameView.getText().toString(), PasswordView.getText().toString(), URL_SIGNUP);
+        });
+    }
+
+    public void startActivityOnSuccess(){
+        Intent intent = new Intent(this, SignIn.class);
+        startActivity(intent);
     }
 
 }

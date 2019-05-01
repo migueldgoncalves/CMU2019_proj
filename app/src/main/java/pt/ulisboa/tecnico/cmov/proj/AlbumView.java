@@ -23,12 +23,8 @@ import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.GridView;
-import android.widget.Toast;
 
-import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.dropbox.core.v2.files.FileMetadata;
 
 import org.json.JSONObject;
@@ -37,8 +33,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.Random;
 
 import pt.ulisboa.tecnico.cmov.proj.Adapters.PhotoAdapter;
@@ -47,6 +41,8 @@ import pt.ulisboa.tecnico.cmov.proj.Data.Photo;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.DownloadFileTask;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.DropboxClientFactory;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.UploadFileTask;
+import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequestGetAlbumPhotos;
+import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequestPutAddUserToAlbum;
 
 public class AlbumView extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -248,7 +244,8 @@ public class AlbumView extends AppCompatActivity
 
                 String albumId = ((Peer2PhotoApp) getApplication()).getAlbumId(value);
 
-                httpRequestForUserAddition(albumId, username, sessionId, usernameToAdd);
+                new HttpRequestPutAddUserToAlbum(this);
+                HttpRequestPutAddUserToAlbum.httpRequest(albumId, username, sessionId, usernameToAdd, URL_ADD_USER_TO_ALBUM);
 
             });
 
@@ -264,46 +261,46 @@ public class AlbumView extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    private void httpRequestForUserAddition(String albumId, String username, String sessionId, String usernameToAdd){
-        android.util.Log.d("debug", "Starting POST request to URL " + URL_ADD_USER_TO_ALBUM);
-        createHTTPQueue();
-        HashMap<String, String> mapRequest = new HashMap<>();
-        mapRequest.put("username", username);
-        mapRequest.put("sessionId", sessionId);
-        mapRequest.put("albumId", albumId);
-        mapRequest.put("usernameToAdd", usernameToAdd);
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.PUT, URL_ADD_USER_TO_ALBUM, new JSONObject(mapRequest),
-                httpResponse -> {
-                    try {
-                        setHTTPResponse(httpResponse);
-                        android.util.Log.d("debug", httpResponse.toString());
-                        if(httpResponse.has("error")) {
-                            error = httpResponse.getString("error");
-                            android.util.Log.d("debug", "Error");
-                            android.util.Log.d("debug", error);
-                            Toast.makeText(ctx, error, Toast.LENGTH_SHORT).show();
-                        }
-                        else if(httpResponse.has("success")) {
-                            success = httpResponse.getString("success");
-                            android.util.Log.d("debug", "Success");
-                            android.util.Log.d("debug", success);
-                            Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
-                        }
-                        else {
-                            Toast.makeText(ctx, "No adequate response received", Toast.LENGTH_SHORT).show();
-                            throw new Exception("No adequate response received", new Exception());
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    cleanHTTPResponse();
-                }, error -> {
-            cleanHTTPResponse();
-            android.util.Log.d("debug", "POST error");
-        }
-        );
-        queue.add(request);
-    }
+//    private void httpRequestForUserAddition(String albumId, String username, String sessionId, String usernameToAdd){
+//        android.util.Log.d("debug", "Starting PUT request to URL " + URL_ADD_USER_TO_ALBUM);
+//        createHTTPQueue();
+//        HashMap<String, String> mapRequest = new HashMap<>();
+//        mapRequest.put("username", username);
+//        mapRequest.put("sessionId", sessionId);
+//        mapRequest.put("albumId", albumId);
+//        mapRequest.put("usernameToAdd", usernameToAdd);
+//        JsonObjectRequest request = new JsonObjectRequest(Request.Method.PUT, URL_ADD_USER_TO_ALBUM, new JSONObject(mapRequest),
+//                httpResponse -> {
+//                    try {
+//                        setHTTPResponse(httpResponse);
+//                        android.util.Log.d("debug", httpResponse.toString());
+//                        if(httpResponse.has("error")) {
+//                            error = httpResponse.getString("error");
+//                            android.util.Log.d("debug", "Error");
+//                            android.util.Log.d("debug", error);
+//                            Toast.makeText(ctx, error, Toast.LENGTH_SHORT).show();
+//                        }
+//                        else if(httpResponse.has("success")) {
+//                            success = httpResponse.getString("success");
+//                            android.util.Log.d("debug", "Success");
+//                            android.util.Log.d("debug", success);
+//                            Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
+//                        }
+//                        else {
+//                            Toast.makeText(ctx, "No adequate response received", Toast.LENGTH_SHORT).show();
+//                            throw new Exception("No adequate response received", new Exception());
+//                        }
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    }
+//                    cleanHTTPResponse();
+//                }, error -> {
+//            cleanHTTPResponse();
+//            android.util.Log.d("debug", "PUT error");
+//        }
+//        );
+//        queue.add(request);
+//    }
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
@@ -383,50 +380,51 @@ public class AlbumView extends AppCompatActivity
             }
         }
 
-        httpRequest(AlbumId, Username, SessionId);
+        new HttpRequestGetAlbumPhotos(this);
+        HttpRequestGetAlbumPhotos.httpRequest(AlbumId, Username, SessionId, URL_ALBUM);
 
     }
 
-    private void httpRequest(String albumId, String username, String sessionId){
-        android.util.Log.d("debug", "Starting GET request to URL " + URL_ALBUM + "/" + sessionId + "/" + username + "/" + albumId);
-        createHTTPQueue();
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, URL_ALBUM + "/" + sessionId + "/" + username + "/" + albumId, null,
-                httpResponse -> {
-                    try {
-                        setHTTPResponse(httpResponse);
-                        android.util.Log.d("debug", httpResponse.toString());
-                        if(httpResponse.has("error")) {
-                            error = httpResponse.getString("error");
-                            android.util.Log.d("debug", "Error");
-                            android.util.Log.d("debug", error);
-                            Toast.makeText(ctx, error, Toast.LENGTH_SHORT).show();
-                        }
-                        else if(httpResponse.has("success")) {
-                            success = httpResponse.getString("success");
-                            android.util.Log.d("debug", "Success");
-                            android.util.Log.d("debug", success);
-                            Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
+//    private void httpRequest(String albumId, String username, String sessionId){
+//        android.util.Log.d("debug", "Starting GET request to URL " + URL_ALBUM + "/" + sessionId + "/" + username + "/" + albumId);
+//        createHTTPQueue();
+//        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, URL_ALBUM + "/" + sessionId + "/" + username + "/" + albumId, null,
+//                httpResponse -> {
+//                    try {
+//                        setHTTPResponse(httpResponse);
+//                        android.util.Log.d("debug", httpResponse.toString());
+//                        if(httpResponse.has("error")) {
+//                            error = httpResponse.getString("error");
+//                            android.util.Log.d("debug", "Error");
+//                            android.util.Log.d("debug", error);
+//                            Toast.makeText(ctx, error, Toast.LENGTH_SHORT).show();
+//                        }
+//                        else if(httpResponse.has("success")) {
+//                            success = httpResponse.getString("success");
+//                            android.util.Log.d("debug", "Success");
+//                            android.util.Log.d("debug", success);
+//                            Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
+//
+//                            urlParser(httpResponse.getString("users"), httpResponse);
+//
+//                        }
+//                        else {
+//                            Toast.makeText(ctx, "No adequate response received", Toast.LENGTH_SHORT).show();
+//                            throw new Exception("No adequate response received", new Exception());
+//                        }
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    }
+//                    cleanHTTPResponse();
+//                }, error -> {
+//            cleanHTTPResponse();
+//            android.util.Log.d("debug", "GET error");
+//        }
+//        );
+//        queue.add(request);
+//    }
 
-                            urlParser(httpResponse.getString("users"), httpResponse);
-
-                        }
-                        else {
-                            Toast.makeText(ctx, "No adequate response received", Toast.LENGTH_SHORT).show();
-                            throw new Exception("No adequate response received", new Exception());
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    cleanHTTPResponse();
-                }, error -> {
-            cleanHTTPResponse();
-            android.util.Log.d("debug", "GET error");
-        }
-        );
-        queue.add(request);
-    }
-
-    private void urlParser(String usersString, JSONObject mapResponse){
+    public void urlParser(String usersString, JSONObject mapResponse){
 
         new DownloadFileTask(AlbumView.this, DropboxClientFactory.getClient(), new DownloadFileTask.Callback(){
             @Override
@@ -442,21 +440,21 @@ public class AlbumView extends AppCompatActivity
 
     }
 
-    private void setHTTPResponse(JSONObject json) {
-        this.httpResponse = json;
-    }
-
-    private void cleanHTTPResponse() {
-        success = null;
-        error = null;
-        this.httpResponse = null;
-        android.util.Log.d("debug", "Cleaned " + new Date().getTime());
-    }
-
-    private void createHTTPQueue() {
-        if(this.queue == null) {
-            this.queue = Volley.newRequestQueue(ctx);
-        }
-    }
+//    private void setHTTPResponse(JSONObject json) {
+//        this.httpResponse = json;
+//    }
+//
+//    private void cleanHTTPResponse() {
+//        success = null;
+//        error = null;
+//        this.httpResponse = null;
+//        android.util.Log.d("debug", "Cleaned " + new Date().getTime());
+//    }
+//
+//    private void createHTTPQueue() {
+//        if(this.queue == null) {
+//            this.queue = Volley.newRequestQueue(ctx);
+//        }
+//    }
 
 }

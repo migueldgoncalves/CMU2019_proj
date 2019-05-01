@@ -23,7 +23,7 @@ public abstract class HttpRequest {
         System.out.println("Starting HTTP Request To Server");
     }
 
-    static void httpRequest(String... params) {
+    public static void httpRequest(String... params) {
     }
 
     static void setHTTPResponse(JSONObject json) {

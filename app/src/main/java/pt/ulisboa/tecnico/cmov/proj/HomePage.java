@@ -42,7 +42,9 @@ import pt.ulisboa.tecnico.cmov.proj.Data.Peer2PhotoApp;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.DropboxActivity;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.DropboxClientFactory;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.UploadFileTask;
-import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequestPost;
+import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequest;
+import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequestGetUserAlbums;
+import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequestPostCreateAlbum;
 
 public class HomePage extends DropboxActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -70,7 +72,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         setContentView(R.layout.activity_home_page);
 
         URL_BASE = getString(R.string.serverIP);
-        URL_CREATE_ALBUM = "/createalbum";
+        URL_CREATE_ALBUM = URL_BASE + "/createalbum";
         URL_LOAD_ALBUMS = URL_BASE + "/useralbums";
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -266,7 +268,8 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
                 }
             }
 
-            new HttpRequestPost(this).httpRequest(URL_BASE, URL_CREATE_ALBUM, albumName, username, sessionId);
+            new HttpRequestPostCreateAlbum(this);
+            HttpRequestPostCreateAlbum.httpRequest(username, sessionId, albumName, URL_CREATE_ALBUM);
 
         });
 
@@ -300,51 +303,52 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
             }
         }
 
-        httpRequestForAlbumLoading(((Peer2PhotoApp)getApplication()).getUsername(), ((Peer2PhotoApp)getApplication()).getSessionId());
+        new HttpRequestGetUserAlbums(this);
+        HttpRequestGetUserAlbums.httpRequest(((Peer2PhotoApp)getApplication()).getUsername(), ((Peer2PhotoApp)getApplication()).getSessionId(), URL_LOAD_ALBUMS);
     }
 
-    private void httpRequestForAlbumLoading(String username, String sessionId) {
-        android.util.Log.d("debug", "Starting GET request to URL " + URL_LOAD_ALBUMS + "/" + sessionId + "/" + username);
-        createHTTPQueue();
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, URL_LOAD_ALBUMS + "/" + sessionId + "/" + username, null,
-                httpResponse -> {
-                    try {
-                        setHTTPResponse(httpResponse);
-                        android.util.Log.d("debug", httpResponse.toString());
-                        if(httpResponse.has("error")) {
-                            error = httpResponse.getString("error");
-                            android.util.Log.d("debug", "Error");
-                            android.util.Log.d("debug", error);
-                            Toast.makeText(ctx, error, Toast.LENGTH_SHORT).show();
-                        }
-                        else if(httpResponse.has("success")) {
-                            success = httpResponse.getString("success");
-                            android.util.Log.d("debug", "Success");
-                            android.util.Log.d("debug", success);
-                            Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
+//    private void httpRequestForAlbumLoading(String username, String sessionId) {
+//        android.util.Log.d("debug", "Starting GET request to URL " + URL_LOAD_ALBUMS + "/" + sessionId + "/" + username);
+//        createHTTPQueue();
+//        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, URL_LOAD_ALBUMS + "/" + sessionId + "/" + username, null,
+//                httpResponse -> {
+//                    try {
+//                        setHTTPResponse(httpResponse);
+//                        android.util.Log.d("debug", httpResponse.toString());
+//                        if(httpResponse.has("error")) {
+//                            error = httpResponse.getString("error");
+//                            android.util.Log.d("debug", "Error");
+//                            android.util.Log.d("debug", error);
+//                            Toast.makeText(ctx, error, Toast.LENGTH_SHORT).show();
+//                        }
+//                        else if(httpResponse.has("success")) {
+//                            success = httpResponse.getString("success");
+//                            android.util.Log.d("debug", "Success");
+//                            android.util.Log.d("debug", success);
+//                            Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
+//
+//                            if(!httpResponse.getString("size").equals("0")){
+//                                String[] albumIds = httpResponse.getString("albums").split(",");
+//                                parseAlbumNames(albumIds, httpResponse);
+//                            }
+//                        }
+//                        else {
+//                            Toast.makeText(ctx, "No adequate response received", Toast.LENGTH_SHORT).show();
+//                            throw new Exception("No adequate response received", new Exception());
+//                        }
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    }
+//                    cleanHTTPResponse();
+//                }, error -> {
+//            cleanHTTPResponse();
+//            android.util.Log.d("debug", "GET error");
+//        }
+//        );
+//        queue.add(request);
+//    }
 
-                            if(!httpResponse.getString("size").equals("0")){
-                                String[] albumIds = httpResponse.getString("albums").split(",");
-                                parseAlbumNames(albumIds, httpResponse);
-                            }
-                        }
-                        else {
-                            Toast.makeText(ctx, "No adequate response received", Toast.LENGTH_SHORT).show();
-                            throw new Exception("No adequate response received", new Exception());
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    cleanHTTPResponse();
-                }, error -> {
-            cleanHTTPResponse();
-            android.util.Log.d("debug", "GET error");
-        }
-        );
-        queue.add(request);
-    }
-
-    private void parseAlbumNames(String[] albumIds, JSONObject httpResponse) {
+    public void parseAlbumNames(String[] albumIds, JSONObject httpResponse) {
         // 3\\ cases - User was not added to third party albums;
         // User was added to album with same name as another album user already has;
         // User was added to album with a name different of all user's albums
@@ -382,65 +386,21 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
 
     }
 
-/*    private void httpRequestCreateAlbum(String albumName, String username, String sessionId) {
-        android.util.Log.d("debug", "Starting POST request to URL " + URL_CREATE_ALBUM);
-        createHTTPQueue();
-        HashMap<String, String> mapRequest = new HashMap<>();
-        mapRequest.put("albumName", albumName);
-        mapRequest.put("username", username);
-        mapRequest.put("sessionId", sessionId);
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, URL_CREATE_ALBUM, new JSONObject(mapRequest),
-                httpResponse -> {
-                    try {
-                        setHTTPResponse(httpResponse);
-                        android.util.Log.d("debug", httpResponse.toString());
-                        if(httpResponse.has("error")) {
-                            error = httpResponse.getString("error");
-                            android.util.Log.d("debug", "Error");
-                            android.util.Log.d("debug", error);
-                            Toast.makeText(ctx, error, Toast.LENGTH_SHORT).show();
-                        }
-                        else if(httpResponse.has("success")) {
-                            success = httpResponse.getString("success");
-                            String albumId = httpResponse.getString("albumId");
-                            android.util.Log.d("debug", "Success");
-                            android.util.Log.d("debug", success);
-                            Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
-
-                            createAlbumInCloud(albumName, albumId);
-                            addNewAlbum(albumName);
-                        }
-                        else {
-                            Toast.makeText(ctx, "No adequate response received", Toast.LENGTH_SHORT).show();
-                            throw new Exception("No adequate response received", new Exception());
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    cleanHTTPResponse();
-                }, error -> {
-            cleanHTTPResponse();
-            android.util.Log.d("debug", "POST error");
-        }
-        );
-        queue.add(request);
-    }*/
-
-    private void setHTTPResponse(JSONObject json) {
-        this.httpResponse = json;
-    }
-
-    private void cleanHTTPResponse() {
-        success = null;
-        error = null;
-        this.httpResponse = null;
-        android.util.Log.d("debug", "Cleaned " + new Date().getTime());
-    }
-
-    private void createHTTPQueue() {
-        if(this.queue == null) {
-            this.queue = Volley.newRequestQueue(ctx);
-        }
-    }
+//    private void setHTTPResponse(JSONObject json) {
+//        this.httpResponse = json;
+//    }
+//
+//    private void cleanHTTPResponse() {
+//        success = null;
+//        error = null;
+//        this.httpResponse = null;
+//        android.util.Log.d("debug", "Cleaned " + new Date().getTime());
+//    }
+//
+//    private void createHTTPQueue() {
+//        if(this.queue == null) {
+//            this.queue = Volley.newRequestQueue(ctx);
+//        }
+//    }
 
 }
