@@ -35,7 +35,7 @@ public class JavalinApp {
             HashMap<String, String> mapResponse = operations.serviceGetLogs();
             System.out.println("HTTP success: " + mapResponse.get("success"));
             System.out.println("HTTP error: " + mapResponse.get("error"));
-            System.out.println("HTTP logs: " + mapResponse.get("logs"));
+            //System.out.println("HTTP logs: " + mapResponse.get("logs"));
             ctx.json(mapResponse);
         });
 

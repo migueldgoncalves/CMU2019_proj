@@ -500,7 +500,7 @@ public class Operations {
                     log+="Operation input: " + new Gson().toJson(request) + "\n";
                     log+="Operation output: " + new Gson().toJson(response) + "\n";
                     log+="---------------------------------------------------------------------------------------------------------------\n";
-                    logs+=log;
+                    logs = log + logs;
                     Operations.writeServerState();
                     System.out.println(log);
                     return "Operation successfully logged";
