@@ -1,7 +1,6 @@
 package pt.ulisboa.tecnico.cmov.proj;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -16,6 +15,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -23,10 +23,6 @@ import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.dropbox.core.android.Auth;
 import com.dropbox.core.v2.files.FileMetadata;
 
@@ -42,7 +38,9 @@ import pt.ulisboa.tecnico.cmov.proj.Data.Peer2PhotoApp;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.DropboxActivity;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.DropboxClientFactory;
 import pt.ulisboa.tecnico.cmov.proj.Dropbox.UploadFileTask;
-import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequestPost;
+import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequestDeleteSession;
+import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequestGetUserAlbums;
+import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequestPostCreateAlbum;
 
 public class HomePage extends DropboxActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -55,15 +53,8 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
     public String URL_LOAD_ALBUMS;
     public String URL_SIGNOUT;
 
-    Context ctx = this;
-    private RequestQueue queue = null;
-    private JSONObject httpResponse = null;
-
     private static ArrayList<Album> albums = new ArrayList<>();
     private static ArrayAdapter<Album> albumAdapter = null;
-
-    String success;
-    String error;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +62,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
         setContentView(R.layout.activity_home_page);
 
         URL_BASE = getString(R.string.serverIP);
-        URL_CREATE_ALBUM = "/createalbum";
+        URL_CREATE_ALBUM = URL_BASE + "/createalbum";
         URL_LOAD_ALBUMS = URL_BASE + "/useralbums";
         URL_SIGNOUT = URL_BASE + "/logout";
 
@@ -189,7 +180,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
@@ -197,6 +188,8 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
             startActivity(new Intent(HomePage.this, HomePage.class));
         } else if (id == R.id.nav_createAlbum) {
             createAlbumByUser();
+        }else if (id == R.id.nav_findUsers){
+            startActivity(new Intent(HomePage.this, FindUsers.class));
         } else if (id == R.id.nav_logs) {
             startActivity(new Intent(HomePage.this, LogView.class));
         } else if (id == R.id.nav_dropbox) {
@@ -210,7 +203,8 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
 
         } else if (id == R.id.nav_signOut) {
             String sessionId = ((Peer2PhotoApp) this.getApplication()).getSessionId();
-            httpRequestSignOut(sessionId);
+            new HttpRequestDeleteSession(this);
+            HttpRequestDeleteSession.httpRequest(sessionId, URL_SIGNOUT);
         } else if (id == R.id.nav_settings){
 
         }
@@ -232,7 +226,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
                 username.setText(DropboxClientFactory.getClient().users().getCurrentAccount().getAccountId());
                 mail.setText(DropboxClientFactory.getClient().users().getCurrentAccount().getEmail());
             }catch (Exception e){
-
+                e.printStackTrace();
             }
         }
     }
@@ -263,13 +257,14 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
 
             if(new File(getApplicationContext().getFilesDir().getPath() + "/" + input.getText().toString()).exists()){
                 while (new File(getApplicationContext().getFilesDir().getPath() + "/" + input.getText().toString()).exists()){
-                    Toast.makeText(ctx, "An Album With The Name " + input.getText().toString() + " Already Exists!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "An Album With The Name " + input.getText().toString() + " Already Exists!", Toast.LENGTH_SHORT).show();
                     builder.setView(input);
                     builder.show();
                 }
             }
 
-            new HttpRequestPost(this).httpRequest(URL_BASE, URL_CREATE_ALBUM, albumName, username, sessionId);
+            new HttpRequestPostCreateAlbum(this);
+            HttpRequestPostCreateAlbum.httpRequest(username, sessionId, albumName, URL_CREATE_ALBUM);
 
         });
 
@@ -283,7 +278,7 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
 
             @Override
             public void onUploadComplete(FileMetadata result) {
-                Toast.makeText(ctx, "Upload Complete!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(HomePage.this, "Upload Complete!", Toast.LENGTH_SHORT).show();
                 ((Peer2PhotoApp) getApplication()).addAlbum(albumId, albumName, getApplicationContext().getFilesDir().getPath() + "/albums.txt");
             }
 
@@ -303,79 +298,43 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
             }
         }
 
-        httpRequestForAlbumLoading(((Peer2PhotoApp)getApplication()).getUsername(), ((Peer2PhotoApp)getApplication()).getSessionId());
+        updateApplicationLogs("List User Albums", "Local Albums Loaded Successfully");
+
+        new HttpRequestGetUserAlbums(this);
+        HttpRequestGetUserAlbums.httpRequest(((Peer2PhotoApp)getApplication()).getUsername(), ((Peer2PhotoApp)getApplication()).getSessionId(), URL_LOAD_ALBUMS);
     }
 
-    private void httpRequestForAlbumLoading(String username, String sessionId) {
-        android.util.Log.d("debug", "Starting GET request to URL " + URL_LOAD_ALBUMS + "/" + sessionId + "/" + username);
-        createHTTPQueue();
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, URL_LOAD_ALBUMS + "/" + sessionId + "/" + username, null,
-                httpResponse -> {
-                    try {
-                        setHTTPResponse(httpResponse);
-                        android.util.Log.d("debug", httpResponse.toString());
-                        if(httpResponse.has("error")) {
-                            error = httpResponse.getString("error");
-                            android.util.Log.d("debug", "Error");
-                            android.util.Log.d("debug", error);
-                            Toast.makeText(ctx, error, Toast.LENGTH_SHORT).show();
-                        }
-                        else if(httpResponse.has("success")) {
-                            success = httpResponse.getString("success");
-                            android.util.Log.d("debug", "Success");
-                            android.util.Log.d("debug", success);
-                            Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
-
-                            if(!httpResponse.getString("size").equals("0")){
-                                String[] albumIds = httpResponse.getString("albums").split(",");
-                                parseAlbumNames(albumIds, httpResponse);
-                            }
-                        }
-                        else {
-                            Toast.makeText(ctx, "No adequate response received", Toast.LENGTH_SHORT).show();
-                            throw new Exception("No adequate response received", new Exception());
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    cleanHTTPResponse();
-                }, error -> {
-            cleanHTTPResponse();
-            android.util.Log.d("debug", "GET error");
-        }
-        );
-        queue.add(request);
-    }
-
-    private void parseAlbumNames(String[] albumIds, JSONObject httpResponse) {
+    public void parseAlbumNames(String[] albumIds, JSONObject httpResponse) {
         // 3\\ cases - User was not added to third party albums;
         // User was added to album with same name as another album user already has;
         // User was added to album with a name different of all user's albums
         try{
-            for(int i = 0; i < albumIds.length; i++){
-                String albumName = httpResponse.getString(albumIds[i]);
-                if(((Peer2PhotoApp)getApplication()).getAlbumId(albumName) == null){
-                    if(!(new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName).exists())) {
-                        createAlbumInCloud(albumName, albumIds[i]);
+            for (String albumId : albumIds) {
+                String albumName = httpResponse.getString(albumId);
+                if (((Peer2PhotoApp) getApplication()).getAlbumId(albumName) == null) {
+                    if (!(new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName).exists())) {
+                        createAlbumInCloud(albumName, albumId);
                         addNewAlbum(albumName);
-                        android.util.Log.d("debug", "User has been added to album of other user and its name does not exist in user's albums");
-                    }
-                    else{
+                        Log.d("debug", "User has been added to album of other user and its name does not exist in user's albums");
+                    } else {
                         File fileToDelete = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName);
-                        if(fileToDelete.delete()){
-                            createAlbumInCloud(albumName, albumIds[i]);
+                        if (fileToDelete.delete()) {
+                            createAlbumInCloud(albumName, albumId);
                             addNewAlbum(albumName);
-                            android.util.Log.d("debug", "User has been added to album of other user and its name does not exist in user's albums");
+                            Log.d("debug", "User has been added to album of other user and its name does not exist in user's albums");
                         }
                     }
-                }else{
-                    if(!((Peer2PhotoApp)getApplication()).getAlbumId(albumName).equals(albumIds[i])){
-                        String newName = albumName + "_" + albumIds[i];
-                        createAlbumInCloud(newName, albumIds[i]);
+                } else {
+                    if (!((Peer2PhotoApp) getApplication()).getAlbumId(albumName).equals(albumId)) {
+                        String newName = albumName + "_" + albumId;
+                        createAlbumInCloud(newName, albumId);
                         addNewAlbum(newName);
-                        android.util.Log.d("debug", "User has been added to album of other user with name equal to one of user's albums");
-                    }else{
-                        //TODO: Prever Caso em que ja existe associacao os ids sao iguais mas por acaso o user eliminou o ficheiro local
+                        Log.d("debug", "User has been added to album of other user with name equal to one of user's albums");
+                    } else {
+                        if(!new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName).exists()){
+                            createAlbumInCloud(albumName, albumId);
+                            addNewAlbum(albumName);
+                        }
                     }
                 }
             }
@@ -385,103 +344,13 @@ public class HomePage extends DropboxActivity implements NavigationView.OnNaviga
 
     }
 
-/*    private void httpRequestCreateAlbum(String albumName, String username, String sessionId) {
-        android.util.Log.d("debug", "Starting POST request to URL " + URL_CREATE_ALBUM);
-        createHTTPQueue();
-        HashMap<String, String> mapRequest = new HashMap<>();
-        mapRequest.put("albumName", albumName);
-        mapRequest.put("username", username);
-        mapRequest.put("sessionId", sessionId);
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, URL_CREATE_ALBUM, new JSONObject(mapRequest),
-                httpResponse -> {
-                    try {
-                        setHTTPResponse(httpResponse);
-                        android.util.Log.d("debug", httpResponse.toString());
-                        if(httpResponse.has("error")) {
-                            error = httpResponse.getString("error");
-                            android.util.Log.d("debug", "Error");
-                            android.util.Log.d("debug", error);
-                            Toast.makeText(ctx, error, Toast.LENGTH_SHORT).show();
-                        }
-                        else if(httpResponse.has("success")) {
-                            success = httpResponse.getString("success");
-                            String albumId = httpResponse.getString("albumId");
-                            android.util.Log.d("debug", "Success");
-                            android.util.Log.d("debug", success);
-                            Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
+    public void updateApplicationLogs(@NonNull String operation, @NonNull String operationResult){
+        String Operation = "OPERATION: " + operation + "\n";
+        String timeStamp = "TIMESTAMP: " + new Date().toString() + "\n";
+        String result = "RESULT: " + operationResult + "\n";
 
-                            createAlbumInCloud(albumName, albumId);
-                            addNewAlbum(albumName);
-                        }
-                        else {
-                            Toast.makeText(ctx, "No adequate response received", Toast.LENGTH_SHORT).show();
-                            throw new Exception("No adequate response received", new Exception());
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    cleanHTTPResponse();
-                }, error -> {
-            cleanHTTPResponse();
-            android.util.Log.d("debug", "POST error");
-        }
-        );
-        queue.add(request);
-    }*/
+        ((Peer2PhotoApp)getApplication()).updateLog(Operation + timeStamp + result);
 
-    private void httpRequestSignOut(String sessionId) {
-        android.util.Log.d("debug", "Starting DELETE request to URL " + URL_SIGNOUT + "/" + sessionId);
-        createHTTPQueue();
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.DELETE, URL_SIGNOUT + "/" + sessionId, null,
-                httpResponse -> {
-                    try {
-                        setHTTPResponse(httpResponse);
-                        android.util.Log.d("debug", httpResponse.toString());
-                        if(httpResponse.has("error")) {
-                            error = httpResponse.getString("error");
-                            android.util.Log.d("debug", "Error");
-                            android.util.Log.d("debug", error);
-                            Toast.makeText(ctx, error, Toast.LENGTH_SHORT).show();
-                        }
-                        else if(httpResponse.has("success")) {
-                            success = httpResponse.getString("success");
-                            android.util.Log.d("debug", "Success");
-                            android.util.Log.d("debug", success);
-                            Toast.makeText(ctx, "Sign out successful", Toast.LENGTH_SHORT).show();
-
-                            startActivity(new Intent(HomePage.this, MainActivity.class));
-                        }
-                        else {
-                            Toast.makeText(ctx, "No adequate response received", Toast.LENGTH_SHORT).show();
-                            throw new Exception("No adequate response received", new Exception());
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    cleanHTTPResponse();
-                }, error -> {
-            cleanHTTPResponse();
-            android.util.Log.d("debug", "DELETE error");
-        }
-        );
-        queue.add(request);
-    }
-
-    private void setHTTPResponse(JSONObject json) {
-        this.httpResponse = json;
-    }
-
-    private void cleanHTTPResponse() {
-        success = null;
-        error = null;
-        this.httpResponse = null;
-        android.util.Log.d("debug", "Cleaned " + new Date().getTime());
-    }
-
-    private void createHTTPQueue() {
-        if(this.queue == null) {
-            this.queue = Volley.newRequestQueue(ctx);
-        }
     }
 
 }

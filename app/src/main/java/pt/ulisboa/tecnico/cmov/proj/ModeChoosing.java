@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -28,32 +27,26 @@ public class ModeChoosing extends DropboxActivity {
         Button cloud = findViewById(R.id.Cloud_Mode);
         Button WiFi = findViewById(R.id.WiFiDirect_Mode);
 
-        cloud.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        cloud.setOnClickListener(v -> {
 
-                if(isNetworkAvailable()) {
-                    if (!hasToken()) {
-                        Auth.startOAuth2Authentication(ModeChoosing.this, ACCESS_KEY);
-                        Toast.makeText(ModeChoosing.this, "Accessing Dropbox for Login",
-                                Toast.LENGTH_SHORT).show();
-                    } else {
-                        android.util.Log.d("debug", "Dropbox token obtained");
-                        Intent intent = new Intent(ctx, HomePage.class);
-                        startActivity(intent);
-                    }
-                } else {
-                    Toast.makeText(ModeChoosing.this, "Network not available",
+            if(isNetworkAvailable()) {
+                if (!hasToken()) {
+                    Auth.startOAuth2Authentication(ModeChoosing.this, ACCESS_KEY);
+                    Toast.makeText(ModeChoosing.this, "Accessing Dropbox for Login",
                             Toast.LENGTH_SHORT).show();
+                } else {
+                    android.util.Log.d("debug", "Dropbox token obtained");
+                    Intent intent = new Intent(ctx, HomePage.class);
+                    startActivity(intent);
                 }
+            } else {
+                Toast.makeText(ModeChoosing.this, "Network not available",
+                        Toast.LENGTH_SHORT).show();
             }
         });
 
-        WiFi.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        WiFi.setOnClickListener(v -> {
 
-            }
         });
 
     }

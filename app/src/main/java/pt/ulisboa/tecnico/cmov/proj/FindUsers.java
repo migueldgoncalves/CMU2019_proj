@@ -1,14 +1,10 @@
 package pt.ulisboa.tecnico.cmov.proj;
 
 import android.app.Activity;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
-import android.support.design.widget.TextInputEditText;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -16,32 +12,26 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
-import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.GridView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 
 import pt.ulisboa.tecnico.cmov.proj.Adapters.UserAdapter;
-import pt.ulisboa.tecnico.cmov.proj.Data.Album;
 import pt.ulisboa.tecnico.cmov.proj.Data.Peer2PhotoApp;
 import pt.ulisboa.tecnico.cmov.proj.Data.User;
+import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequestGetAllUsers;
 
-public class FindUsers extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+public class FindUsers extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-    private static ArrayList<User> users = new ArrayList<User>();
+    private static ArrayList<User> users = new ArrayList<>();
+    //TODO: Gonaçalo vê se não podes converter este arrayadapter para uma variavel local como o InteliJ esta a recomendar
     private static ArrayAdapter<User> userAdapter = null;
 
     @Override
@@ -62,6 +52,17 @@ public class FindUsers extends AppCompatActivity
 
         users.clear();
 
+        String URL_BASE = getString(R.string.serverIP);
+        String URL_GET_ALL_USERS = URL_BASE + "/users";
+
+
+        String sessionId = ((Peer2PhotoApp)getApplication()).getSessionId();
+        String username = ((Peer2PhotoApp)getApplication()).getUsername();
+        String URL = URL_GET_ALL_USERS + "/" + sessionId + "/" + username;
+
+        new HttpRequestGetAllUsers(this);
+        HttpRequestGetAllUsers.httpRequest(URL);
+
         users = new ArrayList<>(Arrays.asList(
                 new User(0, "Joao"),
                 new User(1, "Jacinto")
@@ -71,11 +72,7 @@ public class FindUsers extends AppCompatActivity
         ListView userTable = findViewById(R.id.userList);
         userTable.setAdapter(userAdapter);
 
-        userTable.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View view,int position, long id) {
-                addUser(position);
-            }
-        });
+        userTable.setOnItemClickListener((parent, view, position, id) -> addUser(position));
 
         //Send server requests as user types out user's name
         EditText searchText = findViewById(R.id.searchText);
@@ -97,7 +94,7 @@ public class FindUsers extends AppCompatActivity
     }
 
     protected void sendServerRequest(String userName) {
-
+        //TODO: Gonçalo este metodo ainda e necessario ?
     }
 
     @Override
@@ -134,7 +131,7 @@ public class FindUsers extends AppCompatActivity
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
@@ -162,23 +159,31 @@ public class FindUsers extends AppCompatActivity
         builder.setTitle("Add " + users.get(position).getUserName() + " to album?");
 
         // Set up the buttons
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Intent intent = new Intent();
-                intent.putExtra("userName", users.get(position).getUserName());
-                setResult(Activity.RESULT_OK, intent);
-                finish();
-            }
+        builder.setPositiveButton("OK", (dialog, which) -> {
+            Intent intent = new Intent();
+            intent.putExtra("userName", users.get(position).getUserName());
+            setResult(Activity.RESULT_OK, intent);
+            finish();
         });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
 
         builder.show();
+    }
+
+    public void updateApplicationLogs(@NonNull String operationResult){
+        String Operation = "OPERATION: List All Users" + "\n";
+        String timeStamp = "TIMESTAMP: " + new Date().toString() + "\n";
+        String result = "RESULT: " + operationResult + "\n";
+
+        ((Peer2PhotoApp)getApplication()).updateLog(Operation + timeStamp + result);
+
+    }
+
+    public void parseUsers(@NonNull String allUsers){
+        String[] parsedUsers = allUsers.split(",");
+
+        //TODO: Gonçalo o vetor parsedUsers contem os usernames de todos os utilizadores do sistema, este metodo vai ser executado onCreate e aquilo que preciso que facas e apresentar todos os usernames que estao no vetor de strings da forma que tens o joao e o jacinto apresentados
+
     }
 
 }

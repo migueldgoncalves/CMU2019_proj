@@ -2,12 +2,7 @@ package pt.ulisboa.tecnico.cmov.proj.Dropbox;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.widget.Toast;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.dropbox.core.DbxException;
 import com.dropbox.core.v2.DbxClientV2;
 import com.dropbox.core.v2.files.FileMetadata;
@@ -15,17 +10,14 @@ import com.dropbox.core.v2.files.WriteMode;
 import com.dropbox.core.v2.sharing.CreateSharedLinkWithSettingsErrorException;
 import com.dropbox.core.v2.sharing.SharedLinkMetadata;
 
-import org.json.JSONObject;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
-import java.util.HashMap;
 
+import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequestPutSetUrl;
 import pt.ulisboa.tecnico.cmov.proj.R;
 
 /**
@@ -41,12 +33,6 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
     //public static final String URL_BASE = "http://localhost:8080";
     public String URL_BASE;
     public String URL_SETURL;
-
-    private RequestQueue queue = null;
-    private JSONObject httpResponse = null;
-
-    String success;
-    String error;
 
     public UploadFileTask(Context context, DbxClientV2 dbxClient, Callback callback) {
         mContext = context;
@@ -127,9 +113,8 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
                 SharedLinkMetadata sharedLinkMetadata = mDbxClient.sharing().createSharedLinkWithSettings("/Peer2Photo/" + remoteFileName);
                 System.out.println(sharedLinkMetadata.getUrl());
 
-                //TODO: Send URL (ENCRYPTED) To Server
-                httpRequest(params[3], params[4], sharedLinkMetadata.getUrl().replaceAll("dl=0", "dl=1"), params[5]);
-                //THIS IS IMPORTANT
+                new HttpRequestPutSetUrl(mContext);
+                HttpRequestPutSetUrl.httpRequest(params[3], params[4], sharedLinkMetadata.getUrl().replaceAll("dl=0", "dl=1"), params[5], mContext, URL_SETURL);
 
                 return result;
 
@@ -212,64 +197,6 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
     public interface Callback {
         void onUploadComplete(FileMetadata result);
         void onError(Exception e);
-    }
-
-    private void httpRequest(String sessionId, String username, String url, String albumId){
-        android.util.Log.d("debug", "Starting PUT request to URL " + URL_SETURL);
-        createHTTPQueue();
-        HashMap<String, String> mapRequest = new HashMap<>();
-        mapRequest.put("sessionId", sessionId);
-        mapRequest.put("username", username);
-        mapRequest.put("URL", url);
-        mapRequest.put("albumId", albumId);
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.PUT, URL_SETURL, new JSONObject(mapRequest),
-                httpResponse -> {
-                    try {
-                        setHTTPResponse(httpResponse);
-                        android.util.Log.d("debug", httpResponse.toString());
-                        if(httpResponse.has("error")) {
-                            error = httpResponse.getString("error");
-                            android.util.Log.d("debug", "Error");
-                            android.util.Log.d("debug", error);
-                            Toast.makeText(mContext, error, Toast.LENGTH_SHORT).show();
-                        }
-                        else if(httpResponse.has("success")) {
-                            success = httpResponse.getString("success");
-                            android.util.Log.d("debug", "Success");
-                            android.util.Log.d("debug", success);
-                            Toast.makeText(mContext, success, Toast.LENGTH_SHORT).show();
-                        }
-                        else {
-                            Toast.makeText(mContext, "No adequate response received", Toast.LENGTH_SHORT).show();
-                            throw new Exception("No adequate response received", new Exception());
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    cleanHTTPResponse();
-                }, error -> {
-            cleanHTTPResponse();
-            android.util.Log.d("debug", "PUT error");
-        }
-        );
-        queue.add(request);
-    }
-
-    private void setHTTPResponse(JSONObject json) {
-        this.httpResponse = json;
-    }
-
-    private void cleanHTTPResponse() {
-        success = null;
-        error = null;
-        this.httpResponse = null;
-        android.util.Log.d("debug", "Cleaned " + new Date().getTime());
-    }
-
-    private void createHTTPQueue() {
-        if(this.queue == null) {
-            this.queue = Volley.newRequestQueue(mContext);
-        }
     }
 
 }
