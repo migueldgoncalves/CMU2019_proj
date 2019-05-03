@@ -31,7 +31,6 @@ import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequestGetAllUsers;
 public class FindUsers extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private static ArrayList<User> users = new ArrayList<>();
-    //TODO: Gonaçalo vê se não podes converter este arrayadapter para uma variavel local como o InteliJ esta a recomendar
     private static ArrayAdapter<User> userAdapter = null;
 
     @Override
