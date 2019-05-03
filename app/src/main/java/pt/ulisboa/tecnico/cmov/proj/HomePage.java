@@ -391,11 +391,18 @@ public class HomePage extends DropboxActivity implements
         return "Catalog";
     }
 
-    public void sendText() {
+    private void sendText(){
         String catalog = getCatalog();
         new SendCommTask().executeOnExecutor(
                 AsyncTask.THREAD_POOL_EXECUTOR,
                 catalog);
+    }
+
+    private void sendUsername() {
+        String username = getCatalog();
+        new SendCommTask().executeOnExecutor(
+                AsyncTask.THREAD_POOL_EXECUTOR,
+                username);
     }
 
     private ServiceConnection mConnection = new ServiceConnection() {
