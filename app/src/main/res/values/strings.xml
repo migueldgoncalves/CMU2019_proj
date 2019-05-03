@@ -35,4 +35,5 @@
     <string name="cloud_mode">Cloud Mode</string>
     <string name="logs_default_text">No logs to display</string>
     <string name="app_refresh">Refresh</string>
+    <string name="port">10001</string>
 </resources>
