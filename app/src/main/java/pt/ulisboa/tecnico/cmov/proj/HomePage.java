@@ -65,8 +65,7 @@ import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequestGetUserAlbums;
 import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequestPostCreateAlbum;
 
 public class HomePage extends DropboxActivity implements
-        NavigationView.OnNavigationItemSelectedListener,
-        PeerListListener, GroupInfoListener {
+        NavigationView.OnNavigationItemSelectedListener {
 
     private final static String ACCESS_KEY = "ktxcdvzt610l2ao";
     private final static String ACCESS_SECRET = "wurqteptiyuh9s2";
@@ -77,14 +76,7 @@ public class HomePage extends DropboxActivity implements
     public String URL_LOAD_ALBUMS;
     public String URL_SIGNOUT;
 
-    public static final String TAG = "msgsender";
-    private SimWifiP2pManager mManager = null;
-    private Channel mChannel = null;
-    private Messenger mService = null;
-    private boolean mBound = false;
-    private SimWifiP2pSocketServer mSrvSocket = null;
-    private SimWifiP2pSocket mCliSocket = null;
-    private SimWifiP2pBroadcastReceiver mReceiver;
+    private TermiteComponent termite = null;
 
     private static ArrayList<Album> albums = new ArrayList<>();
     private static ArrayAdapter<Album> albumAdapter = null;
@@ -94,6 +86,9 @@ public class HomePage extends DropboxActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_page);
 
+        termite = new TermiteComponent(this, getApplication(), getMainLooper());
+
+        /*
         URL_BASE = getString(R.string.serverIP);
         URL_CREATE_ALBUM = URL_BASE + "/createalbum";
         URL_LOAD_ALBUMS = URL_BASE + "/useralbums";
@@ -143,7 +138,7 @@ public class HomePage extends DropboxActivity implements
                 requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
             }
         }
-
+        */
     }
 
     void populateAlbumArray() {
@@ -384,160 +379,6 @@ public class HomePage extends DropboxActivity implements
 
         ((Peer2PhotoApp)getApplication()).updateLog(Operation + timeStamp + result);
 
-    }
-
-    private String getCatalog() {
-        //TODO: return Catalog content
-        return "Catalog";
-    }
-
-    private void sendText(){
-        String catalog = getCatalog();
-        new SendCommTask().executeOnExecutor(
-                AsyncTask.THREAD_POOL_EXECUTOR,
-                catalog);
-    }
-
-    private void sendUsername() {
-        String username = getCatalog();
-        new SendCommTask().executeOnExecutor(
-                AsyncTask.THREAD_POOL_EXECUTOR,
-                username);
-    }
-
-    private ServiceConnection mConnection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            mService = new Messenger(service);
-            mManager = new SimWifiP2pManager(mService);
-            mChannel = mManager.initialize(getApplication(), getMainLooper(), null);
-            mBound = true;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            mService = null;
-            mManager = null;
-            mChannel = null;
-            mBound = false;
-        }
-    };
-
-
-    /*
-     * Asynctasks implementing message exchange
-     */
-
-    public class IncommingCommTask extends AsyncTask<Void, String, Void> {
-
-        @Override
-        protected Void doInBackground(Void... params) {
-
-            Log.d(TAG, "IncommingCommTask started (" + this.hashCode() + ").");
-
-            try {
-                mSrvSocket = new SimWifiP2pSocketServer(
-                        Integer.parseInt(getString(R.string.port)));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            while (!Thread.currentThread().isInterrupted()) {
-                try {
-                    SimWifiP2pSocket sock = mSrvSocket.accept();
-                    try {
-                        BufferedReader sockIn = new BufferedReader(
-                                new InputStreamReader(sock.getInputStream()));
-                        String st = sockIn.readLine();
-                        publishProgress(st);
-                        sock.getOutputStream().write(("\n").getBytes());
-                    } catch (IOException e) {
-                        Log.d("Error reading socket:", e.getMessage());
-                    } finally {
-                        sock.close();
-                    }
-                } catch (IOException e) {
-                    Log.d("Error socket:", e.getMessage());
-                    break;
-                    //e.printStackTrace();
-                }
-            }
-            return null;
-        }
-
-        @Override
-        protected void onProgressUpdate(String... values) {
-        }
-    }
-
-    public class OutgoingCommTask extends AsyncTask<String, Void, String> {
-
-        @Override
-        protected void onPreExecute() {
-        }
-
-        @Override
-        protected String doInBackground(String... params) {
-            if (mCliSocket == null) {
-                try {
-                    mCliSocket = new SimWifiP2pSocket(params[0],
-                            Integer.parseInt(getString(R.string.port)));
-                } catch (UnknownHostException e) {
-                    return "Unknown Host:" + e.getMessage();
-                } catch (IOException e) {
-                    return "IO error:" + e.getMessage();
-                }
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-
-        }
-    }
-
-    public class SendCommTask extends AsyncTask<String, String, Void> {
-
-        @Override
-        protected Void doInBackground(String... msg) {
-            try {
-                mCliSocket.getOutputStream().write((msg[0] + "\n").getBytes());
-                BufferedReader sockIn = new BufferedReader(
-                        new InputStreamReader(mCliSocket.getInputStream()));
-                sockIn.readLine();
-                mCliSocket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            //mCliSocket = null;
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void result) {
-        }
-    }
-
-    @Override
-    public void onPeersAvailable(SimWifiP2pDeviceList peers) {
-
-        if (peers.getDeviceList().size() > 0) {
-            for (SimWifiP2pDevice device : peers.getDeviceList()) {
-
-            }
-        }
-    }
-
-    @Override
-    public void onGroupInfoAvailable(SimWifiP2pDeviceList devices,
-                                     SimWifiP2pInfo groupInfo) {
-
-        if (groupInfo.getDevicesInNetwork().size() > 0) {
-            for (String deviceName : groupInfo.getDevicesInNetwork()) {
-
-            }
-        }
     }
 
 }
