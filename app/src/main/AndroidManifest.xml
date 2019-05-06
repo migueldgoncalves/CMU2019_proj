@@ -60,6 +60,8 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+        <service android:name="pt.inesc.termite.wifidirect.service.SimWifiP2pService" />
     </application>
 
 </manifest>
