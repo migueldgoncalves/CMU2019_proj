@@ -47,8 +47,6 @@ public class SimWifiP2pBroadcastReceiver extends BroadcastReceiver {
             Toast.makeText(mActivity, "Peer list changed",
                     Toast.LENGTH_SHORT).show();
 
-            termiteComponent.requestPeers();
-
         } else if (SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION.equals(action)) {
 
             SimWifiP2pInfo ginfo = (SimWifiP2pInfo) intent.getSerializableExtra(
@@ -64,6 +62,9 @@ public class SimWifiP2pBroadcastReceiver extends BroadcastReceiver {
             ginfo.print();
             Toast.makeText(mActivity, "Group ownership changed",
                     Toast.LENGTH_SHORT).show();
+
+            termiteComponent.requestPeers();
+
         }
     }
 }
