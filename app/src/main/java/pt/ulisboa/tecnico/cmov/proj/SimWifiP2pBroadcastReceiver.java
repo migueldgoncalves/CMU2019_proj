@@ -12,10 +12,12 @@ import android.widget.Toast;
 public class SimWifiP2pBroadcastReceiver extends BroadcastReceiver {
 
     private AppCompatActivity mActivity;
+    private TermiteComponent termiteComponent;
 
-    public SimWifiP2pBroadcastReceiver(AppCompatActivity activity) {
+    public SimWifiP2pBroadcastReceiver(AppCompatActivity activity, TermiteComponent termiteComponent) {
         super();
         this.mActivity = activity;
+        this.termiteComponent = termiteComponent;
     }
 
     @Override
@@ -44,6 +46,8 @@ public class SimWifiP2pBroadcastReceiver extends BroadcastReceiver {
 
             Toast.makeText(mActivity, "Peer list changed",
                     Toast.LENGTH_SHORT).show();
+
+            termiteComponent.requestPeers();
 
         } else if (SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION.equals(action)) {
 

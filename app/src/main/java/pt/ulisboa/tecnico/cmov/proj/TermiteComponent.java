@@ -3,6 +3,7 @@ package pt.ulisboa.tecnico.cmov.proj;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.IBinder;
@@ -15,18 +16,22 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 
+import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
 import pt.inesc.termite.wifidirect.SimWifiP2pDeviceList;
 import pt.inesc.termite.wifidirect.SimWifiP2pInfo;
 import pt.inesc.termite.wifidirect.SimWifiP2pManager;
 import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
+import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketManager;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
 public class TermiteComponent implements SimWifiP2pManager.PeerListListener, SimWifiP2pManager.GroupInfoListener {
 
     public static final String TAG = "msgsender";
+    public static final String REQUEST_USERNAME = "REQUEST_USERNAME";
     private SimWifiP2pManager mManager = null;
     private SimWifiP2pManager.Channel mChannel = null;
     private Messenger mService = null;
@@ -35,10 +40,12 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     private SimWifiP2pBroadcastReceiver mReceiver = null;
     private ServiceConnection mConnection = null;
     private AppCompatActivity activity = null;
+    private HashMap<String, String> userMap = new HashMap<>();
 
     public TermiteComponent(AppCompatActivity activity, Context context, Looper looper) {
         this.activity = activity;
         createConnection(context, looper);
+        initTermite(context);
         beginService(context);
     }
 
@@ -61,6 +68,19 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         };
     }
 
+    private void initTermite(Context context) {
+        SimWifiP2pSocketManager.Init(context);
+
+        // register broadcast receiver
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_STATE_CHANGED_ACTION);
+        filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_PEERS_CHANGED_ACTION);
+        filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION);
+        filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION);
+        mReceiver = new SimWifiP2pBroadcastReceiver(activity, this);
+        activity.registerReceiver(mReceiver, filter);
+    }
+
     private void beginService(Context context) {
 
         Intent intent = new Intent(context, SimWifiP2pService.class);
@@ -69,6 +89,10 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         // spawn the chat server background task
         new IncommingCommTask().executeOnExecutor(
                 AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    public void requestPeers() {
+        mManager.requestPeers(mChannel, this);
     }
 
     private String getCatalog() {
@@ -81,18 +105,24 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         return "User";
     }
 
-    public void sendText() {
+    private void sendText() {
         String catalog = getCatalog();
         new SendCommTask().executeOnExecutor(
                 AsyncTask.THREAD_POOL_EXECUTOR,
                 catalog);
     }
 
-    public void sendUsername() {
+    private void sendUsername() {
         String username = getUsername();
         new SendCommTask().executeOnExecutor(
                 AsyncTask.THREAD_POOL_EXECUTOR,
                 username);
+    }
+
+    private void requestUsername(String ipAddress) {
+        new RequestUsernameTask().executeOnExecutor(
+                AsyncTask.THREAD_POOL_EXECUTOR,
+                ipAddress);
     }
 
 
@@ -120,7 +150,12 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                         BufferedReader sockIn = new BufferedReader(
                                 new InputStreamReader(sock.getInputStream()));
                         String st = sockIn.readLine();
-                        Log.d(TAG, "Received Message: " + st);
+                        String[] result = st.split(" ");
+                        if (result.length > 0) {
+                            if (result[0].equals(REQUEST_USERNAME)) {
+
+                            }
+                        }
                         publishProgress(st);
                         sock.getOutputStream().write(("\n").getBytes());
                     } catch (IOException e) {
@@ -142,7 +177,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         }
     }
 
-    public class OutgoingCommTask extends AsyncTask<String, Void, String> {
+    public class RequestUsernameTask extends AsyncTask<String, Void, String> {
 
         @Override
         protected void onPreExecute() {
@@ -154,6 +189,12 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                 try {
                     mCliSocket = new SimWifiP2pSocket(params[0],
                             10001);
+
+                    mCliSocket.getOutputStream().write((REQUEST_USERNAME + " " + "\n").getBytes());
+                    BufferedReader sockIn = new BufferedReader(
+                            new InputStreamReader(mCliSocket.getInputStream()));
+                    sockIn.readLine();
+                    mCliSocket.close();
                 } catch (UnknownHostException e) {
                     return "Unknown Host:" + e.getMessage();
                 } catch (IOException e) {
@@ -208,12 +249,14 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                                      SimWifiP2pInfo groupInfo) {
 
         if (groupInfo.getDevicesInNetwork().size() > 0) {
-            sendUsername();
-            /*
-            for (String deviceName : groupInfo.getDevicesInNetwork()) {
+            for (SimWifiP2pDevice device : devices.getDeviceList()) {
+                if (device.deviceName.equals(groupInfo.getDeviceName())) {
 
+                }
+                else {
+                    requestUsername(device.getVirtIp());
+                }
             }
-            */
         }
     }
 }
