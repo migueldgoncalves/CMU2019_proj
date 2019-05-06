@@ -109,7 +109,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
 
             try {
                 mSrvSocket = new SimWifiP2pSocketServer(
-                        R.string.port);
+                        10001);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -153,7 +153,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
             if (mCliSocket == null) {
                 try {
                     mCliSocket = new SimWifiP2pSocket(params[0],
-                            R.string.port);
+                            10001);
                 } catch (UnknownHostException e) {
                     return "Unknown Host:" + e.getMessage();
                 } catch (IOException e) {

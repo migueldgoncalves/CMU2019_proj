@@ -88,7 +88,6 @@ public class HomePage extends DropboxActivity implements
 
         termite = new TermiteComponent(this, getApplication(), getMainLooper());
 
-        /*
         URL_BASE = getString(R.string.serverIP);
         URL_CREATE_ALBUM = URL_BASE + "/createalbum";
         URL_LOAD_ALBUMS = URL_BASE + "/useralbums";
@@ -138,7 +137,6 @@ public class HomePage extends DropboxActivity implements
                 requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
             }
         }
-        */
     }
 
     void populateAlbumArray() {
