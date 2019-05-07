@@ -27,21 +27,24 @@ import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketManager;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
+import pt.ulisboa.tecnico.cmov.proj.Data.Peer2PhotoApp;
 
 public class TermiteComponent implements SimWifiP2pManager.PeerListListener, SimWifiP2pManager.GroupInfoListener {
 
     public static final String TAG = "msgsender";
     public static final String REQUEST_USERNAME = "REQUEST_USERNAME";
+    public static final String RETURN_USERNAME = "RETURN_USERNAME";
+
     public String virtualIP = "";
     private SimWifiP2pManager mManager = null;
     private SimWifiP2pManager.Channel mChannel = null;
     private Messenger mService = null;
     private SimWifiP2pSocketServer mSrvSocket = null;
-    private SimWifiP2pSocket mCliSocket = null;
     private SimWifiP2pBroadcastReceiver mReceiver = null;
     private ServiceConnection mConnection = null;
     private AppCompatActivity activity = null;
-    private HashMap<String, String> userMap = new HashMap<>();
+    private HashMap<String, String> usernameMap = new HashMap<>();
+    private HashMap<String, SimWifiP2pSocket> cliSocketMap = new HashMap<>();
 
     public TermiteComponent(AppCompatActivity activity, Context context, Looper looper) {
         this.activity = activity;
@@ -102,22 +105,8 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     }
 
     private String getUsername() {
-        //TODO: return Username!
-        return "User";
-    }
-
-    private void sendText() {
-        String catalog = getCatalog();
-        new SendCommTask().executeOnExecutor(
-                AsyncTask.THREAD_POOL_EXECUTOR,
-                catalog);
-    }
-
-    private void sendUsername() {
-        String username = getUsername();
-        new SendCommTask().executeOnExecutor(
-                AsyncTask.THREAD_POOL_EXECUTOR,
-                username);
+        Peer2PhotoApp app = (Peer2PhotoApp)activity.getApplication();
+        return (app != null) ? app.getUsername() : "User";
     }
 
     private void requestUsername(String ipAddress) {
@@ -126,9 +115,10 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                 ipAddress);
     }
 
-    private void sendMessage(String message, String ipAddress) throws UnknownHostException, IOException {
-        if (mCliSocket == null) mCliSocket = new SimWifiP2pSocket(ipAddress, 10001);
+    private void sendMessage(String message, String ipAddress) throws IOException {
+        if (!cliSocketMap.containsKey(ipAddress)) cliSocketMap.put(ipAddress, new SimWifiP2pSocket(ipAddress, 10001));
 
+        SimWifiP2pSocket mCliSocket = cliSocketMap.get(ipAddress);
         mCliSocket.getOutputStream().write(message.getBytes());
         BufferedReader sockIn = new BufferedReader(
                 new InputStreamReader(mCliSocket.getInputStream()));
@@ -136,6 +126,14 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         mCliSocket.close();
     }
 
+    private void processRequest(String[] request) throws IOException {
+        if (request[0].equals(REQUEST_USERNAME)) {
+            sendMessage(RETURN_USERNAME + " " + getUsername() + " " + request[2], request[1]);
+        }
+        else if (request[0].equals(RETURN_USERNAME)) {
+            usernameMap.put(request[2], request[1]);
+        }
+    }
 
     /*
      * Asynctasks implementing message exchange
@@ -163,9 +161,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                         String st = sockIn.readLine();
                         String[] result = st.split(" ");
                         if (result.length > 0) {
-                            if (result[0].equals(REQUEST_USERNAME)) {
-                                sendMessage(getUsername(), result[1]);
-                            }
+                            processRequest(result);
                         }
                         publishProgress(st);
                         sock.getOutputStream().write(("\n").getBytes());
@@ -182,10 +178,6 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
             }
             return null;
         }
-
-        @Override
-        protected void onProgressUpdate(String... values) {
-        }
     }
 
     public class RequestUsernameTask extends AsyncTask<String, Void, String> {
@@ -197,7 +189,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         @Override
         protected String doInBackground(String... params) {
             try {
-                String message = REQUEST_USERNAME + " " + virtualIP + "\n";
+                String message = REQUEST_USERNAME + " " + virtualIP + " " + params[0] +  "\n";
                 sendMessage(message, params[0]);
             } catch (UnknownHostException e) {
                 return "Unknown Host:" + e.getMessage();
@@ -205,33 +197,6 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                 return "IO error:" + e.getMessage();
             }
             return null;
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-
-        }
-    }
-
-    public class SendCommTask extends AsyncTask<String, String, Void> {
-
-        @Override
-        protected Void doInBackground(String... msg) {
-            try {
-                mCliSocket.getOutputStream().write((msg[0] + "\n").getBytes());
-                BufferedReader sockIn = new BufferedReader(
-                        new InputStreamReader(mCliSocket.getInputStream()));
-                sockIn.readLine();
-                mCliSocket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            //mCliSocket = null;
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void result) {
         }
     }
 
