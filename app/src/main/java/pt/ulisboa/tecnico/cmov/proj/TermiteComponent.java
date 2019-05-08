@@ -124,9 +124,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         mCliSocket.getOutputStream().write(message.getBytes());
         BufferedReader sockIn = new BufferedReader(
                 new InputStreamReader(mCliSocket.getInputStream()));
-        //TODO: Necessario??
-        //sockIn.readLine();
-        //TODO: Get virtual IP directly??
+        sockIn.readLine();
         mCliSocket.close();
     }
 
@@ -186,12 +184,12 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                         BufferedReader sockIn = new BufferedReader(
                                 new InputStreamReader(sock.getInputStream()));
                         String st = sockIn.readLine();
+                        sock.getOutputStream().write(("\n").getBytes());
                         String[] result = st.split(" ");
                         if (result.length > 0) {
                             processRequest(result);
                         }
                         publishProgress(st);
-                        sock.getOutputStream().write(("\n").getBytes());
                     } catch (IOException e) {
                         Log.d("Error reading socket:", e.getMessage());
                     } finally {
