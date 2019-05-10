@@ -28,29 +28,12 @@ import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
-import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
-import pt.inesc.termite.wifidirect.SimWifiP2pInfo;
-import pt.inesc.termite.wifidirect.SimWifiP2pManager;
-import pt.inesc.termite.wifidirect.SimWifiP2pManager.Channel;
-import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
-import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
-import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketManager;
-import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
-import pt.inesc.termite.wifidirect.SimWifiP2pDeviceList;
-import pt.inesc.termite.wifidirect.SimWifiP2pManager.PeerListListener;
-import pt.inesc.termite.wifidirect.SimWifiP2pManager.GroupInfoListener;
-
 import com.dropbox.core.android.Auth;
 import com.dropbox.core.v2.files.FileMetadata;
 
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -104,8 +87,6 @@ public class HomePage extends DropboxActivity implements
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        populateAlbumArray();
-
         albumAdapter = new AlbumAdapter(this, 0, albums);
         GridView albumTable = findViewById(R.id.album_grid);
         albumTable.setAdapter(albumAdapter);
@@ -133,22 +114,6 @@ public class HomePage extends DropboxActivity implements
                 requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
             }
         }
-    }
-
-    void populateAlbumArray() {
-        //TODO: Replace with fetching dropbox folder for all albums
-
-        /*
-        albums = new ArrayList<>(Arrays.asList(
-                new Album("Fotos 2019", R.drawable.empty_thumbnail),
-                new Album("Fotos 2018", R.drawable.empty_thumbnail),
-                new Album("Fotos 2017", R.drawable.empty_thumbnail),
-                new Album("Fotos 2016", R.drawable.empty_thumbnail),
-                new Album("Fotos 2015", R.drawable.empty_thumbnail),
-                new Album("Fotos 2014", R.drawable.empty_thumbnail),
-                new Album("Fotos 2013", R.drawable.empty_thumbnail)
-        ));
-        */
     }
 
     void updateAlbumAdapter() {

@@ -12,12 +12,15 @@ import android.os.Messenger;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
@@ -36,9 +39,11 @@ import pt.ulisboa.tecnico.cmov.proj.Data.User;
 public class TermiteComponent implements SimWifiP2pManager.PeerListListener, SimWifiP2pManager.GroupInfoListener {
 
     public static final String TAG = "msgsender";
-    public static final String REQUEST_USERNAME = "REQUEST_USERNAME";
-    public static final String RETURN_USERNAME = "RETURN_USERNAME";
+    public static final String SEND_USERNAME = "SEND_USERNAME";
     public static final String CATALOG = "CATALOG";
+    public static final String MESSAGE_SPLITTER = "|";
+    public static final String PATH_SPLITTER = ";";
+    public static final String ALBUM_USER_MAP_SPLITTER = "º";
 
     public String virtualIP = "";
     private SimWifiP2pManager mManager = null;
@@ -49,8 +54,10 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     private SimWifiP2pBroadcastReceiver mReceiver = null;
     private ServiceConnection mConnection = null;
     private AppCompatActivity activity = null;
-    private HashMap<String, String> usernameMap = new HashMap<>();
-    private HashMap<String, SimWifiP2pSocket> cliSocketMap = new HashMap<>();
+    private HashMap<String, String> ipUsernameMap = new HashMap<>();
+    private HashMap<String, SimWifiP2pSocket> ipSocketMap = new HashMap<>();
+    private HashMap<String, String[]> userPhotoMap = new HashMap<String, String[]>();
+    public HashMap<String, String[]> albumUserMap = new HashMap<String, String[]>();
 
     public TermiteComponent(AppCompatActivity activity, Context context, Looper looper) {
         this.activity = activity;
@@ -112,41 +119,45 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     }
 
     private void sendCatalogs() {
-        //TODO: Users not in album!
-        //TODO: What to change in server request?
-        HomePage_Wifi home = (HomePage_Wifi)activity;
-        if (home == null) return;
-
-        for (Album album : home.albums) {
-            for (User user : album.getAllUsers()) {
-                for (Map.Entry<String,String> userEntry : usernameMap.entrySet()) {
-                    if (userEntry.getValue().equals(user.getUserName())) {
-                        File localPhotosFile = new File(context.getFilesDir().getPath() + "/" + params[0] + "/" + params[0] + "_LOCAL.txt");
-                        sendCatalog("CATALOG CONTENT!?!?!?!?!", userEntry.getKey());
+        for (Map.Entry<String,String[]> albumEntry : albumUserMap.entrySet()) {
+            for (String user : albumEntry.getValue()) {
+                for (Map.Entry<String,String> userEntry : ipUsernameMap.entrySet()) {
+                    if (userEntry.getValue().equals(user)) {
+                        try {
+                            //TODO: Path devia ser nome ou id do album??
+                            File localPhotosFile = new File(context.getFilesDir().getPath() + "/" + albumEntry.getKey() + "/" + albumEntry.getKey() + "_LOCAL.txt");
+                            List<String> contents = FileUtils.readLines(localPhotosFile);
+                            sendCatalog(albumEntry.getKey(), contents, userEntry.getKey());
+                        }
+                        catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
         }
     }
 
-    private void requestUsername(String destinationIpAddress) {
-        String message = REQUEST_USERNAME + " " + virtualIP +  "\n";
+    private void sendUsername(String destinationIpAddress) {
+        String message = SEND_USERNAME + MESSAGE_SPLITTER + getUsername() + MESSAGE_SPLITTER + virtualIP +  "\n";
         new SendTask().executeOnExecutor(
                 AsyncTask.THREAD_POOL_EXECUTOR,
                 message, destinationIpAddress);
     }
 
-    private void sendCatalog(String catalogContent, String destinationIpAddress) {
-        String message = CATALOG + " " + virtualIP + " " + catalogContent + "\n";
+    private void sendCatalog(String albumId, List<String> catalogLines, String destinationIpAddress) {
+        String catalogContent = "";
+        for (String catalogLine : catalogLines) catalogContent += (catalogLine + ";");
+        String message = CATALOG + MESSAGE_SPLITTER + albumId + MESSAGE_SPLITTER + virtualIP + MESSAGE_SPLITTER + catalogContent + "\n";
         new SendTask().executeOnExecutor(
                 AsyncTask.THREAD_POOL_EXECUTOR,
                 message, destinationIpAddress);
     }
 
     private void sendMessage(String message, String ipAddress) throws IOException {
-        if (!cliSocketMap.containsKey(ipAddress)) cliSocketMap.put(ipAddress, new SimWifiP2pSocket(ipAddress, 10001));
+        if (!ipSocketMap.containsKey(ipAddress)) ipSocketMap.put(ipAddress, new SimWifiP2pSocket(ipAddress, 10001));
 
-        SimWifiP2pSocket mCliSocket = cliSocketMap.get(ipAddress);
+        SimWifiP2pSocket mCliSocket = ipSocketMap.get(ipAddress);
         mCliSocket.getOutputStream().write(message.getBytes());
         BufferedReader sockIn = new BufferedReader(
                 new InputStreamReader(mCliSocket.getInputStream()));
@@ -154,14 +165,11 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         mCliSocket.close();
     }
 
-    private void processRequest(String[] request) throws IOException {
-        if (request[0].equals(REQUEST_USERNAME)) {
-            sendMessage(RETURN_USERNAME + " " + getUsername() + " " + virtualIP, request[1]);
-        }
-        else if (request[0].equals(RETURN_USERNAME)) {
-            usernameMap.put(request[2], request[1]);
+    private void processRequest(String[] request) {
+        if (request[0].equals(SEND_USERNAME)) {
+            ipUsernameMap.put(request[2], request[1]);
             boolean requestCompleted = true;
-            for (String username : usernameMap.values()) {
+            for (String username : ipUsernameMap.values()) {
                 if (username.equals("")) {
                     requestCompleted = false;
                     break;
@@ -172,13 +180,15 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
             }
         }
         else if (request[0].equals(CATALOG)) {
-
-            processCatalog("");
+            processCatalog(request[1], request[2], request[3]);
         }
     }
 
-    void processCatalog(String catalog) {
-
+    void processCatalog(String albumId, String ownerIp, String catalog) {
+        String[] paths = catalog.split(PATH_SPLITTER);
+        String username = ipUsernameMap.get(ownerIp);
+        userPhotoMap.put(albumId+ALBUM_USER_MAP_SPLITTER+username, paths);
+        //TODO: What next??
     }
 
     /*
@@ -206,7 +216,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                                 new InputStreamReader(sock.getInputStream()));
                         String st = sockIn.readLine();
                         sock.getOutputStream().write(("\n").getBytes());
-                        String[] result = st.split(" ");
+                        String[] result = st.split(MESSAGE_SPLITTER);
                         if (result.length > 0) {
                             processRequest(result);
                         }
@@ -272,8 +282,8 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
             }
             for (SimWifiP2pDevice device : devices.getDeviceList()) {
                 if (!device.deviceName.equals(groupInfo.getDeviceName())) {
-                    usernameMap.put(device.getVirtIp(), "");
-                    requestUsername(device.getVirtIp());
+                    ipUsernameMap.put(device.getVirtIp(), "");
+                    sendUsername(device.getVirtIp());
                 }
             }
         }

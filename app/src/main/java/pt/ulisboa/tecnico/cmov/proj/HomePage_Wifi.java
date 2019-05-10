@@ -31,6 +31,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 
 import pt.ulisboa.tecnico.cmov.proj.Adapters.AlbumAdapter;
 import pt.ulisboa.tecnico.cmov.proj.Data.Album;
@@ -86,8 +87,6 @@ public class HomePage_Wifi extends DropboxActivity implements
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        populateAlbumArray();
-
         albumAdapter = new AlbumAdapter(this, 0, albums);
         GridView albumTable = findViewById(R.id.album_grid);
         albumTable.setAdapter(albumAdapter);
@@ -115,22 +114,6 @@ public class HomePage_Wifi extends DropboxActivity implements
                 requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
             }
         }
-    }
-
-    void populateAlbumArray() {
-        //TODO: Replace with fetching dropbox folder for all albums
-
-        /*
-        albums = new ArrayList<>(Arrays.asList(
-                new Album("Fotos 2019", R.drawable.empty_thumbnail),
-                new Album("Fotos 2018", R.drawable.empty_thumbnail),
-                new Album("Fotos 2017", R.drawable.empty_thumbnail),
-                new Album("Fotos 2016", R.drawable.empty_thumbnail),
-                new Album("Fotos 2015", R.drawable.empty_thumbnail),
-                new Album("Fotos 2014", R.drawable.empty_thumbnail),
-                new Album("Fotos 2013", R.drawable.empty_thumbnail)
-        ));
-        */
     }
 
     void updateAlbumAdapter() {
@@ -313,17 +296,18 @@ public class HomePage_Wifi extends DropboxActivity implements
         // User was added to album with same name as another album user already has;
         // User was added to album with a name different of all user's albums
         try{
+            HashMap<String, String[]> albumUserMap = new HashMap<String, String[]>();
             for (String albumId : albumIds) {
                 String albumName = httpResponse.getString(albumId);
+                String users = httpResponse.getString("Users_" + albumId);
+                albumUserMap.put(albumId, users.split(","));
                 if (((Peer2PhotoApp) getApplication()).getAlbumId(albumName) == null) {
                     if (!(new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName).exists())) {
-                        createAlbumInCloud(albumName, albumId);
                         addNewAlbum(albumName);
                         Log.d("debug", "User has been added to album of other user and its name does not exist in user's albums");
                     } else {
                         File fileToDelete = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName);
                         if (fileToDelete.delete()) {
-                            createAlbumInCloud(albumName, albumId);
                             addNewAlbum(albumName);
                             Log.d("debug", "User has been added to album of other user and its name does not exist in user's albums");
                         }
@@ -331,17 +315,16 @@ public class HomePage_Wifi extends DropboxActivity implements
                 } else {
                     if (!((Peer2PhotoApp) getApplication()).getAlbumId(albumName).equals(albumId)) {
                         String newName = albumName + "_" + albumId;
-                        createAlbumInCloud(newName, albumId);
                         addNewAlbum(newName);
                         Log.d("debug", "User has been added to album of other user with name equal to one of user's albums");
                     } else {
                         if(!new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName).exists()){
-                            createAlbumInCloud(albumName, albumId);
                             addNewAlbum(albumName);
                         }
                     }
                 }
             }
+            termite.albumUserMap = albumUserMap;
         }catch (Exception e){
             e.printStackTrace();
         }
