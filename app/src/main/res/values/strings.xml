@@ -33,4 +33,6 @@
     <string name="mode_choosing_title">Select an operation mode</string>
     <string name="wifi_direct_mode">WiFi Direct Mode</string>
     <string name="cloud_mode">Cloud Mode</string>
+    <string name="logs_default_text">No logs to display</string>
+    <string name="app_refresh">Refresh</string>
 </resources>
