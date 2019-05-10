@@ -1,15 +1,10 @@
 package pt.ulisboa.tecnico.cmov.proj;
 
 import android.Manifest;
-import android.content.ComponentName;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.IBinder;
-import android.os.Messenger;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -28,29 +23,12 @@ import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
-import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
-import pt.inesc.termite.wifidirect.SimWifiP2pInfo;
-import pt.inesc.termite.wifidirect.SimWifiP2pManager;
-import pt.inesc.termite.wifidirect.SimWifiP2pManager.Channel;
-import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
-import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
-import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketManager;
-import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
-import pt.inesc.termite.wifidirect.SimWifiP2pDeviceList;
-import pt.inesc.termite.wifidirect.SimWifiP2pManager.PeerListListener;
-import pt.inesc.termite.wifidirect.SimWifiP2pManager.GroupInfoListener;
-
 import com.dropbox.core.android.Auth;
 import com.dropbox.core.v2.files.FileMetadata;
 
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -64,7 +42,7 @@ import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequestDeleteSession;
 import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequestGetUserAlbums;
 import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequestPostCreateAlbum;
 
-public class HomePage extends DropboxActivity implements
+public class HomePage_Wifi extends DropboxActivity implements
         NavigationView.OnNavigationItemSelectedListener {
 
     private final static String ACCESS_KEY = "ktxcdvzt610l2ao";
@@ -76,13 +54,17 @@ public class HomePage extends DropboxActivity implements
     public String URL_LOAD_ALBUMS;
     public String URL_SIGNOUT;
 
-    private static ArrayList<Album> albums = new ArrayList<>();
+    private TermiteComponent termite = null;
+
+    public static ArrayList<Album> albums = new ArrayList<>();
     private static ArrayAdapter<Album> albumAdapter = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_page);
+
+        termite = new TermiteComponent(this, getApplication(), getMainLooper());
 
         URL_BASE = getString(R.string.serverIP);
         URL_CREATE_ALBUM = URL_BASE + "/createalbum";
@@ -113,7 +95,7 @@ public class HomePage extends DropboxActivity implements
         loadAlbums();
 
         albumTable.setOnItemClickListener((parent, view, position, id) -> {
-            Intent intent = new Intent(HomePage.this, AlbumView.class);
+            Intent intent = new Intent(HomePage_Wifi.this, AlbumView.class);
             Bundle b = new Bundle();
             b.putString("AlbumName", albums.get(position).getAlbumName()); //Your id
             intent.putExtras(b); //Put your id to your next Intent
@@ -156,7 +138,7 @@ public class HomePage extends DropboxActivity implements
 
         GridView albumTable = findViewById(R.id.album_grid);
         albumTable.setOnItemClickListener((parent, view, position, id) -> {
-            Intent intent = new Intent(HomePage.this, AlbumView.class);
+            Intent intent = new Intent(HomePage_Wifi.this, AlbumView.class);
             Bundle b = new Bundle();
             b.putString("AlbumName", albums.get(position).getAlbumName()); //Your id
             intent.putExtras(b); //Put your id to your next Intent
@@ -207,19 +189,19 @@ public class HomePage extends DropboxActivity implements
         int id = item.getItemId();
 
         if (id == R.id.nav_home) {
-            startActivity(new Intent(HomePage.this, HomePage.class));
+            startActivity(new Intent(HomePage_Wifi.this, HomePage_Wifi.class));
         } else if (id == R.id.nav_createAlbum) {
             createAlbumByUser();
         }else if (id == R.id.nav_findUsers){
-            startActivity(new Intent(HomePage.this, FindUsers.class));
+            startActivity(new Intent(HomePage_Wifi.this, FindUsers.class));
         } else if (id == R.id.nav_logs) {
-            startActivity(new Intent(HomePage.this, LogView.class));
+            startActivity(new Intent(HomePage_Wifi.this, LogView.class));
         } else if (id == R.id.nav_dropbox) {
 
             if(!hasToken()){
-                Auth.startOAuth2Authentication(HomePage.this, ACCESS_KEY);
+                Auth.startOAuth2Authentication(HomePage_Wifi.this, ACCESS_KEY);
             }else {
-                Toast.makeText(HomePage.this, "You Are Already Logged In To Your Dropbox",
+                Toast.makeText(HomePage_Wifi.this, "You Are Already Logged In To Your Dropbox",
                         Toast.LENGTH_LONG).show();
             }
 
@@ -241,7 +223,7 @@ public class HomePage extends DropboxActivity implements
         super.onResume();
 
         if(hasToken()){
-            Toast.makeText(HomePage.this, "You Are Now Logged In To Your Dropbox", Toast.LENGTH_LONG).show();
+            Toast.makeText(HomePage_Wifi.this, "You Are Now Logged In To Your Dropbox", Toast.LENGTH_LONG).show();
             TextView username = findViewById(R.id.UsernameDisplay);
             TextView mail = findViewById(R.id.MailDisplay);
             try{
@@ -264,10 +246,10 @@ public class HomePage extends DropboxActivity implements
     }
 
     private void createAlbumByUser(){
-        AlertDialog.Builder builder = new AlertDialog.Builder(HomePage.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(HomePage_Wifi.this);
         builder.setTitle("Album Title");
 
-        final EditText input = new EditText(HomePage.this);
+        final EditText input = new EditText(HomePage_Wifi.this);
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL);
         builder.setView(input);
 
@@ -296,11 +278,11 @@ public class HomePage extends DropboxActivity implements
     }
 
     public void createAlbumInCloud(String albumName, String albumId){
-        new UploadFileTask(HomePage.this, DropboxClientFactory.getClient(), new UploadFileTask.Callback(){
+        new UploadFileTask(HomePage_Wifi.this, DropboxClientFactory.getClient(), new UploadFileTask.Callback(){
 
             @Override
             public void onUploadComplete(FileMetadata result) {
-                Toast.makeText(HomePage.this, "Upload Complete!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(HomePage_Wifi.this, "Upload Complete!", Toast.LENGTH_SHORT).show();
                 ((Peer2PhotoApp) getApplication()).addAlbum(albumId, albumName, getApplicationContext().getFilesDir().getPath() + "/albums.txt");
             }
 

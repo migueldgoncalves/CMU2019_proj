@@ -13,10 +13,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.Map;
 
 import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
@@ -27,7 +29,9 @@ import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketManager;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
+import pt.ulisboa.tecnico.cmov.proj.Data.Album;
 import pt.ulisboa.tecnico.cmov.proj.Data.Peer2PhotoApp;
+import pt.ulisboa.tecnico.cmov.proj.Data.User;
 
 public class TermiteComponent implements SimWifiP2pManager.PeerListListener, SimWifiP2pManager.GroupInfoListener {
 
@@ -39,6 +43,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     public String virtualIP = "";
     private SimWifiP2pManager mManager = null;
     private SimWifiP2pManager.Channel mChannel = null;
+    private Context context = null;
     private Messenger mService = null;
     private SimWifiP2pSocketServer mSrvSocket = null;
     private SimWifiP2pBroadcastReceiver mReceiver = null;
@@ -49,6 +54,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
 
     public TermiteComponent(AppCompatActivity activity, Context context, Looper looper) {
         this.activity = activity;
+        this.context = context;
         createConnection(context, looper);
         initTermite(context);
         beginService(context);
@@ -100,18 +106,38 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         mManager.requestGroupInfo(mChannel, this);
     }
 
-    private String getCatalog() {
-        //TODO: return Catalog content
-        return "Catalog";
-    }
-
     private String getUsername() {
         Peer2PhotoApp app = (Peer2PhotoApp)activity.getApplication();
         return (app != null) ? app.getUsername() : "User";
     }
 
+    private void sendCatalogs() {
+        //TODO: Users not in album!
+        //TODO: What to change in server request?
+        HomePage_Wifi home = (HomePage_Wifi)activity;
+        if (home == null) return;
+
+        for (Album album : home.albums) {
+            for (User user : album.getAllUsers()) {
+                for (Map.Entry<String,String> userEntry : usernameMap.entrySet()) {
+                    if (userEntry.getValue().equals(user.getUserName())) {
+                        File localPhotosFile = new File(context.getFilesDir().getPath() + "/" + params[0] + "/" + params[0] + "_LOCAL.txt");
+                        sendCatalog("CATALOG CONTENT!?!?!?!?!", userEntry.getKey());
+                    }
+                }
+            }
+        }
+    }
+
     private void requestUsername(String destinationIpAddress) {
         String message = REQUEST_USERNAME + " " + virtualIP +  "\n";
+        new SendTask().executeOnExecutor(
+                AsyncTask.THREAD_POOL_EXECUTOR,
+                message, destinationIpAddress);
+    }
+
+    private void sendCatalog(String catalogContent, String destinationIpAddress) {
+        String message = CATALOG + " " + virtualIP + " " + catalogContent + "\n";
         new SendTask().executeOnExecutor(
                 AsyncTask.THREAD_POOL_EXECUTOR,
                 message, destinationIpAddress);
@@ -145,19 +171,14 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                 sendCatalogs();
             }
         }
-    }
+        else if (request[0].equals(CATALOG)) {
 
-    private void sendCatalogs() {
-        for (String ipAddress : usernameMap.keySet()) {
-            sendCatalog(ipAddress);
+            processCatalog("");
         }
     }
 
-    private void sendCatalog(String destinationIpAddress) {
-        String message = CATALOG + " " + virtualIP + " " + destinationIpAddress +  "\n";
-        new SendTask().executeOnExecutor(
-                AsyncTask.THREAD_POOL_EXECUTOR,
-                message, destinationIpAddress);
+    void processCatalog(String catalog) {
+
     }
 
     /*
@@ -241,10 +262,12 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                                      SimWifiP2pInfo groupInfo) {
 
         if (groupInfo.getDevicesInNetwork().size() > 0) {
-            for (SimWifiP2pDevice device : devices.getDeviceList()) {
-                if (device.deviceName.equals(groupInfo.getDeviceName())) {
-                    virtualIP = device.getVirtIp();
-                    break;
+            if (virtualIP == "") {
+                for (SimWifiP2pDevice device : devices.getDeviceList()) {
+                    if (device.deviceName.equals(groupInfo.getDeviceName())) {
+                        virtualIP = device.getVirtIp();
+                        break;
+                    }
                 }
             }
             for (SimWifiP2pDevice device : devices.getDeviceList()) {
