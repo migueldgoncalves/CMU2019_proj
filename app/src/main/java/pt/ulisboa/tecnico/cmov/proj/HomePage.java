@@ -1,15 +1,10 @@
 package pt.ulisboa.tecnico.cmov.proj;
 
 import android.Manifest;
-import android.content.ComponentName;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.IBinder;
-import android.os.Messenger;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -59,6 +54,8 @@ public class HomePage extends DropboxActivity implements
     public String URL_LOAD_ALBUMS;
     public String URL_SIGNOUT;
 
+    private boolean usingWifiDirect = false;
+
     private static ArrayList<Album> albums = new ArrayList<>();
     private static ArrayAdapter<Album> albumAdapter = null;
 
@@ -66,6 +63,8 @@ public class HomePage extends DropboxActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_page);
+
+        usingWifiDirect = savedInstanceState.getBoolean("isWifi");
 
         URL_BASE = getString(R.string.serverIP);
         URL_CREATE_ALBUM = URL_BASE + "/createalbum";
@@ -116,6 +115,7 @@ public class HomePage extends DropboxActivity implements
         }
     }
 
+    /*
     void updateAlbumAdapter() {
         albumAdapter.notifyDataSetChanged();
 
@@ -129,6 +129,7 @@ public class HomePage extends DropboxActivity implements
             finish();
         });
     }
+    */
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -291,6 +292,7 @@ public class HomePage extends DropboxActivity implements
         HttpRequestGetUserAlbums.httpRequest(((Peer2PhotoApp)getApplication()).getUsername(), ((Peer2PhotoApp)getApplication()).getSessionId(), URL_LOAD_ALBUMS);
     }
 
+
     public void parseAlbumNames(String[] albumIds, JSONObject httpResponse) {
         // 3\\ cases - User was not added to third party albums;
         // User was added to album with same name as another album user already has;
@@ -300,13 +302,13 @@ public class HomePage extends DropboxActivity implements
                 String albumName = httpResponse.getString(albumId);
                 if (((Peer2PhotoApp) getApplication()).getAlbumId(albumName) == null) {
                     if (!(new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName).exists())) {
-                        createAlbumInCloud(albumName, albumId);
+                        if (!usingWifiDirect) createAlbumInCloud(albumName, albumId);
                         addNewAlbum(albumName);
                         Log.d("debug", "User has been added to album of other user and its name does not exist in user's albums");
                     } else {
                         File fileToDelete = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName);
                         if (fileToDelete.delete()) {
-                            createAlbumInCloud(albumName, albumId);
+                            if (!usingWifiDirect) createAlbumInCloud(albumName, albumId);
                             addNewAlbum(albumName);
                             Log.d("debug", "User has been added to album of other user and its name does not exist in user's albums");
                         }
@@ -314,12 +316,12 @@ public class HomePage extends DropboxActivity implements
                 } else {
                     if (!((Peer2PhotoApp) getApplication()).getAlbumId(albumName).equals(albumId)) {
                         String newName = albumName + "_" + albumId;
-                        createAlbumInCloud(newName, albumId);
+                        if (!usingWifiDirect) createAlbumInCloud(newName, albumId);
                         addNewAlbum(newName);
                         Log.d("debug", "User has been added to album of other user with name equal to one of user's albums");
                     } else {
                         if(!new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName).exists()){
-                            createAlbumInCloud(albumName, albumId);
+                            if (!usingWifiDirect) createAlbumInCloud(albumName, albumId);
                             addNewAlbum(albumName);
                         }
                     }

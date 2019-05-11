@@ -53,10 +53,14 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
     public String URL_ALBUM;
     public String URL_ADD_USER_TO_ALBUM;
 
+    private boolean usingWifiDirect = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_album_view);
+
+        usingWifiDirect = savedInstanceState.getBoolean("isWifi");
 
         URL_BASE = getString(R.string.serverIP);
         URL_ALBUM = URL_BASE + "/album";
@@ -81,8 +85,6 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        populatePhotoArray();
-
         photoAdapter = new PhotoAdapter(this, 0, photos);
         GridView photoTable = findViewById(R.id.photo_grid);
         photoTable.setAdapter(photoAdapter);
@@ -93,30 +95,7 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
         navigationView.setNavigationItemSelectedListener(this);
 
         loadLocalPhotos();
-        getRemotePhotos();
-    }
-
-    protected void populatePhotoArray() {
-        //TODO: Replace with fetching all photos from album
-
-        /*
-        photos   = new ArrayList<>(Arrays.asList(
-                new Photo(BitmapFactory.decodeResource(getApplicationContext().getResources(),
-                        R.drawable.empty_thumbnail)),
-                new Photo(BitmapFactory.decodeResource(getApplicationContext().getResources(),
-                        R.drawable.empty_thumbnail)),
-                new Photo(BitmapFactory.decodeResource(getApplicationContext().getResources(),
-                        R.drawable.empty_thumbnail)),
-                new Photo(BitmapFactory.decodeResource(getApplicationContext().getResources(),
-                        R.drawable.empty_thumbnail)),
-                new Photo(BitmapFactory.decodeResource(getApplicationContext().getResources(),
-                        R.drawable.empty_thumbnail)),
-                new Photo(BitmapFactory.decodeResource(getApplicationContext().getResources(),
-                        R.drawable.empty_thumbnail)),
-                new Photo(BitmapFactory.decodeResource(getApplicationContext().getResources(),
-                        R.drawable.empty_thumbnail))
-        ));
-        */
+        if (!usingWifiDirect) getRemotePhotos();
     }
 
     private void addNewPhoto(Bitmap photoBitmap) {
@@ -299,7 +278,6 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
         else {
             android.util.Log.d("debug", "IT IS NOT A FILE!!");
         }
-
     }
 
     private void getRemotePhotos(){

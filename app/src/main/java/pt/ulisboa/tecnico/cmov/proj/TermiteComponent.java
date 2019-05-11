@@ -54,10 +54,11 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     private SimWifiP2pBroadcastReceiver mReceiver = null;
     private ServiceConnection mConnection = null;
     private AppCompatActivity activity = null;
-    private HashMap<String, String> ipUsernameMap = new HashMap<>();
-    private HashMap<String, SimWifiP2pSocket> ipSocketMap = new HashMap<>();
-    private HashMap<String, String[]> userPhotoMap = new HashMap<String, String[]>();
-    public HashMap<String, String[]> albumUserMap = new HashMap<String, String[]>();
+    private HashMap<String, String> ip_Username_Map = new HashMap<>();
+    private HashMap<String, SimWifiP2pSocket> ip_Socket_Map = new HashMap<>();
+    private HashMap<String, String[]> user_Photo_Map = new HashMap<String, String[]>();
+    public HashMap<String, String> albumId_albumName_Map = new HashMap<>();
+    public HashMap<String, String[]> albumName_User_Map = new HashMap<String, String[]>();
 
     public TermiteComponent(AppCompatActivity activity, Context context, Looper looper) {
         this.activity = activity;
@@ -119,22 +120,22 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     }
 
     private void sendCatalogs() {
-        for (Map.Entry<String,String[]> albumEntry : albumUserMap.entrySet()) {
-            for (String user : albumEntry.getValue()) {
-                for (Map.Entry<String,String> userEntry : ipUsernameMap.entrySet()) {
-                    if (userEntry.getValue().equals(user)) {
-                        try {
-                            //TODO: Path devia ser nome ou id do album??
-                            File localPhotosFile = new File(context.getFilesDir().getPath() + "/" + albumEntry.getKey() + "/" + albumEntry.getKey() + "_LOCAL.txt");
-                            List<String> contents = FileUtils.readLines(localPhotosFile);
+        try {
+            for (Map.Entry<String, String[]> albumEntry : albumName_User_Map.entrySet()) {
+                File localPhotosFile = new File(context.getFilesDir().getPath() + "/" + albumEntry.getKey() + "/" + albumEntry.getKey() + "_LOCAL.txt");
+                if (!localPhotosFile.isFile()) continue;
+                List<String> contents = FileUtils.readLines(localPhotosFile);
+                for (String user : albumEntry.getValue()) {
+                    for (Map.Entry<String, String> userEntry : ip_Username_Map.entrySet()) {
+                        if (userEntry.getValue().equals(user)) {
                             sendCatalog(albumEntry.getKey(), contents, userEntry.getKey());
-                        }
-                        catch (IOException e) {
-                            e.printStackTrace();
                         }
                     }
                 }
             }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -155,9 +156,9 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     }
 
     private void sendMessage(String message, String ipAddress) throws IOException {
-        if (!ipSocketMap.containsKey(ipAddress)) ipSocketMap.put(ipAddress, new SimWifiP2pSocket(ipAddress, 10001));
+        if (!ip_Socket_Map.containsKey(ipAddress)) ip_Socket_Map.put(ipAddress, new SimWifiP2pSocket(ipAddress, 10001));
 
-        SimWifiP2pSocket mCliSocket = ipSocketMap.get(ipAddress);
+        SimWifiP2pSocket mCliSocket = ip_Socket_Map.get(ipAddress);
         mCliSocket.getOutputStream().write(message.getBytes());
         BufferedReader sockIn = new BufferedReader(
                 new InputStreamReader(mCliSocket.getInputStream()));
@@ -167,9 +168,9 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
 
     private void processRequest(String[] request) {
         if (request[0].equals(SEND_USERNAME)) {
-            ipUsernameMap.put(request[2], request[1]);
+            ip_Username_Map.put(request[2], request[1]);
             boolean requestCompleted = true;
-            for (String username : ipUsernameMap.values()) {
+            for (String username : ip_Username_Map.values()) {
                 if (username.equals("")) {
                     requestCompleted = false;
                     break;
@@ -186,8 +187,8 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
 
     void processCatalog(String albumId, String ownerIp, String catalog) {
         String[] paths = catalog.split(PATH_SPLITTER);
-        String username = ipUsernameMap.get(ownerIp);
-        userPhotoMap.put(albumId+ALBUM_USER_MAP_SPLITTER+username, paths);
+        String username = ip_Username_Map.get(ownerIp);
+        user_Photo_Map.put(albumId+ALBUM_USER_MAP_SPLITTER+username, paths);
         //TODO: What next??
     }
 
@@ -282,7 +283,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
             }
             for (SimWifiP2pDevice device : devices.getDeviceList()) {
                 if (!device.deviceName.equals(groupInfo.getDeviceName())) {
-                    ipUsernameMap.put(device.getVirtIp(), "");
+                    ip_Username_Map.put(device.getVirtIp(), "");
                     sendUsername(device.getVirtIp());
                 }
             }

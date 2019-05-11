@@ -28,11 +28,20 @@
             android:label="@string/title_activity_album_view"
             android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity
+            android:name=".AlbumView_Wifi"
+            android:label="@string/title_activity_album_view"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity
             android:name=".FindUsers"
             android:label="@string/title_activity_find_users"
             android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity
             android:name=".HomePage"
+            android:label="@string/title_activity_home_page"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity
+            android:name=".HomePage_Wifi"
             android:label="@string/title_activity_home_page"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
