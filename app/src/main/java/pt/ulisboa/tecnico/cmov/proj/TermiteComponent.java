@@ -16,7 +16,9 @@ import android.widget.Toast;
 import org.apache.commons.io.FileUtils;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.UnknownHostException;
@@ -56,8 +58,8 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     private HashMap<String, String> ip_Username_Map = new HashMap<>();
     private HashMap<String, SimWifiP2pSocket> ip_Socket_Map = new HashMap<>();
     private HashMap<String, String[]> user_Photo_Map = new HashMap<String, String[]>();
-    public HashMap<String, String> albumId_albumName_Map = new HashMap<>();
     public HashMap<String, String[]> albumName_User_Map = new HashMap<String, String[]>();
+    public HashMap<String, String> albumId_albumName_Map = new HashMap<>();
 
     public TermiteComponent(AppCompatActivity activity, Context context, Looper looper) {
         this.activity = activity;
@@ -184,13 +186,36 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         }
     }
 
-    void processCatalog(String albumId, String ownerIp, String catalog) {
+    private void processCatalog(String albumId, String ownerIp, String catalog) {
         String[] paths = catalog.split(PATH_SPLITTER);
         String username = ip_Username_Map.get(ownerIp);
         String albumName = albumId_albumName_Map.get(albumId);
         user_Photo_Map.put(albumName+ALBUM_USER_MAP_SPLITTER+username, paths);
         Toast.makeText(context, "Received catalog from " + username, Toast.LENGTH_SHORT).show();
+
         File newUserCatalog = new File(context.getFilesDir().getPath() + "/" + albumName + "/" + "SLICE_" +  username + ".txt");
+        if (!newUserCatalog.isFile()) return;
+
+        try {
+            //TODO: Fazer log das cenas do Termite???
+            Log.d("debug", "Saved " + albumName + "-" + username + " catalog locally.");
+            BufferedWriter out = new BufferedWriter(new FileWriter(newUserCatalog, false));
+            out.write(catalog + "\n");
+            out.flush();
+            out.close();
+        }
+        catch (IOException e) {
+            Log.d("debug", "Failed to write catalog:");
+            e.printStackTrace();
+        }
+    }
+
+    private void clearData() {
+        ip_Username_Map.clear();
+        ip_Socket_Map.clear();
+        user_Photo_Map.clear();
+        albumName_User_Map.clear();
+        albumId_albumName_Map.clear();
     }
 
     /*
@@ -260,13 +285,6 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     @Override
     public void onPeersAvailable(SimWifiP2pDeviceList peers) {
 
-        if (peers.getDeviceList().size() > 0) {
-            /*
-            for (SimWifiP2pDevice device : peers.getDeviceList()) {
-
-            }
-            */
-        }
     }
 
     @Override
@@ -282,6 +300,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                     }
                 }
             }
+            clearData();
             for (SimWifiP2pDevice device : devices.getDeviceList()) {
                 if (!device.deviceName.equals(groupInfo.getDeviceName())) {
                     ip_Username_Map.put(device.getVirtIp(), "");
