@@ -49,5 +49,10 @@ public class AlbumView_Wifi extends AlbumView {
     protected void onCreate(Bundle savedInstanceState) {
         savedInstanceState.putBoolean("isWifi", true);
         super.onCreate(savedInstanceState);
+        getOtherUsersPhotos();
+    }
+
+    protected void getOtherUsersPhotos() {
+        File newUserCatalog = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName);
     }
 }

@@ -52,6 +52,7 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
     public String URL_BASE;
     public String URL_ALBUM;
     public String URL_ADD_USER_TO_ALBUM;
+    protected String albumName = "";
 
     private boolean usingWifiDirect = false;
 
@@ -68,7 +69,8 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        toolbar.setTitle(getIntent().getStringExtra("AlbumName"));
+        albumName = getIntent().getStringExtra("AlbumName");
+        toolbar.setTitle(albumName);
 
         photos.clear(); //Não eliminar esta linha
 
@@ -205,13 +207,7 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
                 String usernameToAdd = input.getText().toString();
                 String sessionId = ((Peer2PhotoApp) getApplication()).getSessionId();
                 String username = ((Peer2PhotoApp) getApplication()).getUsername();
-
-                Bundle b = getIntent().getExtras();
-                String value = "ERROR"; // or other values
-                if(b != null)
-                    value = b.getString("AlbumName");
-
-                String albumId = ((Peer2PhotoApp) getApplication()).getAlbumId(value);
+                String albumId = ((Peer2PhotoApp) getApplication()).getAlbumId(albumName);
 
                 new HttpRequestPutAddUserToAlbum(this);
                 HttpRequestPutAddUserToAlbum.httpRequest(albumId, username, sessionId, usernameToAdd, URL_ADD_USER_TO_ALBUM);
@@ -256,13 +252,7 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
     }
 
     private void loadLocalPhotos(){
-
-        Bundle b = getIntent().getExtras();
-        String value = "ERROR"; // or other values
-        if(b != null)
-            value = b.getString("AlbumName");
-
-        File localPhotoPaths = new File(getApplicationContext().getFilesDir().getPath() + "/" + value + "/" + value + "_LOCAL.txt");
+        File localPhotoPaths = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName + "/" + albumName + "_LOCAL.txt");
 
         if(localPhotoPaths.isFile()){
             try{
@@ -281,16 +271,11 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
     }
 
     private void getRemotePhotos(){
-        Bundle b = getIntent().getExtras();
-        String value = "ERROR"; // or other values
-        if(b != null)
-            value = b.getString("AlbumName");
-
-        String AlbumId = ((Peer2PhotoApp) (getApplication())).getAlbumId(value);
+        String AlbumId = ((Peer2PhotoApp) (getApplication())).getAlbumId(albumName);
         String SessionId = ((Peer2PhotoApp) (getApplication())).getSessionId();
         String Username = ((Peer2PhotoApp) (getApplication())).getUsername();
 
-        File imageRoot = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), getString(R.string.app_directory_name) + "/" + value);
+        File imageRoot = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), getString(R.string.app_directory_name) + "/" + albumName);
 
         if(imageRoot.exists() && imageRoot.isDirectory()){
             try{

@@ -11,6 +11,7 @@ import android.os.Looper;
 import android.os.Messenger;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.apache.commons.io.FileUtils;
 
@@ -32,9 +33,7 @@ import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketManager;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
-import pt.ulisboa.tecnico.cmov.proj.Data.Album;
 import pt.ulisboa.tecnico.cmov.proj.Data.Peer2PhotoApp;
-import pt.ulisboa.tecnico.cmov.proj.Data.User;
 
 public class TermiteComponent implements SimWifiP2pManager.PeerListListener, SimWifiP2pManager.GroupInfoListener {
 
@@ -188,8 +187,10 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     void processCatalog(String albumId, String ownerIp, String catalog) {
         String[] paths = catalog.split(PATH_SPLITTER);
         String username = ip_Username_Map.get(ownerIp);
-        user_Photo_Map.put(albumId+ALBUM_USER_MAP_SPLITTER+username, paths);
-        //TODO: What next??
+        String albumName = albumId_albumName_Map.get(albumId);
+        user_Photo_Map.put(albumName+ALBUM_USER_MAP_SPLITTER+username, paths);
+        Toast.makeText(context, "Received catalog from " + username, Toast.LENGTH_SHORT).show();
+        File newUserCatalog = new File(context.getFilesDir().getPath() + "/" + albumName + "/" + "SLICE_" +  username + ".txt");
     }
 
     /*
