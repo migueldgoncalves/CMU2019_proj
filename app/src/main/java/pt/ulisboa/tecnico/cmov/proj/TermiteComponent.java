@@ -18,9 +18,14 @@ import org.apache.commons.io.FileUtils;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +47,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     public static final String TAG = "msgsender";
     public static final String SEND_USERNAME = "SEND_USERNAME";
     public static final String CATALOG = "CATALOG";
+    public static final String PHOTO = "PHOTO";
     public static final String MESSAGE_SPLITTER = "|";
     public static final String PATH_SPLITTER = ";";
     public static final String ALBUM_USER_MAP_SPLITTER = "º";
@@ -120,6 +126,17 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         return (app != null) ? app.getUsername() : "User";
     }
 
+    public static String convertStreamToString(InputStream is) throws Exception {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        StringBuilder sb = new StringBuilder();
+        String line = null;
+        while ((line = reader.readLine()) != null) {
+            sb.append(line).append("\n");
+        }
+        reader.close();
+        return sb.toString();
+    }
+
     private void sendCatalogs() {
         try {
             for (Map.Entry<String, String[]> albumEntry : albumName_User_Map.entrySet()) {
@@ -156,6 +173,19 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                 message, destinationIpAddress);
     }
 
+    private void sendPhoto(File photo, String destinationIpAddress) {
+        try {
+            FileInputStream fin = new FileInputStream(photo);
+            String message = SEND_USERNAME + MESSAGE_SPLITTER + photo.getName() + MESSAGE_SPLITTER + convertStreamToString(fin) + "\n";
+            new SendTask().executeOnExecutor(
+                    AsyncTask.THREAD_POOL_EXECUTOR,
+                    message, destinationIpAddress);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void sendMessage(String message, String ipAddress) throws IOException {
         if (!ip_Socket_Map.containsKey(ipAddress)) ip_Socket_Map.put(ipAddress, new SimWifiP2pSocket(ipAddress, 10001));
 
@@ -170,6 +200,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     private void processRequest(String[] request) {
         if (request[0].equals(SEND_USERNAME)) {
             ip_Username_Map.put(request[2], request[1]);
+            //TODO: Redundant, must fix!!
             boolean requestCompleted = true;
             for (String username : ip_Username_Map.values()) {
                 if (username.equals("")) {
@@ -183,6 +214,9 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         }
         else if (request[0].equals(CATALOG)) {
             processCatalog(request[1], request[2], request[3]);
+        }
+        else if (request[0].equals(PHOTO)) {
+            processPhoto(request[1], request[2]);
         }
     }
 
@@ -206,6 +240,20 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         }
         catch (IOException e) {
             Log.d("debug", "Failed to write catalog:");
+            e.printStackTrace();
+        }
+    }
+
+    private void processPhoto(String fileName, String content) {
+        try {
+            //TODO: Create new file where??
+            File newPhoto = new File(context.getFilesDir().getPath(), fileName);
+            FileOutputStream outputStreamWriter = new FileOutputStream(newPhoto);
+            outputStreamWriter.write(content.getBytes());
+            outputStreamWriter.close();
+            //AlbumView.imageScalingAndPosting(filePath);
+        }
+        catch (IOException e) {
             e.printStackTrace();
         }
     }
