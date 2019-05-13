@@ -111,6 +111,8 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
     {
         super.onActivityResult(requestCode, resultCode, data);
 
+        //TODO: Verify what should and shouldn't be called in WifiDirect
+
         if(resultCode == RESULT_OK){
             Uri selectedImage = data.getData();
             String[] filePathColumn = {MediaStore.Images.Media.DATA};
@@ -130,16 +132,16 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
 
             String PhotoName = value + "_Photo_" + new Random().nextInt();
 
-            new UploadFileTask(AlbumView.this, DropboxClientFactory.getClient(), new UploadFileTask.Callback(){
-                 @Override
-                 public void onUploadComplete(FileMetadata result) {
+            new UploadFileTask(AlbumView.this, DropboxClientFactory.getClient(), new UploadFileTask.Callback() {
+                @Override
+                public void onUploadComplete(FileMetadata result) {
 
-                  }
+                }
 
-                  @Override
-                  public void onError(Exception e) {
+                @Override
+                public void onError(Exception e) {
 
-                 }
+                }
             }).execute(PhotoName, "/Peer2Photo", "NEW_PHOTO", filePath, value, ((Peer2PhotoApp) getApplication()).getSessionId(), ((Peer2PhotoApp) getApplication()).getUsername(), ((Peer2PhotoApp) getApplication()).getAlbumId(value));
 
             imageScalingAndPosting(filePath);

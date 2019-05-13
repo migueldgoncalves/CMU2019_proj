@@ -9,6 +9,7 @@ import android.os.AsyncTask;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Messenger;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
@@ -27,6 +28,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.UnknownHostException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -264,6 +266,15 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         user_Photo_Map.clear();
         albumName_User_Map.clear();
         albumId_albumName_Map.clear();
+    }
+
+    public void updateApplicationLogs(@NonNull String operation, @NonNull String operationResult){
+        String Operation = "OPERATION: " + operation + "\n";
+        String timeStamp = "TIMESTAMP: " + new Date().toString() + "\n";
+        String result = "RESULT: " + operationResult + "\n";
+
+        ((Peer2PhotoApp)activity.getApplication()).updateLog(Operation + timeStamp + result);
+
     }
 
     /*
