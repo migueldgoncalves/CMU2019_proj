@@ -17,8 +17,9 @@ public class HomePage_Wifi extends HomePage {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        savedInstanceState.putBoolean("isWifi", true);
-        super.onCreate(savedInstanceState);
+        Bundle bundle = savedInstanceState != null ? savedInstanceState : new Bundle();
+        bundle.putBoolean("isWifi", true);
+        super.onCreate(bundle);
 
         termite = new TermiteComponent(this, getApplication(), getMainLooper());
     }
@@ -38,23 +39,23 @@ public class HomePage_Wifi extends HomePage {
                 albumName_User_Map.put(albumName, users.split(","));
                 if (((Peer2PhotoApp) getApplication()).getAlbumId(albumName) == null) {
                     if (!(new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName).exists())) {
-                        addNewAlbum(albumName);
+                        addNewAlbum(albumId, albumName);
                         Log.d("debug", "User has been added to album of other user and its name does not exist in user's albums");
                     } else {
                         File fileToDelete = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName);
                         if (fileToDelete.delete()) {
-                            addNewAlbum(albumName);
+                            addNewAlbum(albumId, albumName);
                             Log.d("debug", "User has been added to album of other user and its name does not exist in user's albums");
                         }
                     }
                 } else {
                     if (!((Peer2PhotoApp) getApplication()).getAlbumId(albumName).equals(albumId)) {
                         String newName = albumName + "_" + albumId;
-                        addNewAlbum(newName);
+                        addNewAlbum(albumId, newName);
                         Log.d("debug", "User has been added to album of other user with name equal to one of user's albums");
                     } else {
                         if(!new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName).exists()){
-                            addNewAlbum(albumName);
+                            addNewAlbum(albumId, albumName);
                         }
                     }
                 }

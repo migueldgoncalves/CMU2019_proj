@@ -54,18 +54,12 @@ public class FindUsers extends AppCompatActivity implements NavigationView.OnNav
         String URL_BASE = getString(R.string.serverIP);
         String URL_GET_ALL_USERS = URL_BASE + "/users";
 
-
         String sessionId = ((Peer2PhotoApp)getApplication()).getSessionId();
         String username = ((Peer2PhotoApp)getApplication()).getUsername();
         String URL = URL_GET_ALL_USERS + "/" + sessionId + "/" + username;
 
         new HttpRequestGetAllUsers(this);
         HttpRequestGetAllUsers.httpRequest(URL);
-
-        users = new ArrayList<>(Arrays.asList(
-                new User(0, "Joao"),
-                new User(1, "Jacinto")
-        ));
 
         userAdapter = new UserAdapter(this, 0, users);
         ListView userTable = findViewById(R.id.userList);
@@ -86,14 +80,12 @@ public class FindUsers extends AppCompatActivity implements NavigationView.OnNav
             public void onTextChanged(CharSequence s, int start,
                                       int before, int count) {
                 //TODO: Comecamos a procurar depois do utilizador introduzir 2 caracteres?
+                /*
                 if(s.length() > 1)
                     sendServerRequest(s.toString());
+                */
             }
         });
-    }
-
-    protected void sendServerRequest(String userName) {
-        //TODO: Gonçalo este metodo ainda e necessario ?
     }
 
     @Override
@@ -102,6 +94,8 @@ public class FindUsers extends AppCompatActivity implements NavigationView.OnNav
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
+            Intent intent = new Intent();
+            setResult(Activity.RESULT_CANCELED, intent);
             super.onBackPressed();
         }
     }
@@ -179,10 +173,15 @@ public class FindUsers extends AppCompatActivity implements NavigationView.OnNav
     }
 
     public void parseUsers(@NonNull String allUsers){
+        users.clear();
         String[] parsedUsers = allUsers.split(",");
-
-        //TODO: Gonçalo o vetor parsedUsers contem os usernames de todos os utilizadores do sistema, este metodo vai ser executado onCreate e aquilo que preciso que facas e apresentar todos os usernames que estao no vetor de strings da forma que tens o joao e o jacinto apresentados
-
+        Peer2PhotoApp app = (Peer2PhotoApp)getApplication();
+        String myUsername = (app != null) ? app.getUsername() : "User";
+        for (int i = 0; i < parsedUsers.length; i++) {
+            //TODO: UserId desnecessario!!
+            if (!myUsername.equals(parsedUsers[i])) users.add(new User(i, parsedUsers[i]));
+        }
+        userAdapter.notifyDataSetChanged();
     }
 
 }

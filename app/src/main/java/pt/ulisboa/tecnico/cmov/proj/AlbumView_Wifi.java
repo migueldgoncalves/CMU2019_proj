@@ -16,7 +16,8 @@ public class AlbumView_Wifi extends AlbumView {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        savedInstanceState.putBoolean("isWifi", true);
+        Bundle bundle = savedInstanceState != null ? savedInstanceState : new Bundle();
+        bundle.putBoolean("isWifi", true);
         super.onCreate(savedInstanceState);
         getOtherUsersPhotos();
     }

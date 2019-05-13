@@ -64,7 +64,7 @@ public class HomePage extends DropboxActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_page);
 
-        usingWifiDirect = savedInstanceState.getBoolean("isWifi");
+        usingWifiDirect = savedInstanceState != null ? savedInstanceState.getBoolean("isWifi") : false;
 
         URL_BASE = getString(R.string.serverIP);
         URL_CREATE_ALBUM = URL_BASE + "/createalbum";
@@ -93,10 +93,11 @@ public class HomePage extends DropboxActivity implements
         loadAlbums();
 
         albumTable.setOnItemClickListener((parent, view, position, id) -> {
-            Intent intent = new Intent(HomePage.this, AlbumView.class);
+            Intent intent = new Intent(HomePage.this, usingWifiDirect ? AlbumView_Wifi.class :  AlbumView.class);
             Bundle b = new Bundle();
-            b.putString("AlbumName", albums.get(position).getAlbumName()); //Your id
-            intent.putExtras(b); //Put your id to your next Intent
+            b.putString("AlbumId", albums.get(position).getAlbumId());
+            b.putString("AlbumName", albums.get(position).getAlbumName());
+            intent.putExtras(b);
             startActivity(intent);
             finish();
         });
@@ -182,6 +183,7 @@ public class HomePage extends DropboxActivity implements
             startActivity(new Intent(HomePage.this, LogView.class));
         } else if (id == R.id.nav_dropbox) {
 
+            //TODO: Remove this from WifiDirect
             if(!hasToken()){
                 Auth.startOAuth2Authentication(HomePage.this, ACCESS_KEY);
             }else {
@@ -224,8 +226,8 @@ public class HomePage extends DropboxActivity implements
 
     }
 
-    public void addNewAlbum(String albumName) {
-        albums.add(new Album(albumName, R.drawable.empty_thumbnail));
+    public void addNewAlbum(String albumId, String albumName) {
+        albums.add(new Album(albumId, albumName, R.drawable.empty_thumbnail));
         albumAdapter.notifyDataSetChanged();
     }
 
@@ -261,6 +263,11 @@ public class HomePage extends DropboxActivity implements
         builder.show();
     }
 
+    public void processNewAlbum(String albumName, String albumId) {
+        if (!usingWifiDirect) createAlbumInCloud(albumName, albumId);
+        addNewAlbum(albumId, albumName);
+    }
+
     public void createAlbumInCloud(String albumName, String albumId){
         new UploadFileTask(HomePage.this, DropboxClientFactory.getClient(), new UploadFileTask.Callback(){
 
@@ -278,15 +285,20 @@ public class HomePage extends DropboxActivity implements
     }
 
     private void loadAlbums() {
+        //TODO: Necessary?
+        /*
         File[] directories = new File(getApplicationContext().getFilesDir().getPath()).listFiles(File::isDirectory);
 
         if(!(directories.length == 0)){
             for (File i : directories){
-                addNewAlbum(i.getName());
+                //TODO: How to get album id by file??
+                addNewAlbum("", i.getName());
             }
         }
 
         updateApplicationLogs("List User Albums", "Local Albums Loaded Successfully");
+
+        */
 
         new HttpRequestGetUserAlbums(this);
         HttpRequestGetUserAlbums.httpRequest(((Peer2PhotoApp)getApplication()).getUsername(), ((Peer2PhotoApp)getApplication()).getSessionId(), URL_LOAD_ALBUMS);
@@ -301,15 +313,16 @@ public class HomePage extends DropboxActivity implements
             for (String albumId : albumIds) {
                 String albumName = httpResponse.getString(albumId);
                 if (((Peer2PhotoApp) getApplication()).getAlbumId(albumName) == null) {
+                    //TODO: Simplify?
                     if (!(new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName).exists())) {
                         if (!usingWifiDirect) createAlbumInCloud(albumName, albumId);
-                        addNewAlbum(albumName);
+                        addNewAlbum(albumId, albumName);
                         Log.d("debug", "User has been added to album of other user and its name does not exist in user's albums");
                     } else {
                         File fileToDelete = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName);
                         if (fileToDelete.delete()) {
                             if (!usingWifiDirect) createAlbumInCloud(albumName, albumId);
-                            addNewAlbum(albumName);
+                            addNewAlbum(albumId, albumName);
                             Log.d("debug", "User has been added to album of other user and its name does not exist in user's albums");
                         }
                     }
@@ -317,12 +330,12 @@ public class HomePage extends DropboxActivity implements
                     if (!((Peer2PhotoApp) getApplication()).getAlbumId(albumName).equals(albumId)) {
                         String newName = albumName + "_" + albumId;
                         if (!usingWifiDirect) createAlbumInCloud(newName, albumId);
-                        addNewAlbum(newName);
+                        addNewAlbum(albumId, newName);
                         Log.d("debug", "User has been added to album of other user with name equal to one of user's albums");
                     } else {
                         if(!new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName).exists()){
                             if (!usingWifiDirect) createAlbumInCloud(albumName, albumId);
-                            addNewAlbum(albumName);
+                            addNewAlbum(albumId, albumName);
                         }
                     }
                 }

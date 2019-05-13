@@ -49,9 +49,12 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
     private static ArrayList<Photo> photos = new ArrayList<>();
     private static ArrayAdapter<Photo> photoAdapter = null;
 
+    static final int FIND_USER_REQUEST = 420;
     public String URL_BASE;
     public String URL_ALBUM;
     public String URL_ADD_USER_TO_ALBUM;
+
+    protected String albumId = "";
     protected String albumName = "";
 
     private boolean usingWifiDirect = false;
@@ -61,7 +64,7 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_album_view);
 
-        usingWifiDirect = savedInstanceState.getBoolean("isWifi");
+        usingWifiDirect = savedInstanceState != null ? savedInstanceState.getBoolean("isWifi") : false;
 
         URL_BASE = getString(R.string.serverIP);
         URL_ALBUM = URL_BASE + "/album";
@@ -70,6 +73,7 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         albumName = getIntent().getStringExtra("AlbumName");
+        albumId = getIntent().getStringExtra("AlbumId");
         toolbar.setTitle(albumName);
 
         photos.clear(); //Não eliminar esta linha
@@ -106,46 +110,58 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
         updateApplicationLogs("Photo Successfully Added to Album", "Add Photo To Album");
     }
 
+    private void addUserToAlbum(String username) {
+        //TODO: Add User to album!
+        String sessionId = ((Peer2PhotoApp) this.getApplication()).getSessionId();
+        new HttpRequestPutAddUserToAlbum(this);
+        HttpRequestPutAddUserToAlbum.httpRequest(albumId, username, sessionId, URL_ADD_USER_TO_ALBUM);
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
         super.onActivityResult(requestCode, resultCode, data);
 
-        //TODO: Verify what should and shouldn't be called in WifiDirect
+        if (requestCode == FIND_USER_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                addUserToAlbum(data.getExtras().getString("userName"));
+            }
+        }
+        else {
+            //TODO: Verify what should and shouldn't be called in WifiDirect
+            if (resultCode == RESULT_OK) {
+                Uri selectedImage = data.getData();
+                String[] filePathColumn = {MediaStore.Images.Media.DATA};
 
-        if(resultCode == RESULT_OK){
-            Uri selectedImage = data.getData();
-            String[] filePathColumn = {MediaStore.Images.Media.DATA};
+                assert selectedImage != null;
+                Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
+                assert cursor != null;
+                cursor.moveToFirst();
+                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                String filePath = cursor.getString(columnIndex);
+                cursor.close();
 
-            assert selectedImage != null;
-            Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
-            assert cursor != null;
-            cursor.moveToFirst();
-            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-            String filePath = cursor.getString(columnIndex);
-            cursor.close();
+                Bundle b = getIntent().getExtras();
+                String value = "ERROR"; // or other values
+                if (b != null)
+                    value = b.getString("AlbumName");
 
-            Bundle b = getIntent().getExtras();
-            String value = "ERROR"; // or other values
-            if(b != null)
-                value = b.getString("AlbumName");
+                String PhotoName = value + "_Photo_" + new Random().nextInt();
 
-            String PhotoName = value + "_Photo_" + new Random().nextInt();
+                new UploadFileTask(AlbumView.this, DropboxClientFactory.getClient(), new UploadFileTask.Callback() {
+                    @Override
+                    public void onUploadComplete(FileMetadata result) {
 
-            new UploadFileTask(AlbumView.this, DropboxClientFactory.getClient(), new UploadFileTask.Callback() {
-                @Override
-                public void onUploadComplete(FileMetadata result) {
+                    }
 
-                }
+                    @Override
+                    public void onError(Exception e) {
 
-                @Override
-                public void onError(Exception e) {
+                    }
+                }).execute(PhotoName, "/Peer2Photo", "NEW_PHOTO", filePath, value, ((Peer2PhotoApp) getApplication()).getSessionId(), ((Peer2PhotoApp) getApplication()).getUsername(), ((Peer2PhotoApp) getApplication()).getAlbumId(value));
 
-                }
-            }).execute(PhotoName, "/Peer2Photo", "NEW_PHOTO", filePath, value, ((Peer2PhotoApp) getApplication()).getSessionId(), ((Peer2PhotoApp) getApplication()).getUsername(), ((Peer2PhotoApp) getApplication()).getAlbumId(value));
-
-            imageScalingAndPosting(filePath);
-
+                imageScalingAndPosting(filePath);
+            }
         }
     }
 
@@ -196,29 +212,12 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
         String option = (String) item.getTitleCondensed();
 
         //noinspection SimplifiableIfStatement
-        if (option.equals("Add User")) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(AlbumView.this);
-            builder.setTitle("Username To Add");
-
-            final EditText input = new EditText(AlbumView.this);
-            input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL);
-            builder.setView(input);
-
-            // Set up the buttons
-            builder.setPositiveButton("OK", (dialog, which) -> {
-                String usernameToAdd = input.getText().toString();
-                String sessionId = ((Peer2PhotoApp) getApplication()).getSessionId();
-                String username = ((Peer2PhotoApp) getApplication()).getUsername();
-                String albumId = ((Peer2PhotoApp) getApplication()).getAlbumId(albumName);
-
-                new HttpRequestPutAddUserToAlbum(this);
-                HttpRequestPutAddUserToAlbum.httpRequest(albumId, username, sessionId, usernameToAdd, URL_ADD_USER_TO_ALBUM);
-
-            });
-
-            builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
-
-            builder.show();
+        if (id == R.id.add_user) {
+            Intent intent = new Intent(this, FindUsers.class);
+            startActivityForResult(intent, FIND_USER_REQUEST);
+            finish();
+            //TODO: Receive user response
+            return true;
         }
         else if (id == R.id.add_photo) {
             //TODO: Adicionar

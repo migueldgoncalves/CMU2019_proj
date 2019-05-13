@@ -50,7 +50,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     public static final String SEND_USERNAME = "SEND_USERNAME";
     public static final String CATALOG = "CATALOG";
     public static final String PHOTO = "PHOTO";
-    public static final String MESSAGE_SPLITTER = "|";
+    public static final String MESSAGE_SPLITTER = ",";
     public static final String PATH_SPLITTER = ";";
     public static final String ALBUM_USER_MAP_SPLITTER = "º";
 
@@ -202,7 +202,6 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     private void processRequest(String[] request) {
         if (request[0].equals(SEND_USERNAME)) {
             ip_Username_Map.put(request[2], request[1]);
-            //TODO: Redundant, must fix!!
             boolean requestCompleted = true;
             for (String username : ip_Username_Map.values()) {
                 if (username.equals("")) {

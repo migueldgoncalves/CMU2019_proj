@@ -5,6 +5,9 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.dropbox.core.android.Auth;
 
+import pt.ulisboa.tecnico.cmov.proj.AlbumView_Wifi;
+import pt.ulisboa.tecnico.cmov.proj.HomePage_Wifi;
+
 
 /**
  * Base class for Activities that require auth tokens
@@ -15,6 +18,8 @@ public abstract class DropboxActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        if (this instanceof HomePage_Wifi) return;
 
         SharedPreferences prefs = getSharedPreferences("dropbox-sample", MODE_PRIVATE);
         String accessToken = prefs.getString("access-token", null);
