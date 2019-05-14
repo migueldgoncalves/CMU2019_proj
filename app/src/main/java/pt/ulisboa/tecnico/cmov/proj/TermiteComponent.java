@@ -148,6 +148,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                 for (String user : albumEntry.getValue()) {
                     for (Map.Entry<String, String> userEntry : ip_Username_Map.entrySet()) {
                         if (userEntry.getValue().equals(user)) {
+                            android.util.Log.d("debug", "SENT CATALOG TO " + user);
                             sendCatalog(albumEntry.getKey(), contents, userEntry.getKey());
                         }
                     }
@@ -170,6 +171,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         String catalogContent = "";
         for (String catalogLine : catalogLines) catalogContent += (catalogLine + ";");
         String message = CATALOG + MESSAGE_SPLITTER + albumId + MESSAGE_SPLITTER + virtualIP + MESSAGE_SPLITTER + catalogContent + "\n";
+
         new SendTask().executeOnExecutor(
                 AsyncTask.THREAD_POOL_EXECUTOR,
                 message, destinationIpAddress);
@@ -200,6 +202,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     }
 
     private void processRequest(String[] request) {
+        android.util.Log.d("debug", "PROCESSING REQUEST " + request[0]);
         if (request[0].equals(SEND_USERNAME)) {
             ip_Username_Map.put(request[2], request[1]);
             boolean requestCompleted = true;
@@ -359,7 +362,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
             clearData();
             for (SimWifiP2pDevice device : devices.getDeviceList()) {
                 if (!device.deviceName.equals(groupInfo.getDeviceName())) {
-                    ip_Username_Map.put(device.getVirtIp(), "");
+                    if (!ip_Username_Map.containsKey(device.getVirtIp())) ip_Username_Map.put(device.getVirtIp(), "");
                     sendUsername(device.getVirtIp());
                 }
             }
