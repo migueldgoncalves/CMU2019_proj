@@ -25,6 +25,12 @@ public class HomePage_Wifi extends HomePage {
     }
 
     @Override
+    public void addNewAlbum(String albumId, String albumName) {
+        super.addNewAlbum(albumId, albumName);
+        TermiteComponent.instance.albumId_albumName_Map.put(albumId, albumName);
+    }
+
+    @Override
     public void parseAlbumNames(String[] albumIds, JSONObject httpResponse) {
         // 3\\ cases - User was not added to third party albums;
         // User was added to album with same name as another album user already has;

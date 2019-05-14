@@ -113,7 +113,7 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
         updateApplicationLogs("Photo Successfully Added to Album", "Add Photo To Album");
     }
 
-    private void addUserToAlbum(String username) {
+    protected void addUserToAlbum(String username) {
         String sessionId = ((Peer2PhotoApp) this.getApplication()).getSessionId();
         new HttpRequestPutAddUserToAlbum(this);
         HttpRequestPutAddUserToAlbum.httpRequest(albumId, ((Peer2PhotoApp) this.getApplication()).getUsername(), sessionId, username, URL_ADD_USER_TO_ALBUM);
@@ -168,10 +168,9 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
                                 name,
                                 ((Peer2PhotoApp) getApplication()).getSessionId(),
                                 ((Peer2PhotoApp) getApplication()).getUsername(),
-                                ((Peer2PhotoApp) getApplication()).getAlbumId(name));
+                                albumId);
                 }
                 else {
-                    //TODO: Rever
                     try {
                         //File localSlice = new File(getApplicationContext().getFilesDir().getPath() + "/" + name + "/" + name + ".txt");
                         File photosFile = new File(getApplicationContext().getFilesDir().getPath() + "/" + name + "/" + name + "_LOCAL.txt");
@@ -298,7 +297,6 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
     }
 
     private void getRemotePhotos(){
-        String AlbumId = ((Peer2PhotoApp) (getApplication())).getAlbumId(albumName);
         String SessionId = ((Peer2PhotoApp) (getApplication())).getSessionId();
         String Username = ((Peer2PhotoApp) (getApplication())).getUsername();
 
@@ -316,7 +314,7 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
         }
 
         new HttpRequestGetAlbumPhotos(this);
-        HttpRequestGetAlbumPhotos.httpRequest(AlbumId, Username, SessionId, URL_ALBUM);
+        HttpRequestGetAlbumPhotos.httpRequest(albumId, Username, SessionId, URL_ALBUM);
 
     }
 

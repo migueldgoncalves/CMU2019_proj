@@ -194,6 +194,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         if (!ip_Socket_Map.containsKey(ipAddress)) ip_Socket_Map.put(ipAddress, new SimWifiP2pSocket(ipAddress, 10001));
 
         SimWifiP2pSocket mCliSocket = ip_Socket_Map.get(ipAddress);
+        android.util.Log.d("debug", "Sent: " + message);
         mCliSocket.getOutputStream().write(message.getBytes());
         BufferedReader sockIn = new BufferedReader(
                 new InputStreamReader(mCliSocket.getInputStream()));
@@ -302,6 +303,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                                 new InputStreamReader(sock.getInputStream()));
                         String st = sockIn.readLine();
                         sock.getOutputStream().write(("\n").getBytes());
+                        android.util.Log.d("debug", "Received: " + st);
                         String[] result = st.split(MESSAGE_SPLITTER);
                         if (result.length > 0) {
                             processRequest(result);

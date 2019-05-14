@@ -93,13 +93,12 @@ public class HomePage extends DropboxActivity implements
         loadAlbums();
 
         albumTable.setOnItemClickListener((parent, view, position, id) -> {
-            Intent intent = new Intent(HomePage.this, usingWifiDirect ? AlbumView_Wifi.class :  AlbumView.class);
+            Intent intent = new Intent(this, usingWifiDirect ? AlbumView_Wifi.class :  AlbumView.class);
             Bundle b = new Bundle();
             b.putString("AlbumId", albums.get(position).getAlbumId());
             b.putString("AlbumName", albums.get(position).getAlbumName());
             intent.putExtras(b);
             startActivity(intent);
-            //finish();
         });
 
         NavigationView navigationView = findViewById(R.id.nav_view);
@@ -144,6 +143,7 @@ public class HomePage extends DropboxActivity implements
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
+        //TODO: Necessary?
         if (id == R.id.action_settings) {
             return true;
         }

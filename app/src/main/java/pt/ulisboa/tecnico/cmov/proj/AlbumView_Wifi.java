@@ -22,6 +22,12 @@ public class AlbumView_Wifi extends AlbumView {
         getOtherUsersPhotos();
     }
 
+    @Override
+    protected void addUserToAlbum(String username) {
+        super.addUserToAlbum(username);
+        //TODO: Add User to termite
+    }
+
     protected void getOtherUsersPhotos() {
         File albumDirectory = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName);
         if (!albumDirectory.isFile()) return;
