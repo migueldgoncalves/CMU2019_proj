@@ -263,8 +263,6 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         ip_Username_Map.clear();
         ip_Socket_Map.clear();
         user_Photo_Map.clear();
-        albumName_User_Map.clear();
-        albumId_albumName_Map.clear();
     }
 
     public void updateApplicationLogs(@NonNull String operation, @NonNull String operationResult){

@@ -29,8 +29,11 @@ import com.dropbox.core.v2.files.FileMetadata;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
@@ -111,10 +114,9 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
     }
 
     private void addUserToAlbum(String username) {
-        //TODO: Add User to album!
         String sessionId = ((Peer2PhotoApp) this.getApplication()).getSessionId();
         new HttpRequestPutAddUserToAlbum(this);
-        HttpRequestPutAddUserToAlbum.httpRequest(albumId, username, sessionId, URL_ADD_USER_TO_ALBUM);
+        HttpRequestPutAddUserToAlbum.httpRequest(albumId, ((Peer2PhotoApp) this.getApplication()).getUsername(), sessionId, username, URL_ADD_USER_TO_ALBUM);
     }
 
     @Override
@@ -124,11 +126,11 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
 
         if (requestCode == FIND_USER_REQUEST) {
             if (resultCode == RESULT_OK) {
-                addUserToAlbum(data.getExtras().getString("userName"));
+                String username = data.getExtras().getString("userName");
+                addUserToAlbum(username);
             }
         }
         else {
-            //TODO: Verify what should and shouldn't be called in WifiDirect
             if (resultCode == RESULT_OK) {
                 Uri selectedImage = data.getData();
                 String[] filePathColumn = {MediaStore.Images.Media.DATA};
@@ -142,24 +144,46 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
                 cursor.close();
 
                 Bundle b = getIntent().getExtras();
-                String value = "ERROR"; // or other values
+                String name = "ERROR"; // or other values
                 if (b != null)
-                    value = b.getString("AlbumName");
+                    name = b.getString("AlbumName");
 
-                String PhotoName = value + "_Photo_" + new Random().nextInt();
+                String PhotoName = name + "_Photo_" + new Random().nextInt();
 
-                new UploadFileTask(AlbumView.this, DropboxClientFactory.getClient(), new UploadFileTask.Callback() {
-                    @Override
-                    public void onUploadComplete(FileMetadata result) {
+                if (!usingWifiDirect) {
+                    new UploadFileTask(AlbumView.this, DropboxClientFactory.getClient(), new UploadFileTask.Callback() {
+                        @Override
+                        public void onUploadComplete(FileMetadata result) {
 
+                        }
+
+                        @Override
+                        public void onError(Exception e) {
+
+                        }
+                    }).execute( PhotoName,
+                                "/Peer2Photo",
+                                "NEW_PHOTO",
+                                filePath,
+                                name,
+                                ((Peer2PhotoApp) getApplication()).getSessionId(),
+                                ((Peer2PhotoApp) getApplication()).getUsername(),
+                                ((Peer2PhotoApp) getApplication()).getAlbumId(name));
+                }
+                else {
+                    //TODO: Rever
+                    try {
+                        //File localSlice = new File(getApplicationContext().getFilesDir().getPath() + "/" + name + "/" + name + ".txt");
+                        File photosFile = new File(getApplicationContext().getFilesDir().getPath() + "/" + name + "/" + name + "_LOCAL.txt");
+                        BufferedWriter out = new BufferedWriter(new FileWriter(photosFile, true));
+                        out.write(filePath + "\n");
+                        out.flush();
+                        out.close();
                     }
-
-                    @Override
-                    public void onError(Exception e) {
-
+                    catch (IOException e) {
+                        e.printStackTrace();
                     }
-                }).execute(PhotoName, "/Peer2Photo", "NEW_PHOTO", filePath, value, ((Peer2PhotoApp) getApplication()).getSessionId(), ((Peer2PhotoApp) getApplication()).getUsername(), ((Peer2PhotoApp) getApplication()).getAlbumId(value));
-
+                }
                 imageScalingAndPosting(filePath);
             }
         }
@@ -212,15 +236,17 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
         String option = (String) item.getTitleCondensed();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.add_user) {
+        if (option.equals("Add User")) {
             Intent intent = new Intent(this, FindUsers.class);
             startActivityForResult(intent, FIND_USER_REQUEST);
-            finish();
+            //finish();
             //TODO: Receive user response
             return true;
         }
-        else if (id == R.id.add_photo) {
-            //TODO: Adicionar
+        else if (option.equals("Add Photo")) {
+            Intent i = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
+            final int ACTIVITY_SELECT_IMAGE = 1234;
+            startActivityForResult(i, ACTIVITY_SELECT_IMAGE);
             return true;
         }
 

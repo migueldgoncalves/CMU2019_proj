@@ -179,6 +179,7 @@ public class FindUsers extends AppCompatActivity implements NavigationView.OnNav
         String myUsername = (app != null) ? app.getUsername() : "User";
         for (int i = 0; i < parsedUsers.length; i++) {
             //TODO: UserId desnecessario!!
+            //TODO: Verificar se utilizador já está no album
             if (!myUsername.equals(parsedUsers[i])) users.add(new User(i, parsedUsers[i]));
         }
         userAdapter.notifyDataSetChanged();
