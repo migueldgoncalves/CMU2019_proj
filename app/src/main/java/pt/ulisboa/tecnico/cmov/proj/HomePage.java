@@ -48,6 +48,8 @@ public class HomePage extends DropboxActivity implements
     private final static String ACCESS_KEY = "ktxcdvzt610l2ao";
     private final static String ACCESS_SECRET = "wurqteptiyuh9s2";
 
+    public final static int ALBUM_VIEW_REQUEST = 3234;
+
     //public static final String URL_BASE = "http://localhost:8080";
     public String URL_BASE;
     public String URL_CREATE_ALBUM;
@@ -98,7 +100,7 @@ public class HomePage extends DropboxActivity implements
             b.putString("AlbumId", albums.get(position).getAlbumId());
             b.putString("AlbumName", albums.get(position).getAlbumName());
             intent.putExtras(b);
-            startActivity(intent);
+            startActivityForResult(intent, ALBUM_VIEW_REQUEST);
         });
 
         NavigationView navigationView = findViewById(R.id.nav_view);

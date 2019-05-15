@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.cmov.proj;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -215,6 +216,8 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
+            Intent intent = new Intent();
+            setResult(Activity.RESULT_CANCELED, intent);
             super.onBackPressed();
         }
     }

@@ -25,7 +25,8 @@ public class AlbumView_Wifi extends AlbumView {
     @Override
     protected void addUserToAlbum(String username) {
         super.addUserToAlbum(username);
-        //TODO: Add User to termite
+        //TODO: Add to local map and send it
+
     }
 
     protected void getOtherUsersPhotos() {
