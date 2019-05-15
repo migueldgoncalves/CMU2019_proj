@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.cmov.proj;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -7,6 +8,8 @@ import android.widget.Toast;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import pt.ulisboa.tecnico.cmov.proj.Data.Peer2PhotoApp;
@@ -19,15 +22,34 @@ public class HomePage_Wifi extends HomePage {
     protected void onCreate(Bundle savedInstanceState) {
         Bundle bundle = savedInstanceState != null ? savedInstanceState : new Bundle();
         bundle.putBoolean("isWifi", true);
-        super.onCreate(bundle);
-
         termite = new TermiteComponent(this, getApplication(), getMainLooper());
+
+        super.onCreate(bundle);
     }
 
     @Override
     public void addNewAlbum(String albumId, String albumName) {
         super.addNewAlbum(albumId, albumName);
-        TermiteComponent.instance.albumId_albumName_Map.put(albumId, albumName);
+        termite.albumId_albumName_Map.put(albumId, albumName);
+        termite.albumName_User_Map.put(albumName, new ArrayList<>());
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == ALBUM_VIEW_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                String usernames = data.getExtras().getString("Users");
+                if (usernames.equals("")) return;
+
+                String albumName = data.getExtras().getString("AlbumName");
+                String[] users = usernames.split(",");
+                for (String user : users) {
+                    termite.albumName_User_Map.get(albumName).add(user);
+                }
+            }
+        }
     }
 
     @Override
@@ -37,12 +59,13 @@ public class HomePage_Wifi extends HomePage {
         // User was added to album with a name different of all user's albums
         try{
             HashMap<String, String> albumId_albumName_Map = new HashMap<String, String>();
-            HashMap<String, String[]> albumName_User_Map = new HashMap<String, String[]>();
+            HashMap<String, ArrayList<String>> albumName_User_Map = new HashMap<>();
             for (String albumId : albumIds) {
                 String albumName = httpResponse.getString(albumId);
                 albumId_albumName_Map.put(albumId, albumName);
                 String users = httpResponse.getString("Users_" + albumId);
-                albumName_User_Map.put(albumName, users.split(","));
+                String[] usersArray = users.split(",");
+                albumName_User_Map.put(albumName, new ArrayList<>(Arrays.asList(usersArray)));
                 if (((Peer2PhotoApp) getApplication()).getAlbumId(albumName) == null) {
                     if (!(new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName).exists())) {
                         addNewAlbum(albumId, albumName);

@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -66,7 +67,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     private HashMap<String, String> ip_Username_Map = new HashMap<>();
     private HashMap<String, SimWifiP2pSocket> ip_Socket_Map = new HashMap<>();
     private HashMap<String, String[]> user_Photo_Map = new HashMap<String, String[]>();
-    public HashMap<String, String[]> albumName_User_Map = new HashMap<String, String[]>();
+    public HashMap<String, ArrayList<String>> albumName_User_Map = new HashMap<>();
     public HashMap<String, String> albumId_albumName_Map = new HashMap<>();
 
     public TermiteComponent(AppCompatActivity activity, Context context, Looper looper) {
@@ -141,7 +142,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
 
     private void sendCatalogs() {
         try {
-            for (Map.Entry<String, String[]> albumEntry : albumName_User_Map.entrySet()) {
+            for (Map.Entry<String, ArrayList<String>> albumEntry : albumName_User_Map.entrySet()) {
                 File localPhotosFile = new File(context.getFilesDir().getPath() + "/" + albumEntry.getKey() + "/" + albumEntry.getKey() + "_LOCAL.txt");
                 if (!localPhotosFile.isFile()) continue;
                 List<String> contents = FileUtils.readLines(localPhotosFile);
@@ -149,7 +150,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                     for (Map.Entry<String, String> userEntry : ip_Username_Map.entrySet()) {
                         if (userEntry.getValue().equals(user)) {
                             android.util.Log.d("debug", "SENT CATALOG TO " + user);
-                            sendCatalog(albumEntry.getKey(), contents, userEntry.getKey());
+                            sendCatalog(albumEntry.getKey(), contents, userEntry.getValue());
                         }
                     }
                 }
@@ -167,10 +168,10 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                 message, destinationIpAddress);
     }
 
-    private void sendCatalog(String albumId, List<String> catalogLines, String destinationIpAddress) {
+    private void sendCatalog(String albumName, List<String> catalogLines, String destinationIpAddress) {
         String catalogContent = "";
         for (String catalogLine : catalogLines) catalogContent += (catalogLine + ";");
-        String message = CATALOG + MESSAGE_SPLITTER + albumId + MESSAGE_SPLITTER + virtualIP + MESSAGE_SPLITTER + catalogContent + "\n";
+        String message = CATALOG + MESSAGE_SPLITTER + albumName + MESSAGE_SPLITTER + virtualIP + MESSAGE_SPLITTER + catalogContent + "\n";
 
         new SendTask().executeOnExecutor(
                 AsyncTask.THREAD_POOL_EXECUTOR,
@@ -225,10 +226,9 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         }
     }
 
-    private void processCatalog(String albumId, String ownerIp, String catalog) {
+    private void processCatalog(String albumName, String ownerIp, String catalog) {
         String[] paths = catalog.split(PATH_SPLITTER);
         String username = ip_Username_Map.get(ownerIp);
-        String albumName = albumId_albumName_Map.get(albumId);
         user_Photo_Map.put(albumName+ALBUM_USER_MAP_SPLITTER+username, paths);
         Toast.makeText(context, "Received catalog from " + username, Toast.LENGTH_SHORT).show();
 
@@ -287,6 +287,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         @Override
         protected Void doInBackground(Void... params) {
 
+            android.util.Log.d("debug", "INCOMING!");
             Log.d(TAG, "IncommingCommTask started (" + this.hashCode() + ").");
 
             try {

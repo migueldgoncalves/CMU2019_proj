@@ -1,6 +1,10 @@
 package pt.ulisboa.tecnico.cmov.proj;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -8,11 +12,10 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class AlbumView_Wifi extends AlbumView {
 
-    private HashMap<String, ArrayList<String>> username_photos_Map = new HashMap<>();
+    private ArrayList<String> addedUsers = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,8 +28,23 @@ public class AlbumView_Wifi extends AlbumView {
     @Override
     protected void addUserToAlbum(String username) {
         super.addUserToAlbum(username);
-        //TODO: Add to local map and send it
+        addedUsers.add(username);
+    }
 
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            String userResult = "";
+            for (String user : addedUsers) userResult += (user + ",");
+            Intent intent = new Intent();
+            intent.putExtra("Users", userResult);
+            intent.putExtra("AlbumName", albumName);
+            setResult(Activity.RESULT_OK, intent);
+            handleWifiBackPressed();
+        }
     }
 
     protected void getOtherUsersPhotos() {
@@ -48,8 +66,8 @@ public class AlbumView_Wifi extends AlbumView {
                     }
 
                     inputStream.close();
-                    String username = files[i].getName().substring(6, files[i].getName().length()-3);
-                    username_photos_Map.put(username, userPhotos);
+                    //String username = files[i].getName().substring(6, files[i].getName().length()-3);
+                    //username_photos_Map.put(username, userPhotos);
                 }
                 catch (Exception e) {
                     e.printStackTrace();

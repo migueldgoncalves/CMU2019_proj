@@ -216,10 +216,13 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            Intent intent = new Intent();
-            setResult(Activity.RESULT_CANCELED, intent);
+            setResult(Activity.RESULT_CANCELED);
             super.onBackPressed();
         }
+    }
+
+    public void handleWifiBackPressed() {
+        super.onBackPressed();
     }
 
     @Override
