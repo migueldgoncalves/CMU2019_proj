@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.os.Looper;
@@ -15,9 +17,13 @@ import android.util.Log;
 import android.widget.Toast;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -26,6 +32,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -43,6 +51,7 @@ import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketManager;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
+import pt.ulisboa.tecnico.cmov.proj.Data.BitmapDataObject;
 import pt.ulisboa.tecnico.cmov.proj.Data.Peer2PhotoApp;
 
 public class TermiteComponent implements SimWifiP2pManager.PeerListListener, SimWifiP2pManager.GroupInfoListener {
@@ -54,6 +63,8 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     public static final String MESSAGE_SPLITTER = ",";
     public static final String PATH_SPLITTER = ";";
     public static final String ALBUM_USER_MAP_SPLITTER = "º";
+
+    ObjectOutputStream imageOutput;
 
     public String virtualIP = "";
     private SimWifiP2pManager mManager = null;
@@ -178,13 +189,11 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                 message, destinationIpAddress);
     }
 
-    private void sendPhoto(File photo, String destinationIpAddress) {
+    private void sendPhoto(String filePath, String destinationIpAddress) {
         try {
-            FileInputStream fin = new FileInputStream(photo);
-            String message = SEND_USERNAME + MESSAGE_SPLITTER + photo.getName() + MESSAGE_SPLITTER + convertStreamToString(fin) + "\n";
-            new SendTask().executeOnExecutor(
+            new SendPhoto().executeOnExecutor(
                     AsyncTask.THREAD_POOL_EXECUTOR,
-                    message, destinationIpAddress);
+                    filePath, destinationIpAddress);
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -238,10 +247,10 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         }
     }
 
-    private void processPhoto(String fileName, String content) {
+    private void processPhoto(String content) {
         try {
             //TODO: Create new file where??
-            File newPhoto = new File(context.getFilesDir().getPath(), fileName);
+            File newPhoto = new File(context.getFilesDir().getPath(), "Photo");
             FileOutputStream outputStreamWriter = new FileOutputStream(newPhoto);
             outputStreamWriter.write(content.getBytes());
             outputStreamWriter.close();
@@ -266,6 +275,20 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
 
     }
 
+    private void writeImage(ObjectOutputStream out, Bitmap target) throws IOException {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        target.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        BitmapDataObject bitmapDataObject = new BitmapDataObject();
+        bitmapDataObject.imageByteArray = stream.toByteArray();
+
+        out.writeObject(bitmapDataObject);
+    }
+
+    private Bitmap readImage(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        BitmapDataObject bitmapDataObject = (BitmapDataObject)in.readObject();
+        return BitmapFactory.decodeByteArray(bitmapDataObject.imageByteArray, 0, bitmapDataObject.imageByteArray.length);
+    }
+
     /*
      * Asynctasks implementing message exchange
      */
@@ -288,8 +311,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                 try {
                     SimWifiP2pSocket sock = mSrvSocket.accept();
                     try {
-                        BufferedReader sockIn = new BufferedReader(
-                                new InputStreamReader(sock.getInputStream()));
+                        BufferedReader sockIn = new BufferedReader(new InputStreamReader(sock.getInputStream()));
                         String st = sockIn.readLine();
                         sock.getOutputStream().write(("\n").getBytes());
                         android.util.Log.d("debug", "Received 1: " + st);
@@ -297,13 +319,23 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                         if (result.length > 0) {
                             processUsername(result[1], result[2]);
                         }
-                        st = sockIn.readLine();
-                        sock.getOutputStream().write(("\n").getBytes());
-                        android.util.Log.d("debug", "Received 2: " + st);
-                        result = st.split(MESSAGE_SPLITTER);
-                        if (result.length > 0) {
-                            processPhoto(result[0]);
+                        BufferedInputStream in = new BufferedInputStream(sock.getInputStream());
+                        int n = 0;
+                        byte[] bytes = new byte[64*1024];
+                        while ((n = in.read(bytes)) >= 0) {
+                            android.util.Log.d("debug", "Read bytes");
                         }
+                        //String str = (String) ois.readObject();
+                        //Bitmap image = readImage(ois);
+                        sock.getOutputStream().write(("\n").getBytes());
+                        File newPhoto = new File(context.getFilesDir().getPath() + "/Photos", "Photo");
+                        if (!newPhoto.isFile()) newPhoto.createNewFile();
+                        try (FileOutputStream out = new FileOutputStream(context.getFilesDir().getPath() + "/Photos/Photo.png")) {
+                            //image.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
                         //TODO: DEFINIR PROTOCOLO!!!!
 
                         publishProgress(st);
@@ -333,6 +365,34 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         protected String doInBackground(String... params) {
             try {
                 sendMessage(params[0], params[1]);
+            } catch (UnknownHostException e) {
+                return "Unknown Host:" + e.getMessage();
+            } catch (IOException e) {
+                return "IO error:" + e.getMessage();
+            }
+            return null;
+        }
+    }
+
+    public class SendPhoto extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected void onPreExecute() {
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            try {
+                SimWifiP2pSocket mCliSocket = new SimWifiP2pSocket(params[1], 10001);
+                android.util.Log.d("debug", "Sent photo");
+                Bitmap photo = BitmapFactory.decodeFile(params[0]);;
+                imageOutput = new ObjectOutputStream(mCliSocket.getOutputStream());
+                writeImage(imageOutput, photo);
+                BufferedReader sockIn = new BufferedReader(
+                        new InputStreamReader(mCliSocket.getInputStream()));
+                sockIn.readLine();
+                android.util.Log.d("debug", "Confirm Sent");
+                mCliSocket.close();
             } catch (UnknownHostException e) {
                 return "Unknown Host:" + e.getMessage();
             } catch (IOException e) {
