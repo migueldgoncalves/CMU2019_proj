@@ -65,7 +65,6 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     private ServiceConnection mConnection = null;
     private AppCompatActivity activity = null;
     private HashMap<String, String> ip_Username_Map = new HashMap<>();
-    private HashMap<String, SimWifiP2pSocket> ip_Socket_Map = new HashMap<>();
     private HashMap<String, String[]> user_Photo_Map = new HashMap<String, String[]>();
     public HashMap<String, ArrayList<String>> albumName_User_Map = new HashMap<>();
     public HashMap<String, String> albumId_albumName_Map = new HashMap<>();
@@ -150,7 +149,8 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                     for (Map.Entry<String, String> userEntry : ip_Username_Map.entrySet()) {
                         if (userEntry.getValue().equals(user)) {
                             android.util.Log.d("debug", "SENT CATALOG TO " + user);
-                            sendCatalog(albumEntry.getKey(), contents, userEntry.getValue());
+                            sendPhoto(contents.get(0), userEntry.getKey());
+                            //sendCatalog(albumEntry.getKey(), contents, userEntry.getKey());
                         }
                     }
                 }
@@ -192,37 +192,27 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     }
 
     private void sendMessage(String message, String ipAddress) throws IOException {
-        if (!ip_Socket_Map.containsKey(ipAddress)) ip_Socket_Map.put(ipAddress, new SimWifiP2pSocket(ipAddress, 10001));
-
-        SimWifiP2pSocket mCliSocket = ip_Socket_Map.get(ipAddress);
+        SimWifiP2pSocket mCliSocket = new SimWifiP2pSocket(ipAddress, 10001);
         android.util.Log.d("debug", "Sent: " + message);
         mCliSocket.getOutputStream().write(message.getBytes());
         BufferedReader sockIn = new BufferedReader(
                 new InputStreamReader(mCliSocket.getInputStream()));
         sockIn.readLine();
+        android.util.Log.d("debug", "Confirm Sent");
         mCliSocket.close();
     }
 
-    private void processRequest(String[] request) {
-        android.util.Log.d("debug", "PROCESSING REQUEST " + request[0]);
-        if (request[0].equals(SEND_USERNAME)) {
-            ip_Username_Map.put(request[2], request[1]);
-            boolean requestCompleted = true;
-            for (String username : ip_Username_Map.values()) {
-                if (username.equals("")) {
-                    requestCompleted = false;
-                    break;
-                }
-            }
-            if (requestCompleted) {
-                sendCatalogs();
+    private void processUsername(String username, String ipAddress) {
+        ip_Username_Map.put(ipAddress, username);
+        boolean requestCompleted = true;
+        for (String user : ip_Username_Map.values()) {
+            if (user.equals("")) {
+                requestCompleted = false;
+                break;
             }
         }
-        else if (request[0].equals(CATALOG)) {
-            processCatalog(request[1], request[2], request[3]);
-        }
-        else if (request[0].equals(PHOTO)) {
-            processPhoto(request[1], request[2]);
+        if (requestCompleted) {
+            sendCatalogs();
         }
     }
 
@@ -230,7 +220,6 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         String[] paths = catalog.split(PATH_SPLITTER);
         String username = ip_Username_Map.get(ownerIp);
         user_Photo_Map.put(albumName+ALBUM_USER_MAP_SPLITTER+username, paths);
-        Toast.makeText(context, "Received catalog from " + username, Toast.LENGTH_SHORT).show();
 
         File newUserCatalog = new File(context.getFilesDir().getPath() + "/" + albumName + "/" + "SLICE_" +  username + ".txt");
         if (!newUserCatalog.isFile()) return;
@@ -265,7 +254,6 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
 
     private void clearData() {
         ip_Username_Map.clear();
-        ip_Socket_Map.clear();
         user_Photo_Map.clear();
     }
 
@@ -304,12 +292,22 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                                 new InputStreamReader(sock.getInputStream()));
                         String st = sockIn.readLine();
                         sock.getOutputStream().write(("\n").getBytes());
-                        android.util.Log.d("debug", "Received: " + st);
+                        android.util.Log.d("debug", "Received 1: " + st);
                         String[] result = st.split(MESSAGE_SPLITTER);
                         if (result.length > 0) {
-                            processRequest(result);
+                            processUsername(result[1], result[2]);
                         }
+                        st = sockIn.readLine();
+                        sock.getOutputStream().write(("\n").getBytes());
+                        android.util.Log.d("debug", "Received 2: " + st);
+                        result = st.split(MESSAGE_SPLITTER);
+                        if (result.length > 0) {
+                            processPhoto(result[0]);
+                        }
+                        //TODO: DEFINIR PROTOCOLO!!!!
+
                         publishProgress(st);
+
                     } catch (IOException e) {
                         Log.d("Error reading socket:", e.getMessage());
                     } finally {
