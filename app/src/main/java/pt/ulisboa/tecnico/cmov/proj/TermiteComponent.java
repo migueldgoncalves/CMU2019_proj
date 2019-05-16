@@ -161,6 +161,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     private void sendCatalogs() {
         try {
             //TODO: CHECK IF ALBUM OWNER
+            //TODO: Send message if no photos sent!
             //TODO: Check if first for can go deeper
             for (Map.Entry<String, String> userEntry : ip_Username_Map.entrySet()) {
                 for (Map.Entry<String, ArrayList<String>> albumEntry : albumName_User_Map.entrySet()) {
@@ -194,6 +195,21 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         }
     }
 
+    private boolean hasLocalPhoto(String albumName, String photoName) {
+        return (new File(context.getFilesDir().getPath() + "/" + albumName + "/" + photoName)).exists();
+    }
+
+    private String getLocalPhotoConfirmation(String albumName, String photoNames) {
+        String confirmationString = "";
+
+        String[] photoNameArray = photoNames.split(",");
+        for (String photoName : photoNameArray) {
+            confirmationString += ((hasLocalPhoto(albumName, photoName) ? "0" : "1") + ",");
+        }
+
+        return confirmationString;
+    }
+
     private void processUsername(String username, String ipAddress) {
         ip_Username_Map.put(ipAddress, username);
         boolean requestCompleted = true;
@@ -208,18 +224,19 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         }
     }
 
-    private void processPhoto(byte[] photoBytes, String albumName) {
+    private void processPhoto(byte[] photoBytes, String albumName, String photoName) {
         try {
             Bitmap photo = BitmapFactory.decodeByteArray(photoBytes, 0, photoBytes.length);
             File photoDir = new File(context.getFilesDir().getPath() + "/" + albumName);
             if (!photoDir.mkdir()) {
                 Log.d("debug", "Failed to create photo directory!");
             }
-            File newPhoto = new File(context.getFilesDir().getPath() + "/" + albumName + "/Photo.png");
+            //TODO: Change photo name!
+            File newPhoto = new File(context.getFilesDir().getPath() + "/" + albumName + "/" + photoName);
             if (!newPhoto.createNewFile()) {
                 Log.d("debug", "Failed to create new photo file!");
             }
-            FileOutputStream out = new FileOutputStream(context.getFilesDir().getPath() + "/" + albumName + "/Photo.png");
+            FileOutputStream out = new FileOutputStream(context.getFilesDir().getPath() + "/" + albumName + "/" + photoName);
             photo.compress(Bitmap.CompressFormat.PNG, 100, out);
         }
         catch (IOException e) {
@@ -272,16 +289,21 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                         }
                         else if (messageType.equals(PHOTO)) {
                             String albumName = sockIn.readLine();
+                            String photoNames = sockIn.readLine();
+                            sock.getOutputStream().write((getLocalPhotoConfirmation(albumName, photoNames) + "\n").getBytes());
+
                             int numPhotos = Integer.parseInt(sockIn.readLine());
                             android.util.Log.d("debug", "Receiving " + numPhotos + "photos");
 
-                            ArrayList<String> photoStrings = new ArrayList<>();
-                            for (int i = 0; i < numPhotos; i++) photoStrings.add(sockIn.readLine());
+                            HashMap<String, String> photoStrings = new HashMap<>();
+                            for (int i = 0; i < numPhotos; i++) {
+                                photoStrings.put(sockIn.readLine(), sockIn.readLine());
+                            }
                             sock.getOutputStream().write(("\n").getBytes());
 
-                            for (String photoString : photoStrings) {
-                                byte[] bytes = new Gson().fromJson(photoString, byte[].class);
-                                processPhoto(bytes, albumName);
+                            for (Map.Entry<String, String> photoString : photoStrings.entrySet()) {
+                                byte[] bytes = new Gson().fromJson(photoString.getValue(), byte[].class);
+                                processPhoto(bytes, albumName, photoString.getKey());
                                 android.util.Log.d("debug", "Processed new photo");
                             }
                         }
@@ -344,30 +366,40 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                 SimWifiP2pSocket mCliSocket = new SimWifiP2pSocket(ipAddress, 10001);
 
                 String photoNames = "";
-                ArrayList<String> serializedPhotos = new ArrayList<>();
 
                 for (String photoPath : photoPaths) {
                     String[] splitPath = photoPath.split("/");
                     photoNames += (splitPath[splitPath.length-1] + ",");
                 }
 
-                for (String photoPath : photoPaths) {
-                    Bitmap photo = BitmapFactory.decodeFile(photoPath);
+                android.util.Log.d("debug", "Sending photo");
+                mCliSocket.getOutputStream().write((PHOTO + "\n").getBytes());
+                mCliSocket.getOutputStream().write((albumName + "\n").getBytes());
+                mCliSocket.getOutputStream().write((photoNames + "\n").getBytes());
+
+                BufferedReader sockIn = new BufferedReader(
+                        new InputStreamReader(mCliSocket.getInputStream()));
+                String photoConfirmation = sockIn.readLine();
+
+                String[] confirmations = photoConfirmation.split(",");
+                HashMap<String, String> serializedPhotos = new HashMap<>();
+
+                for (int i = 0; i < photoPaths.size(); i++) {
+                    if (confirmations[i].equals("0")) continue;
+                    Bitmap photo = BitmapFactory.decodeFile(photoPaths.get(i));
                     ByteArrayOutputStream stream = new ByteArrayOutputStream();
                     photo.compress(Bitmap.CompressFormat.PNG, 100, stream);
                     BitmapDataObject bitmapDataObject = new BitmapDataObject();
                     bitmapDataObject.imageByteArray = stream.toByteArray();
-                    serializedPhotos.add(new Gson().toJson(stream.toByteArray()));
-                    String[] splitPath = photoPath.split("/");
+                    String[] splitPath = photoPaths.get(i).split("/");
+                    serializedPhotos.put(splitPath[splitPath.length-1], new Gson().toJson(stream.toByteArray()));
                 }
 
-                android.util.Log.d("debug", "Sending photo");
-                mCliSocket.getOutputStream().write((PHOTO + "\n").getBytes());
-                mCliSocket.getOutputStream().write((albumName + "\n").getBytes());
                 mCliSocket.getOutputStream().write((serializedPhotos.size() + "\n").getBytes());
-                for (String serialized : serializedPhotos) mCliSocket.getOutputStream().write((serialized + "\n").getBytes());
-                BufferedReader sockIn = new BufferedReader(
-                        new InputStreamReader(mCliSocket.getInputStream()));
+                for (Map.Entry<String, String> serialized : serializedPhotos.entrySet()) {
+                    mCliSocket.getOutputStream().write((serialized.getKey() + "\n").getBytes());
+                    mCliSocket.getOutputStream().write((serialized.getValue() + "\n").getBytes());
+                }
                 sockIn.readLine();
                 android.util.Log.d("debug", "Photo Sent");
                 mCliSocket.close();
