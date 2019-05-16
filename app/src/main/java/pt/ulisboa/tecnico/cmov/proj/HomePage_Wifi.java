@@ -28,6 +28,18 @@ public class HomePage_Wifi extends HomePage {
     }
 
     @Override
+    protected void signOut() {
+        termite.destroy();
+        super.signOut();
+    }
+
+    @Override
+    protected void onDestroy() {
+        termite.destroy();
+        super.onDestroy();
+    }
+
+    @Override
     protected void enterAlbum(int position) {
         Intent intent = new Intent(this, usingWifiDirect ? AlbumView_Wifi.class :  AlbumView.class);
         String albumId = albums.get(position).getAlbumId();
@@ -54,13 +66,15 @@ public class HomePage_Wifi extends HomePage {
         if (requestCode == ALBUM_VIEW_REQUEST) {
             if (resultCode == RESULT_OK) {
                 String usernames = data.getExtras().getString("Users");
-                if (usernames.equals("")) return;
-
-                String albumName = data.getExtras().getString("AlbumName");
-                String[] users = usernames.split(",");
-                for (String user : users) {
-                    termite.albumName_User_Map.get(albumName).add(user);
+                if (!usernames.equals("")) {
+                    String albumName = data.getExtras().getString("AlbumName");
+                    String[] users = usernames.split(",");
+                    for (String user : users) {
+                        termite.albumName_User_Map.get(albumName).add(user);
+                    }
                 }
+
+                if (data.getExtras().getBoolean("shouldSignOut")) signOut();
             }
         }
     }

@@ -22,4 +22,15 @@
 
     <include layout="@layout/content_log_view" />
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/returnFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_margin="@dimen/fab_margin"
+        android:clickable="true"
+        android:focusable="auto"
+        app:backgroundTint="#9CD2FF"
+        app:srcCompat="@mipmap/back_icon_foreground" />
+
 </android.support.design.widget.CoordinatorLayout>

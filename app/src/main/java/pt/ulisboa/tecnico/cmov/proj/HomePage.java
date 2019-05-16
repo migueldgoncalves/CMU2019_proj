@@ -149,21 +149,10 @@ public class HomePage extends DropboxActivity implements
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_home) {
-            startActivity(new Intent(HomePage.this, HomePage.class));
-        } else if (id == R.id.nav_logs) {
-            startActivity(new Intent(HomePage.this, LogView.class));
-        } else if (id == R.id.nav_dropbox) {
-            if(!hasToken()){
-                Auth.startOAuth2Authentication(HomePage.this, ACCESS_KEY);
-            }else {
-                Toast.makeText(HomePage.this, "You Are Already Logged In To Your Dropbox",
-                        Toast.LENGTH_LONG).show();
-            }
+        if (id == R.id.nav_logs) {
+            startActivity(new Intent(this, LogView.class));
         } else if (id == R.id.nav_signOut) {
-            String sessionId = ((Peer2PhotoApp) this.getApplication()).getSessionId();
-            new HttpRequestDeleteSession(this);
-            HttpRequestDeleteSession.httpRequest(sessionId, URL_SIGNOUT);
+            signOut();
         } else if (id == R.id.nav_settings){
             //TODO: Isto serve para alguma coisa???
         }
@@ -173,12 +162,18 @@ public class HomePage extends DropboxActivity implements
         return true;
     }
 
+    protected void signOut() {
+        String sessionId = ((Peer2PhotoApp) this.getApplication()).getSessionId();
+        new HttpRequestDeleteSession(this);
+        HttpRequestDeleteSession.httpRequest(sessionId, URL_SIGNOUT);
+    }
+
     @Override
     public void onResume(){
         super.onResume();
 
         if(hasToken()){
-            Toast.makeText(HomePage.this, "You Are Now Logged In To Your Dropbox", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "You Are Now Logged In To Your Dropbox", Toast.LENGTH_LONG).show();
             TextView username = findViewById(R.id.UsernameDisplay);
             TextView mail = findViewById(R.id.MailDisplay);
             try{
@@ -192,7 +187,7 @@ public class HomePage extends DropboxActivity implements
 
     @Override
     protected void loadData() {
-
+        //TODO: Isto serve para alguma coisa??
     }
 
     public void addNewAlbum(String albumId, String albumName) {
@@ -201,10 +196,10 @@ public class HomePage extends DropboxActivity implements
     }
 
     private void createAlbumByUser(){
-        AlertDialog.Builder builder = new AlertDialog.Builder(HomePage.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Album Title");
 
-        final EditText input = new EditText(HomePage.this);
+        final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL);
         builder.setView(input);
 
@@ -239,7 +234,7 @@ public class HomePage extends DropboxActivity implements
 
     public void createAlbumInCloud(String albumName, String albumId){
         if (!usingWifiDirect) {
-            new UploadFileTask(HomePage.this, DropboxClientFactory.getClient(), new UploadFileTask.Callback() {
+            new UploadFileTask(this, DropboxClientFactory.getClient(), new UploadFileTask.Callback() {
 
                 @Override
                 public void onUploadComplete(FileMetadata result) {
@@ -262,6 +257,7 @@ public class HomePage extends DropboxActivity implements
             File localFile = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName);
             File file = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName + "/" + albumName + ".txt");
             File localPhotosFile = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName+ "/" + albumName + "_LOCAL.txt");
+            ((Peer2PhotoApp) getApplication()).addAlbum(albumId, albumName, getApplicationContext().getFilesDir().getPath() + "/albums.txt");
             try{
                 if(localFile.mkdir()){
                     System.out.println("Folder Created Successfuly!");

@@ -35,13 +35,7 @@ public class AlbumView_Wifi extends AlbumView {
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            String userResult = "";
-            for (String user : addedUsers) userResult += (user + ",");
-            Intent intent = new Intent();
-            intent.putExtra("Users", userResult);
-            intent.putExtra("AlbumName", albumName);
-            setResult(Activity.RESULT_OK, intent);
-            handleWifiBackPressed();
+            processExit(false);
         }
     }
 

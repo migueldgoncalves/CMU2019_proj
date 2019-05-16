@@ -9,7 +9,7 @@
             android:title="Home" />
         <item
             android:id="@+id/nav_logs"
-            android:icon="@drawable/ic_menu_slideshow"
+            android:icon="@drawable/logs"
             android:title="Logs" />
         <item
             android:id="@+id/nav_signOut"

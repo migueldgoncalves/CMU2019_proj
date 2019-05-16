@@ -136,6 +136,17 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
         startActivityForResult(i, ACTIVITY_SELECT_IMAGE);
     }
 
+    protected void processExit(boolean shouldSignOut) {
+        String userResult = "";
+        for (String user : addedUsers) userResult += (user + ",");
+        Intent intent = new Intent();
+        intent.putExtra("Users", userResult);
+        intent.putExtra("AlbumName", albumName);
+        intent.putExtra("shouldSignOut", shouldSignOut);
+        setResult(Activity.RESULT_OK, intent);
+        super.onBackPressed();
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
@@ -237,10 +248,6 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
         }
     }
 
-    public void handleWifiBackPressed() {
-        super.onBackPressed();
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -275,17 +282,13 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
+        if (id == R.id.nav_home) {
+            super.onBackPressed();
+        } else if (id == R.id.nav_logs) {
+            startActivity(new Intent(this, LogView.class));
+        } else if (id == R.id.nav_signOut) {
+            processExit(true);
+        } else if (id == R.id.nav_settings) {
 
         }
 

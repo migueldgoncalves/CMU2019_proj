@@ -72,7 +72,6 @@ public class Peer2PhotoApp extends Application {
                 Gson gson = new Gson();
                 String jsonString = FileUtils.readFileToString(new File(filePath), "UTF-8");
                 jsonString = jsonString.replace("\n", "").replace("\r", "");
-                //TODO: ERRO! Não recebe albums!!!!
                 albums = gson.fromJson(jsonString, HashMap.class);
                 android.util.Log.d("debug", jsonString);
             } catch (Exception e) {

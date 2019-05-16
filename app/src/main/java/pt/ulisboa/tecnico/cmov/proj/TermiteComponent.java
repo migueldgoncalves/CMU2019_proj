@@ -130,6 +130,18 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                 AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
+    public void destroy() {
+        try {
+            if (mSrvSocket != null) mSrvSocket.close();
+            mSrvSocket = null;
+            activity.unbindService(mConnection);
+            activity.unregisterReceiver(mReceiver);
+        }
+        catch (IOException e) {
+            Log.d("debug", "Failed to close socket");
+        }
+    }
+
     public void requestPeers() {
         mManager.requestGroupInfo(mChannel, this);
     }
@@ -267,8 +279,10 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
             Log.d(TAG, "IncommingCommTask started (" + this.hashCode() + ").");
 
             try {
-                mSrvSocket = new SimWifiP2pSocketServer(
-                        10001);
+                if (mSrvSocket == null) {
+                    mSrvSocket = new SimWifiP2pSocketServer(
+                            10001);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
