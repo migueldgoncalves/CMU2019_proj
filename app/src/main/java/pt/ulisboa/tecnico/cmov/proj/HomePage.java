@@ -17,6 +17,8 @@ import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.GridView;
@@ -56,17 +58,17 @@ public class HomePage extends DropboxActivity implements
     public String URL_LOAD_ALBUMS;
     public String URL_SIGNOUT;
 
-    private boolean usingWifiDirect = false;
+    protected boolean usingWifiDirect = false;
 
-    private static ArrayList<Album> albums = new ArrayList<>();
-    private static ArrayAdapter<Album> albumAdapter = null;
+    protected static ArrayList<Album> albums = new ArrayList<>();
+    protected static ArrayAdapter<Album> albumAdapter = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_page);
 
-        usingWifiDirect = savedInstanceState != null ? savedInstanceState.getBoolean("isWifi") : false;
+        usingWifiDirect = savedInstanceState != null && savedInstanceState.getBoolean("isWifi");
 
         URL_BASE = getString(R.string.serverIP);
         URL_CREATE_ALBUM = URL_BASE + "/createalbum";
@@ -95,12 +97,7 @@ public class HomePage extends DropboxActivity implements
         loadAlbums();
 
         albumTable.setOnItemClickListener((parent, view, position, id) -> {
-            Intent intent = new Intent(this, usingWifiDirect ? AlbumView_Wifi.class :  AlbumView.class);
-            Bundle b = new Bundle();
-            b.putString("AlbumId", albums.get(position).getAlbumId());
-            b.putString("AlbumName", albums.get(position).getAlbumName());
-            intent.putExtras(b);
-            startActivityForResult(intent, ALBUM_VIEW_REQUEST);
+            enterAlbum(position);
         });
 
         NavigationView navigationView = findViewById(R.id.nav_view);
@@ -115,6 +112,15 @@ public class HomePage extends DropboxActivity implements
                 requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
             }
         }
+    }
+
+    protected void enterAlbum(int position) {
+        Intent intent = new Intent(this, AlbumView.class);
+        Bundle b = new Bundle();
+        b.putString("AlbumId", albums.get(position).getAlbumId());
+        b.putString("AlbumName", albums.get(position).getAlbumName());
+        intent.putExtras(b);
+        startActivityForResult(intent, ALBUM_VIEW_REQUEST);
     }
 
     @Override

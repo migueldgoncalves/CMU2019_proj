@@ -28,10 +28,25 @@ public class HomePage_Wifi extends HomePage {
     }
 
     @Override
+    protected void enterAlbum(int position) {
+        Intent intent = new Intent(this, usingWifiDirect ? AlbumView_Wifi.class :  AlbumView.class);
+        Bundle b = new Bundle();
+        String albumId = albums.get(position).getAlbumId();
+        String albumName = albums.get(position).getAlbumName();
+        b.putString("AlbumId", albumId);
+        b.putString("AlbumName", albumName);
+        b.putStringArrayList("AlbumUsers", termite.albumName_User_Map.get(albumName));
+        intent.putExtras(b);
+        startActivityForResult(intent, ALBUM_VIEW_REQUEST);
+    }
+
+    @Override
     public void addNewAlbum(String albumId, String albumName) {
         super.addNewAlbum(albumId, albumName);
         termite.albumId_albumName_Map.put(albumId, albumName);
-        termite.albumName_User_Map.put(albumName, new ArrayList<>());
+        ArrayList<String> Users = new ArrayList<String>();
+        Users.add(((Peer2PhotoApp)getApplication()).getUsername());
+        termite.albumName_User_Map.put(albumName, Users);
     }
 
     @Override

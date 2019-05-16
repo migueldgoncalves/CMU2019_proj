@@ -28,26 +28,23 @@ import pt.ulisboa.tecnico.cmov.proj.Data.Peer2PhotoApp;
 import pt.ulisboa.tecnico.cmov.proj.Data.User;
 import pt.ulisboa.tecnico.cmov.proj.HTMLHandlers.HttpRequestGetAllUsers;
 
-public class FindUsers extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class FindUsers extends AppCompatActivity {
 
     private static ArrayList<User> users = new ArrayList<>();
     private static ArrayAdapter<User> userAdapter = null;
 
+    protected ArrayList<String> albumUsers = new ArrayList<>();
+    protected ArrayList<String> addedUsers = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_find_users);
+        setContentView(R.layout.app_bar_find_users);
         Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        toolbar.setTitle("Find Users");
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.addDrawerListener(toggle);
-        toggle.syncState();
-
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+        albumUsers = getIntent().getStringArrayListExtra("AlbumUsers");
+        addedUsers = getIntent().getStringArrayListExtra("AlbumUsers");
 
         users.clear();
 
@@ -66,85 +63,13 @@ public class FindUsers extends AppCompatActivity implements NavigationView.OnNav
         userTable.setAdapter(userAdapter);
 
         userTable.setOnItemClickListener((parent, view, position, id) -> addUser(position));
-
-        //Send server requests as user types out user's name
-        EditText searchText = findViewById(R.id.searchText);
-        searchText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void afterTextChanged(Editable s) {}
-            @Override
-            public void beforeTextChanged(CharSequence s, int start,
-                                          int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start,
-                                      int before, int count) {
-                //TODO: Comecamos a procurar depois do utilizador introduzir 2 caracteres?
-                /*
-                if(s.length() > 1)
-                    sendServerRequest(s.toString());
-                */
-            }
-        });
     }
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            Intent intent = new Intent();
-            setResult(Activity.RESULT_CANCELED, intent);
-            super.onBackPressed();
-        }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.find_users, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        if (id == R.id.nav_home) {
-
-        } else if (id == R.id.nav_createAlbum) {
-
-        } else if (id == R.id.nav_logs) {
-            
-        } else if (id == R.id.nav_dropbox) {
-
-        } else if (id == R.id.nav_signOut) {
-
-        } else if (id == R.id.nav_settings){
-
-        }
-
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
+        Intent intent = new Intent();
+        setResult(Activity.RESULT_CANCELED, intent);
+        super.onBackPressed();
     }
 
     private void addUser(int position){
@@ -175,12 +100,8 @@ public class FindUsers extends AppCompatActivity implements NavigationView.OnNav
     public void parseUsers(@NonNull String allUsers){
         users.clear();
         String[] parsedUsers = allUsers.split(",");
-        Peer2PhotoApp app = (Peer2PhotoApp)getApplication();
-        String myUsername = (app != null) ? app.getUsername() : "User";
-        for (int i = 0; i < parsedUsers.length; i++) {
-            //TODO: UserId desnecessario!!
-            //TODO: Verificar se utilizador já está no album
-            if (!myUsername.equals(parsedUsers[i])) users.add(new User(i, parsedUsers[i]));
+        for (String user : parsedUsers) {
+            if (!albumUsers.contains(user) && !addedUsers.contains(user)) users.add(new User(0, user));
         }
         userAdapter.notifyDataSetChanged();
     }

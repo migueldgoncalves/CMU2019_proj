@@ -15,8 +15,6 @@ import java.util.ArrayList;
 
 public class AlbumView_Wifi extends AlbumView {
 
-    private ArrayList<String> addedUsers = new ArrayList<>();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Bundle bundle = savedInstanceState != null ? savedInstanceState : new Bundle();

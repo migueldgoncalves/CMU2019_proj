@@ -60,6 +60,8 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
 
     protected String albumId = "";
     protected String albumName = "";
+    protected ArrayList<String> albumUsers = new ArrayList<String>();
+    protected ArrayList<String> addedUsers = new ArrayList<>();
 
     private boolean usingWifiDirect = false;
 
@@ -68,7 +70,10 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_album_view);
 
-        usingWifiDirect = savedInstanceState != null ? savedInstanceState.getBoolean("isWifi") : false;
+        if (savedInstanceState != null) {
+            usingWifiDirect = savedInstanceState.getBoolean("isWifi");
+            albumUsers = savedInstanceState.getStringArrayList("AlbumUsers");
+        }
 
         URL_BASE = getString(R.string.serverIP);
         URL_ALBUM = URL_BASE + "/album";
@@ -118,6 +123,19 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
         String sessionId = ((Peer2PhotoApp) this.getApplication()).getSessionId();
         new HttpRequestPutAddUserToAlbum(this);
         HttpRequestPutAddUserToAlbum.httpRequest(albumId, ((Peer2PhotoApp) this.getApplication()).getUsername(), sessionId, username, URL_ADD_USER_TO_ALBUM);
+    }
+
+    protected void beginAddUser() {
+        Intent intent = new Intent(this, FindUsers.class);
+        intent.putExtra("AlbumUsers", albumUsers);
+        intent.putExtra("AddedUsers", addedUsers);
+        startActivityForResult(intent, FIND_USER_REQUEST);
+    }
+
+    protected void beginAddPhoto() {
+        Intent i = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
+        final int ACTIVITY_SELECT_IMAGE = 1234;
+        startActivityForResult(i, ACTIVITY_SELECT_IMAGE);
     }
 
     @Override
@@ -242,16 +260,11 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
 
         //noinspection SimplifiableIfStatement
         if (option.equals("Add User")) {
-            Intent intent = new Intent(this, FindUsers.class);
-            startActivityForResult(intent, FIND_USER_REQUEST);
-            //finish();
-            //TODO: Receive user response
+            beginAddUser();
             return true;
         }
         else if (option.equals("Add Photo")) {
-            Intent i = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
-            final int ACTIVITY_SELECT_IMAGE = 1234;
-            startActivityForResult(i, ACTIVITY_SELECT_IMAGE);
+            beginAddPhoto();
             return true;
         }
 
