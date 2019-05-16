@@ -9,7 +9,7 @@
     tools:openDrawer="start">
 
     <include
-        layout="@layout/app_bar_find_users"
+        layout="@layout/app_bar_home_page"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
@@ -19,7 +19,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
-        app:headerLayout="@layout/nav_header_find_users"
-        app:menu="@menu/activity_find_users_drawer" />
+        app:headerLayout="@layout/nav_header_home_page"
+        app:menu="@menu/activity_home_page_wifi_drawer" />
 
 </android.support.v4.widget.DrawerLayout>

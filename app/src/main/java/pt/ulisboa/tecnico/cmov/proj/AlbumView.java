@@ -70,10 +70,8 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_album_view);
 
-        if (savedInstanceState != null) {
-            usingWifiDirect = savedInstanceState.getBoolean("isWifi");
-            albumUsers = savedInstanceState.getStringArrayList("AlbumUsers");
-        }
+        usingWifiDirect = savedInstanceState != null && savedInstanceState.getBoolean("isWifi");
+        albumUsers = getIntent().getStringArrayListExtra("AlbumUsers");
 
         URL_BASE = getString(R.string.serverIP);
         URL_ALBUM = URL_BASE + "/album";

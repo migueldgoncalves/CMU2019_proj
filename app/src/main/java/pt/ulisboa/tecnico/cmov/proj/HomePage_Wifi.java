@@ -30,13 +30,11 @@ public class HomePage_Wifi extends HomePage {
     @Override
     protected void enterAlbum(int position) {
         Intent intent = new Intent(this, usingWifiDirect ? AlbumView_Wifi.class :  AlbumView.class);
-        Bundle b = new Bundle();
         String albumId = albums.get(position).getAlbumId();
         String albumName = albums.get(position).getAlbumName();
-        b.putString("AlbumId", albumId);
-        b.putString("AlbumName", albumName);
-        b.putStringArrayList("AlbumUsers", termite.albumName_User_Map.get(albumName));
-        intent.putExtras(b);
+        intent.putExtra("AlbumId", albumId);
+        intent.putExtra("AlbumName", albumName);
+        intent.putExtra("AlbumUsers", termite.albumName_User_Map.get(albumName));
         startActivityForResult(intent, ALBUM_VIEW_REQUEST);
     }
 

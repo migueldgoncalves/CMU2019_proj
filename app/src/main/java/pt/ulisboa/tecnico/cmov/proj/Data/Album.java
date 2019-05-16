@@ -9,8 +9,7 @@ public class Album {
 
     private String albumId;
     private String albumName;
-    private int thumbnail = -1;
-    private ArrayList<User> users = new ArrayList<User>();
+    private int thumbnail;
 
     public Album(String albumId, String albumName, int thumbnail) {
         this.albumId = albumId;
@@ -24,10 +23,4 @@ public class Album {
 
     public int getAlbumThumbnail() { return this.thumbnail; }
 
-    public Collection<User> getAllUsers() { return users; }
-
-    public User getUserWithID() {
-        //TODO:
-        return null;
-    }
 }

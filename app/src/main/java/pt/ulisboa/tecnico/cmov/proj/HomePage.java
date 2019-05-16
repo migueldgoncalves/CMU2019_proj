@@ -66,9 +66,9 @@ public class HomePage extends DropboxActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home_page);
-
         usingWifiDirect = savedInstanceState != null && savedInstanceState.getBoolean("isWifi");
+
+        setContentView(usingWifiDirect ? R.layout.activity_home_page_wifi : R.layout.activity_home_page);
 
         URL_BASE = getString(R.string.serverIP);
         URL_CREATE_ALBUM = URL_BASE + "/createalbum";
@@ -143,22 +143,6 @@ public class HomePage extends DropboxActivity implements
         }
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        //TODO: Necessary?
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -167,28 +151,21 @@ public class HomePage extends DropboxActivity implements
 
         if (id == R.id.nav_home) {
             startActivity(new Intent(HomePage.this, HomePage.class));
-        } else if (id == R.id.nav_createAlbum) {
-            createAlbumByUser();
-        }else if (id == R.id.nav_findUsers){
-            startActivity(new Intent(HomePage.this, FindUsers.class));
         } else if (id == R.id.nav_logs) {
             startActivity(new Intent(HomePage.this, LogView.class));
         } else if (id == R.id.nav_dropbox) {
-
-            //TODO: Remove this from WifiDirect
             if(!hasToken()){
                 Auth.startOAuth2Authentication(HomePage.this, ACCESS_KEY);
             }else {
                 Toast.makeText(HomePage.this, "You Are Already Logged In To Your Dropbox",
                         Toast.LENGTH_LONG).show();
             }
-
         } else if (id == R.id.nav_signOut) {
             String sessionId = ((Peer2PhotoApp) this.getApplication()).getSessionId();
             new HttpRequestDeleteSession(this);
             HttpRequestDeleteSession.httpRequest(sessionId, URL_SIGNOUT);
         } else if (id == R.id.nav_settings){
-
+            //TODO: Isto serve para alguma coisa???
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -282,7 +259,6 @@ public class HomePage extends DropboxActivity implements
                         albumId);
         }
         else {
-            //TODO: Rever
             File localFile = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName);
             File file = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName + "/" + albumName + ".txt");
             File localPhotosFile = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName+ "/" + albumName + "_LOCAL.txt");

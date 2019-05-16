@@ -44,7 +44,7 @@ public class FindUsers extends AppCompatActivity {
         toolbar.setTitle("Find Users");
 
         albumUsers = getIntent().getStringArrayListExtra("AlbumUsers");
-        addedUsers = getIntent().getStringArrayListExtra("AlbumUsers");
+        addedUsers = getIntent().getStringArrayListExtra("AddedUsers");
 
         users.clear();
 
