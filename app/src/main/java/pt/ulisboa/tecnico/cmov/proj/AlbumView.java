@@ -19,6 +19,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
@@ -32,6 +33,7 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -54,6 +56,7 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
     private static ArrayAdapter<Photo> photoAdapter = null;
 
     static final int FIND_USER_REQUEST = 420;
+    static final int SELECT_IMAGE_REQUEST = 1234;
     public String URL_BASE;
     public String URL_ALBUM;
     public String URL_ADD_USER_TO_ALBUM;
@@ -111,7 +114,22 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
         if (!usingWifiDirect) getRemotePhotos();
     }
 
-    private void addNewPhoto(Bitmap photoBitmap) {
+    private void addNewPhoto(Bitmap photoBitmap, String photoName) {
+        try {
+            File photoDir = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName);
+            if (!photoDir.exists()) photoDir.mkdir();
+            File newPhoto = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName + "/" + photoName);
+            if (!newPhoto.exists()) {
+                if (!newPhoto.createNewFile()) {
+                    Log.d("debug", "Failed to create new photo file!");
+                }
+                FileOutputStream out = new FileOutputStream(getApplicationContext().getFilesDir().getPath() + "/" + albumName + "/" + photoName);
+                photoBitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+            }
+        }
+        catch (IOException e) {
+            Log.d("debug", "Failed to add local photo file!");
+        }
         photos.add(new Photo(photoBitmap));
         photoAdapter.notifyDataSetChanged();
         updateApplicationLogs("Photo Successfully Added to Album", "Add Photo To Album");
@@ -132,8 +150,7 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
 
     protected void beginAddPhoto() {
         Intent i = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
-        final int ACTIVITY_SELECT_IMAGE = 1234;
-        startActivityForResult(i, ACTIVITY_SELECT_IMAGE);
+        startActivityForResult(i, SELECT_IMAGE_REQUEST);
     }
 
     protected void processExit(boolean shouldSignOut) {
@@ -158,7 +175,7 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
                 addUserToAlbum(username);
             }
         }
-        else {
+        else if (requestCode == SELECT_IMAGE_REQUEST) {
             if (resultCode == RESULT_OK) {
                 Uri selectedImage = data.getData();
                 String[] filePathColumn = {MediaStore.Images.Media.DATA};
@@ -234,7 +251,8 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
 
         Bitmap scaled = Bitmap.createScaledBitmap(yourSelectedImage, outWidth, outHeight, false);
 
-        addNewPhoto(scaled);
+        String[] splitPath = filePath.split("/");
+        addNewPhoto(scaled, splitPath[splitPath.length-1]);
     }
 
     @Override
