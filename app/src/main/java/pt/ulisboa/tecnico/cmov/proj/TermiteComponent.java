@@ -167,7 +167,8 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         if (localAlbumDir.exists()) {
             File[] localFiles = localAlbumDir.listFiles();
             for (File file : localFiles) {
-                String filename = file.getName().substring(file.getName().indexOf('/') + 1);
+                //TODO: Verify that file.getname() works
+                String filename = file.getName();
                 if (photoNames.contains(filename)) continue;
                 if (filename.equals(albumName + ".txt") || filename.equals(albumName + "_LOCAL.txt"))
                     continue;
@@ -233,6 +234,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
 
     private void processUsername(String username, String ipAddress) {
         ip_Username_Map.put(ipAddress, username);
+        verifySendCatalogs();
     }
 
     private void verifySendCatalogs() {
@@ -307,10 +309,8 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                     if (messageType.equals(SEND_USERNAME)) {
                         String username = sockIn.readLine();
                         String ipAddress = sockIn.readLine();
-                        processUsername(username, ipAddress);
-                        if (!ip_Username_Map.containsKey(ipAddress) || ip_Username_Map.get(ipAddress).equals("")) sendUsername(ipAddress);
-                        verifySendCatalogs();
-                        sock.getOutputStream().write(("\n").getBytes());
+                        sock.getOutputStream().write((getUsername() + "\n").getBytes());
+                        sock.getOutputStream().write((virtualIP + "\n").getBytes());
                         android.util.Log.d("debug", "Processed username " + username);
                     }
                     else if (messageType.equals(PHOTO)) {
@@ -375,9 +375,13 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                 mCliSocket.getOutputStream().write((SEND_USERNAME + "\n").getBytes());
                 mCliSocket.getOutputStream().write((username + "\n").getBytes());
                 mCliSocket.getOutputStream().write((localIp + "\n").getBytes());
+
                 BufferedReader sockIn = new BufferedReader(
                         new InputStreamReader(mCliSocket.getInputStream()));
-                sockIn.readLine();
+                String otherUsername = sockIn.readLine();
+                String otherIp = sockIn.readLine();
+                processUsername(otherUsername, otherIp);
+
                 android.util.Log.d("debug", "Username Sent");
                 mCliSocket.close();
             } catch (UnknownHostException e) {
@@ -470,10 +474,13 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                     }
                 }
             }
-            for (SimWifiP2pDevice device : devices.getDeviceList()) {
-                if (!device.deviceName.equals(groupInfo.getDeviceName())) {
-                    if (!ip_Username_Map.containsKey(device.getVirtIp())) ip_Username_Map.put(device.getVirtIp(), "");
-                    sendUsername(device.getVirtIp());
+            else {
+                for (SimWifiP2pDevice device : devices.getDeviceList()) {
+                    if (!device.deviceName.equals(groupInfo.getDeviceName())) {
+                        if (!ip_Username_Map.containsKey(device.getVirtIp()))
+                            ip_Username_Map.put(device.getVirtIp(), "");
+                        sendUsername(device.getVirtIp());
+                    }
                 }
             }
         }

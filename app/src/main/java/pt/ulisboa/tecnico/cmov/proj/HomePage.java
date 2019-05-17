@@ -291,6 +291,7 @@ public class HomePage extends DropboxActivity implements
             }
         }
 
+        //TODO: Not receiving users in album!
         updateApplicationLogs("List User Albums", "Local Albums Loaded Successfully");
 
         new HttpRequestGetUserAlbums(this);

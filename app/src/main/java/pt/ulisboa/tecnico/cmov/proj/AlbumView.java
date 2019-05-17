@@ -28,6 +28,7 @@ import android.widget.GridView;
 
 import com.dropbox.core.v2.files.FileMetadata;
 
+import org.apache.commons.io.FileUtils;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -39,6 +40,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 import pt.ulisboa.tecnico.cmov.proj.Adapters.PhotoAdapter;
@@ -318,12 +320,13 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
     private void loadLocalPhotos(){
         File localPhotoPaths = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName + "/" + albumName + "_LOCAL.txt");
 
-        //TODO: Check local photo files!
+        ArrayList<String> photoNames = new ArrayList<>();
         if(localPhotoPaths.isFile()){
             try{
                 BufferedReader br = new BufferedReader(new FileReader(localPhotoPaths));
                 String line;
                 while ((line = br.readLine()) != null) {
+                    photoNames.add(line.substring(line.lastIndexOf('/')+1));
                     imageScalingAndPosting(line);
                 }
             }catch (Exception e){
@@ -332,6 +335,20 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
         }
         else {
             android.util.Log.d("debug", "IT IS NOT A FILE!!");
+        }
+
+        //Check local photo files
+        File localAlbumDir = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName);
+        if (localAlbumDir.exists()) {
+            File[] localFiles = localAlbumDir.listFiles();
+            for (File file : localFiles) {
+                String filename = file.getName();
+                if (photoNames.contains(filename)) continue;
+                if (filename.equals(albumName + ".txt") || filename.equals(albumName + "_LOCAL.txt"))
+                    continue;
+                photoNames.add(filename);
+                imageScalingAndPosting(file.getPath());
+            }
         }
     }
 
