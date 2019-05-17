@@ -329,15 +329,12 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                         sock.getOutputStream().write(("\n").getBytes());
                         android.util.Log.d("debug", "Receiving " + photoStrings.size() + " photos");
 
-                        /*
                         if (!hasLocalAlbum(albumName)) {
-                            //TODO: TEST!!
-                            HomePage homePage = (HomePage)activity;
-                            if (homePage != null) {
-                                homePage.processNewAlbum(albumName, albumId);
-                            }
+                            Intent intent = new Intent(context, HomePage_Wifi.class);
+                            intent.putExtra("AlbumId", albumId);
+                            intent.putExtra("AlbumName", albumName);
+                            activity.startActivity(intent);
                         }
-                        */
 
                         for (Map.Entry<String, String> photoString : photoStrings.entrySet()) {
                             byte[] bytes = new Gson().fromJson(photoString.getValue(), byte[].class);

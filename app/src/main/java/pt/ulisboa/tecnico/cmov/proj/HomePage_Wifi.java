@@ -31,6 +31,14 @@ public class HomePage_Wifi extends HomePage {
         updateFab.setOnClickListener(view -> updateAlbums());
     }
 
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        String albumId = intent.getExtras().getString("AlbumId");
+        String albumName = intent.getExtras().getString("AlbumName");
+        processNewAlbum(albumName, albumId);
+    }
+
     @Override
     protected void signOut() {
         termite.destroy();
