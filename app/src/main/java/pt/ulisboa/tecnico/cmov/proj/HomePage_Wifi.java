@@ -50,7 +50,8 @@ public class HomePage_Wifi extends HomePage {
             String albumId = intent.getExtras().getString("AlbumId");
             String albumName = intent.getExtras().getString("AlbumName");
             int numPhotos = intent.getExtras().getInt("NumPhotos");
-            processNewAlbum(albumName, albumId);
+            boolean isNew = intent.getExtras().getBoolean("IsNew");
+            if (!isNew) processNewAlbum(albumName, albumId);
             Toast.makeText(getApplicationContext(), "Received " + numPhotos + " new photos for " + albumName, Toast.LENGTH_SHORT).show();
         }
         else if (code == 1) {
@@ -165,7 +166,10 @@ public class HomePage_Wifi extends HomePage {
                         if (!shouldAdd) continue;
 
                         totalSize += file.length() / 1000;
-                        deleteCandidate.add(file);
+                        boolean deleted = deleteCandidate.add(file);
+                        if (deleted) {
+                            deleted = true;
+                        }
                     }
                 }
             }
@@ -193,11 +197,9 @@ public class HomePage_Wifi extends HomePage {
         // User was added to album with same name as another album user already has;
         // User was added to album with a name different of all user's albums
         try{
-            HashMap<String, String> albumId_albumName_Map = new HashMap<String, String>();
             HashMap<String, ArrayList<String>> albumName_User_Map = new HashMap<>();
             for (String albumId : albumIds) {
                 String albumName = httpResponse.getString(albumId);
-                albumId_albumName_Map.put(albumId, albumName);
                 String users = httpResponse.getString("Users_" + albumId);
                 String[] usersArray = users.split(",");
                 albumName_User_Map.put(albumName, new ArrayList<>(Arrays.asList(usersArray)));
@@ -225,7 +227,6 @@ public class HomePage_Wifi extends HomePage {
                 }
             }
             termite.albumName_User_Map = albumName_User_Map;
-            termite.albumId_albumName_Map = albumId_albumName_Map;
 
             Toast.makeText(HomePage_Wifi.this, "Updated albums",
                     Toast.LENGTH_LONG).show();

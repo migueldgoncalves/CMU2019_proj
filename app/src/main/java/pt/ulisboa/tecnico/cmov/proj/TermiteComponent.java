@@ -64,7 +64,6 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     private AppCompatActivity activity = null;
     private HashMap<String, String> ip_Username_Map = new HashMap<>();
     public HashMap<String, ArrayList<String>> albumName_User_Map = new HashMap<>();
-    public HashMap<String, String> albumId_albumName_Map = new HashMap<>();
 
     public TermiteComponent(AppCompatActivity activity, Context context, Looper looper) {
         this.activity = activity;
@@ -157,7 +156,6 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         if (localAlbumDir.exists()) {
             File[] localFiles = localAlbumDir.listFiles();
             for (File file : localFiles) {
-                //TODO: Verify that file.getname() works
                 String filename = file.getName();
                 if (photoNames.contains(filename)) continue;
                 if (filename.equals(albumName + ".txt") || filename.equals(albumName + "_LOCAL.txt"))
@@ -187,8 +185,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     }
 
     public void addNewAlbum(String albumId, String albumName) {
-        if (!albumId_albumName_Map.containsKey(albumId)) {
-            albumId_albumName_Map.put(albumId, albumName);
+        if (!albumName_User_Map.containsKey(albumName)) {
             ArrayList<String> Users = new ArrayList<>();
             Users.add(((Peer2PhotoApp) activity.getApplication()).getUsername());
             albumName_User_Map.put(albumName, Users);
@@ -217,7 +214,8 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     }
 
     private boolean hasLocalPhoto(String albumName, String photoName) {
-        return (new File(context.getFilesDir().getPath() + "/" + albumName + "/" + photoName)).exists();
+        File photo = new File(context.getFilesDir().getPath() + "/" + albumName + "/" + photoName);
+        return photo.exists();
     }
 
     private String getLocalPhotoConfirmation(String albumName, String photoNames) {
@@ -328,14 +326,13 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                         sock.getOutputStream().write(("\n").getBytes());
                         android.util.Log.d("debug", "Receiving " + photoStrings.size() + " photos");
 
-                        if (!hasLocalAlbum(albumName)) {
-                            Intent intent = new Intent(context, HomePage_Wifi.class);
-                            intent.putExtra("Code", 0);
-                            intent.putExtra("AlbumId", albumId);
-                            intent.putExtra("AlbumName", albumName);
-                            intent.putExtra("NumPhotos", photoStrings.size());
-                            activity.startActivity(intent);
-                        }
+                        Intent intent = new Intent(context, HomePage_Wifi.class);
+                        intent.putExtra("Code", 0);
+                        intent.putExtra("IsNew", hasLocalAlbum(albumName));
+                        intent.putExtra("AlbumId", albumId);
+                        intent.putExtra("AlbumName", albumName);
+                        intent.putExtra("NumPhotos", photoStrings.size());
+                        activity.startActivity(intent);
 
                         for (Map.Entry<String, String> photoString : photoStrings.entrySet()) {
                             byte[] bytes = new Gson().fromJson(photoString.getValue(), byte[].class);
@@ -448,7 +445,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                 intent.putExtra("Code", 1);
                 intent.putExtra("AlbumId", albumId);
                 intent.putExtra("AlbumName", albumName);
-                intent.putExtra("NumPhotos", photoPaths.size());
+                intent.putExtra("NumPhotos", confirmations.length);
 
                 activity.startActivity(intent);
                 mCliSocket.close();
