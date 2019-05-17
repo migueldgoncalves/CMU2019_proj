@@ -7,51 +7,39 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.security.KeyStore;
-import java.security.PrivateKey;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.HashMap;
 
 public class KeyStoreInterface {
 
-    public static final String KEYSTORE_PASSWORD = "keyStore";
-
-    public static final int RSA_KEY_BYTES = 2048;
-    public static final int CERTIFICATE_VALIDITY = 365; //days
-
     public static final String SERVER_URL = "http://localhost:8080";
-
-    public KeyStoreInterface() {
-        createBaseKeyStore();
-    }
 
     // Main methods
 
-    public HashMap<String, String> getPublicKey(String username, int sessionId, int albumId) {
+    HashMap<String, String> getPublicKey(String username, int sessionId, int albumId) {
+        File file = new File("Album" + albumId + ".pub");
+        if(!file.exists())
+            addKeyPairToKeyStore(albumId);
+
         HashMap<String, String> response = new HashMap<>();
         try {
             if(!isUserInAlbum(username, sessionId, albumId)) {
                 response.put("error", "User is not in album or user albums could not be obtained");
                 return response;
             }
-            KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            keyStore.load(new FileInputStream(System.getProperty("user.dir") + "\\src\\main\\resources\\KeyStore.jks"), KEYSTORE_PASSWORD.toCharArray());
-            if(!keyStore.isKeyEntry(String.valueOf(albumId))) {
-                addKeyPairToKeyStore(albumId);
-            }
-            Runtime runtime = Runtime.getRuntime();
-            Process process = runtime.exec(writeCertificateToFileCommandGenerator(albumId));
-            process.waitFor();
-            if(process.exitValue() != 0) {
-                System.out.println("Error while getting public key of album" + albumId);
-            }
-            InputStream inputStream = new FileInputStream(System.getProperty("user.dir") + "\\src\\main\\resources\\Temp.cert");
-            CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
-            Certificate certificate = certificateFactory.generateCertificate(inputStream);
+            byte[] keyBytes = Files.readAllBytes(Paths.get("Album" + albumId + ".pub"));
+
+            X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+            PublicKey publicKey = KeyFactory.getInstance("RSA").generatePublic(spec);
 
             response.put("success", "Public key obtained successfully");
-            response.put("publicKey", new Gson().toJson(certificate.getPublicKey().getEncoded()));
+            response.put("publicKey", new Gson().toJson(publicKey.getEncoded()));
             return response;
         } catch (Exception e) {
             e.printStackTrace();
@@ -60,19 +48,21 @@ public class KeyStoreInterface {
         }
     }
 
-    public HashMap<String, String> getPrivateKey(String username, int sessionId, int albumId) {
+    HashMap<String, String> getPrivateKey(String username, int sessionId, int albumId) {
+        File file = new File("Album" + albumId + ".key");
+        if(!file.exists())
+            addKeyPairToKeyStore(albumId);
+
         HashMap<String, String> response = new HashMap<>();
         try {
             if(!isUserInAlbum(username, sessionId, albumId)) {
                 response.put("error", "User is not in album or user albums could not be obtained");
                 return response;
             }
-            KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            keyStore.load(new FileInputStream(System.getProperty("user.dir") + "\\src\\main\\resources\\KeyStore.jks"), KEYSTORE_PASSWORD.toCharArray());
-            if(!keyStore.isKeyEntry(String.valueOf(albumId))) {
-                addKeyPairToKeyStore(albumId);
-            }
-            PrivateKey privateKey = (PrivateKey) keyStore.getKey(String.valueOf(albumId), String.valueOf(albumId).toCharArray());
+            byte[] keyBytes = Files.readAllBytes(Paths.get("Album" + albumId + ".key"));
+
+            PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
+            PrivateKey privateKey = KeyFactory.getInstance("RSA").generatePrivate(spec);
 
             response.put("success", "Private key obtained successfully");
             response.put("privateKey", new Gson().toJson(privateKey.getEncoded()));
@@ -86,32 +76,22 @@ public class KeyStoreInterface {
 
     // Auxiliary methods
 
-    private void createBaseKeyStore() {
-        try {
-             File baseKeyStore = new File(System.getProperty("user.dir") + "\\src\\main\\resources\\KeyStore.jks");
-             if(!baseKeyStore.exists()) {
-                 KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-                 keyStore.load(null, KEYSTORE_PASSWORD.toCharArray());
-                 FileOutputStream stream = new FileOutputStream(System.getProperty("user.dir") + "\\src\\main\\resources\\KeyStore.jks");
-                 keyStore.store(stream, KEYSTORE_PASSWORD.toCharArray());
-             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Could not create key store");
-        }
-    }
-
     private void addKeyPairToKeyStore(int albumId) {
         try {
-            Runtime runtime = Runtime.getRuntime();
-            Process process = runtime.exec(addKeyPairCommandGenerator(albumId));
-            process.waitFor();
-            if(process.exitValue() != 0) {
-                throw new Exception("An error occurred while creating keypair for album " + albumId);
-            }
+            KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
+            kpg.initialize(2048);
+            KeyPair pair = kpg.generateKeyPair();
+
+            FileOutputStream out = new FileOutputStream("Album" + albumId + ".key");
+            out.write(pair.getPrivate().getEncoded());
+            out.close();
+
+            out = new FileOutputStream("Album" + albumId + ".pub");
+            out.write(pair.getPublic().getEncoded());
+            out.close();
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("Could not add key pair to keystore");
+            System.out.println("Could not create key pair");
         }
     }
 
@@ -126,40 +106,6 @@ public class KeyStoreInterface {
         } catch (Exception e) {
             e.printStackTrace();
             return false;
-        }
-    }
-
-    private String addKeyPairCommandGenerator(int albumId) {
-        return "keytool -genkeypair " +
-                "-alias " + albumId + " " +
-                "-keyalg RSA " +
-                "-keysize " + RSA_KEY_BYTES + " " +
-                "-dname \"CN=Group20, OU=CMU, O=IST, L=Taguspark, ST=Lisboa, C=PT\" " +
-                "-keypass " + albumId + " " +
-                "-validity " + CERTIFICATE_VALIDITY + " " +
-                "-storetype JKS " +
-                "-keystore " + System.getProperty("user.dir") + "\\src\\main\\resources\\KeyStore.jks" + " " +
-                "-storepass " + KEYSTORE_PASSWORD;
-    }
-
-    private String writeCertificateToFileCommandGenerator(int albumId) {
-        return "keytool -export -keystore " + System.getProperty("user.dir") + "\\src\\main\\resources\\KeyStore.jks" + " " +
-                "-alias " + albumId + " " + "-file " + System.getProperty("user.dir") + "\\src\\main\\resources\\Temp.cert" + " " +
-                "-storepass " + KEYSTORE_PASSWORD;
-    }
-
-    protected void deleteKeystore() {
-        try {
-            File keyStore = new File(System.getProperty("user.dir") + "\\src\\main\\resources\\KeyStore.jks");
-            if(keyStore.exists()) {
-                if (keyStore.delete()) {
-                    System.out.println("Keystore successfully deleted");
-                } else {
-                    System.out.println("Error while deleting keystore");
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 }

@@ -7,7 +7,14 @@ import android.widget.Toast;
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
 
+import org.json.JSONObject;
+
+import java.security.PrivateKey;
+
 import pt.ulisboa.tecnico.cmov.proj.AlbumView;
+import pt.ulisboa.tecnico.cmov.proj.Cryptography;
+import pt.ulisboa.tecnico.cmov.proj.Data.Peer2PhotoApp;
+import pt.ulisboa.tecnico.cmov.proj.HomePage;
 
 public class HttpRequestGetAlbumPhotos extends HttpRequest {
 
@@ -35,6 +42,9 @@ public class HttpRequestGetAlbumPhotos extends HttpRequest {
                             android.util.Log.d("debug", "Success");
                             android.util.Log.d("debug", success);
                             Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
+
+                            urlReplacer(httpResponse, sessionId, username, albumId, ctx);
+
                             ((AlbumView)ctx).updateApplicationLogs(success, "View Album");
                             ((AlbumView)ctx).urlParser(httpResponse.getString("users"), httpResponse);
 
@@ -53,6 +63,30 @@ public class HttpRequestGetAlbumPhotos extends HttpRequest {
         }
         );
         queue.add(request);
+    }
+
+    private static void urlReplacer(JSONObject httpResponse, String sessionId, String username, String albumId, Context mContext) {
+        try {
+            String[] users = httpResponse.getString("users").split(",");
+            for (String user : users) {
+                String cipheredURL = httpResponse.getString(user);
+                String decipheredURL = decipherURL(sessionId, username, cipheredURL, albumId, mContext);
+                httpResponse.remove(user);
+                httpResponse.put(user, decipheredURL);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static String decipherURL(String sessionId, String username, String cipheredSliceURL, String albumId, Context mContext) {
+        PrivateKey privateKey = ((Peer2PhotoApp)((HomePage) mContext).getApplication()).getAlbumPrivateKey(Integer.valueOf(albumId));
+        if(privateKey==null) {
+            HttpRequestGetPrivateAlbumKey.httpRequest("http://localhost:9090", username, sessionId, albumId);
+            privateKey = ((Peer2PhotoApp)((HomePage) mContext).getApplication()).getAlbumPrivateKey(Integer.valueOf(albumId));
+        }
+        assert privateKey!=null;
+        return Cryptography.decipher(privateKey, cipheredSliceURL);
     }
 
 }
