@@ -193,6 +193,8 @@ public class HomePage extends DropboxActivity implements
     }
 
     public void addNewAlbum(String albumId, String albumName) {
+        for (Album album : albums) if (album.getAlbumName().equals(albumName)) return;
+
         albums.add(new Album(albumId, albumName, R.drawable.empty_thumbnail));
         albumAdapter.notifyDataSetChanged();
     }
@@ -256,31 +258,35 @@ public class HomePage extends DropboxActivity implements
                         albumId);
         }
         else {
-            File localFile = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName);
-            File file = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName + "/" + albumName + ".txt");
-            File localPhotosFile = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName+ "/" + albumName + "_LOCAL.txt");
-            ((Peer2PhotoApp) getApplication()).addAlbum(albumId, albumName, getApplicationContext().getFilesDir().getPath() + "/albums.txt");
-            try{
-                if(localFile.mkdir()){
-                    System.out.println("Folder Created Successfuly!");
-                    if(file.createNewFile()){
-                        System.out.println("Album File Created Successfully!");
-                    }else {
-                        System.out.println("Failed To Create Album File!");
-                    }
+            createAlbumFolders(albumName, albumId);
+        }
+    }
 
-                    if (localPhotosFile.createNewFile()){
-                        System.out.println("The Local Photos File Was Created Successfuly!");
-                    }else{
-                        System.out.println("The Local Photos File Already Exists!");
-                    }
+    private void createAlbumFolders(String albumName, String albumId) {
+        File localFile = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName);
+        File file = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName + "/" + albumName + ".txt");
+        File localPhotosFile = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName+ "/" + albumName + "_LOCAL.txt");
+        ((Peer2PhotoApp) getApplication()).addAlbum(albumId, albumName, getApplicationContext().getFilesDir().getPath() + "/albums.txt");
+        try{
+            if(localFile.mkdir()){
+                System.out.println("Folder Created Successfuly!");
+                if(file.createNewFile()){
+                    System.out.println("Album File Created Successfully!");
+                }else {
+                    System.out.println("Failed To Create Album File!");
                 }
-                else {
-                    System.out.println("The File Already Exists in Local Storage. Perfoming Update...");
+
+                if (localPhotosFile.createNewFile()){
+                    System.out.println("The Local Photos File Was Created Successfuly!");
+                }else{
+                    System.out.println("The Local Photos File Already Exists!");
                 }
-            }catch (Exception e){
-                e.printStackTrace();
             }
+            else {
+                System.out.println("The File Already Exists in Local Storage. Perfoming Update...");
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -289,11 +295,12 @@ public class HomePage extends DropboxActivity implements
 
         if(!(directories.length == 0)){
             for (File i : directories){
-                addNewAlbum(((Peer2PhotoApp) getApplication()).getAlbumId(i.getName()), i.getName());
+                String albumName = i.getName();
+                String albumId = ((Peer2PhotoApp) getApplication()).getAlbumId(albumName);
+                addNewAlbum(albumId, albumName);
             }
         }
 
-        //TODO: Not receiving users in album!
         updateApplicationLogs("List User Albums", "Local Albums Loaded Successfully");
 
         new HttpRequestGetUserAlbums(this);

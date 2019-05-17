@@ -71,12 +71,7 @@ public class HomePage_Wifi extends HomePage {
     @Override
     public void addNewAlbum(String albumId, String albumName) {
         super.addNewAlbum(albumId, albumName);
-        if (!termite.albumId_albumName_Map.containsKey(albumId)) {
-            termite.albumId_albumName_Map.put(albumId, albumName);
-            ArrayList<String> Users = new ArrayList<>();
-            Users.add(((Peer2PhotoApp) getApplication()).getUsername());
-            termite.albumName_User_Map.put(albumName, Users);
-        }
+        termite.addNewAlbum(albumId, albumName);
     }
 
     @Override

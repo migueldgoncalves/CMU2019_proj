@@ -38,6 +38,7 @@ public class ModeChoosing extends DropboxActivity {
                     android.util.Log.d("debug", "Dropbox token obtained");
                     Intent intent = new Intent(ctx, HomePage.class);
                     startActivity(intent);
+                    finish();
                 }
             } else {
                 Toast.makeText(ModeChoosing.this, "Network not available",
@@ -48,6 +49,7 @@ public class ModeChoosing extends DropboxActivity {
         WiFi.setOnClickListener(v -> {
             Intent intent = new Intent(ctx, HomePage_Wifi.class);
             startActivity(intent);
+            finish();
         });
     }
 

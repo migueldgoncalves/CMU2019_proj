@@ -49,11 +49,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
 
     public static final String TAG = "msgsender";
     public static final String SEND_USERNAME = "SEND_USERNAME";
-    public static final String CATALOG = "CATALOG";
     public static final String PHOTO = "PHOTO";
-    public static final String PATH_SPLITTER = ";";
-
-    ObjectOutputStream imageOutput;
 
     public String virtualIP = "";
     private SimWifiP2pManager mManager = null;
@@ -148,7 +144,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         return (app != null) ? app.getUsername() : "null";
     }
 
-    private List<String> getLocalPhotosPath(String albumName) throws IOException {
+    private List<String> getLocalPhotosPaths(String albumName) throws IOException {
         ArrayList<String> paths = new ArrayList<>();
         ArrayList<String> photoNames = new ArrayList<>();
         File localAlbumDir = new File(context.getFilesDir().getPath() + "/" + albumName);
@@ -172,11 +168,11 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         return paths;
     }
 
-    private void sendCatalogs() {
+    private void sendAlbumPhotos() {
         try {
             for (Map.Entry<String, ArrayList<String>> albumEntry : albumName_User_Map.entrySet()) {
                 String albumName = albumEntry.getKey();
-                List<String> contents = getLocalPhotosPath(albumName);
+                List<String> contents = getLocalPhotosPaths(albumName);
                 for (Map.Entry<String, String> userEntry : ip_Username_Map.entrySet()) {
                     if (albumEntry.getValue().contains(userEntry.getValue())) {
                         sendPhotos(contents, albumName, userEntry.getKey());
@@ -186,6 +182,15 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         }
         catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void addNewAlbum(String albumId, String albumName) {
+        if (!albumId_albumName_Map.containsKey(albumId)) {
+            albumId_albumName_Map.put(albumId, albumName);
+            ArrayList<String> Users = new ArrayList<>();
+            Users.add(((Peer2PhotoApp) activity.getApplication()).getUsername());
+            albumName_User_Map.put(albumName, Users);
         }
     }
 
@@ -227,10 +232,10 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
 
     private void processUsername(String username, String ipAddress) {
         ip_Username_Map.put(ipAddress, username);
-        verifySendCatalogs();
+        verifySendAlbumPhotos();
     }
 
-    private void verifySendCatalogs() {
+    private void verifySendAlbumPhotos() {
         boolean requestCompleted = true;
         for (String user : ip_Username_Map.values()) {
             if (user.equals("")) {
@@ -239,7 +244,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
             }
         }
         if (requestCompleted) {
-            sendCatalogs();
+            sendAlbumPhotos();
         }
     }
 
@@ -408,6 +413,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                 mCliSocket.getOutputStream().write((PHOTO + "\n").getBytes());
                 mCliSocket.getOutputStream().write((albumId + "\n").getBytes());
                 mCliSocket.getOutputStream().write((albumName + "\n").getBytes());
+                //TODO: Send users list
                 mCliSocket.getOutputStream().write((photoNames + "\n").getBytes());
 
                 BufferedReader sockIn = new BufferedReader(
