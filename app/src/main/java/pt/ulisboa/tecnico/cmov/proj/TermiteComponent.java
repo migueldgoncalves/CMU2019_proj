@@ -153,9 +153,26 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     }
 
     private List<String> getLocalPhotosPath(String albumName) throws IOException {
+        ArrayList<String> paths = new ArrayList<>();
+        ArrayList<String> photoNames = new ArrayList<>();
+        File localAlbumDir = new File(context.getFilesDir().getPath() + "/" + albumName);
         File localPhotosFile = new File(context.getFilesDir().getPath() + "/" + albumName + "/" + albumName + "_LOCAL.txt");
-        if (!localPhotosFile.isFile()) return new ArrayList<>();
-        return FileUtils.readLines(localPhotosFile);
+        if (localPhotosFile.isFile()) {
+            paths.addAll(FileUtils.readLines(localPhotosFile));
+            for (String path : paths) photoNames.add(path.substring(path.lastIndexOf('/')+1));
+        }
+        if (localAlbumDir.exists()) {
+            File[] localFiles = localAlbumDir.listFiles();
+            for (File file : localFiles) {
+                String filename = file.getName().substring(file.getName().indexOf('/') + 1);
+                if (photoNames.contains(filename)) continue;
+                if (filename.equals(albumName + ".txt") || filename.equals(albumName + "_LOCAL.txt"))
+                    continue;
+                paths.add(file.getName());
+                photoNames.add(filename);
+            }
+        }
+        return paths;
     }
 
     private void sendCatalogs() {
@@ -228,10 +245,11 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         try {
             Bitmap photo = BitmapFactory.decodeByteArray(photoBytes, 0, photoBytes.length);
             File photoDir = new File(context.getFilesDir().getPath() + "/" + albumName);
-            if (!photoDir.mkdir()) {
-                Log.d("debug", "Failed to create photo directory!");
+            if (!photoDir.exists()) {
+                if (!photoDir.mkdir()) {
+                    Log.d("debug", "Failed to create photo directory!");
+                }
             }
-            //TODO: Change photo name!
             File newPhoto = new File(context.getFilesDir().getPath() + "/" + albumName + "/" + photoName);
             if (!newPhoto.createNewFile()) {
                 Log.d("debug", "Failed to create new photo file!");
@@ -273,42 +291,42 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
             }
             while (!Thread.currentThread().isInterrupted()) {
                 try {
-                    while (true) {
-                        SimWifiP2pSocket sock = mSrvSocket.accept();
-                        android.util.Log.d("debug", "Accepted socket!");
-                        BufferedReader sockIn = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-                        String messageType = sockIn.readLine();
-                        android.util.Log.d("debug", "Received: " + messageType);
+                    SimWifiP2pSocket sock = mSrvSocket.accept();
+                    android.util.Log.d("debug", "Accepted socket!");
+                    BufferedReader sockIn = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+                    String messageType = sockIn.readLine();
+                    android.util.Log.d("debug", "Received: " + messageType);
 
-                        if (messageType.equals(SEND_USERNAME)) {
-                            String username = sockIn.readLine();
-                            String ipAddress = sockIn.readLine();
-                            processUsername(username, ipAddress);
-                            sock.getOutputStream().write(("\n").getBytes());
-                            android.util.Log.d("debug", "Processed username");
-                        }
-                        else if (messageType.equals(PHOTO)) {
-                            String albumName = sockIn.readLine();
-                            String photoNames = sockIn.readLine();
-                            sock.getOutputStream().write((getLocalPhotoConfirmation(albumName, photoNames) + "\n").getBytes());
-
-                            int numPhotos = Integer.parseInt(sockIn.readLine());
-                            android.util.Log.d("debug", "Receiving " + numPhotos + "photos");
-
-                            HashMap<String, String> photoStrings = new HashMap<>();
-                            for (int i = 0; i < numPhotos; i++) {
-                                photoStrings.put(sockIn.readLine(), sockIn.readLine());
-                            }
-                            sock.getOutputStream().write(("\n").getBytes());
-
-                            for (Map.Entry<String, String> photoString : photoStrings.entrySet()) {
-                                byte[] bytes = new Gson().fromJson(photoString.getValue(), byte[].class);
-                                processPhoto(bytes, albumName, photoString.getKey());
-                                android.util.Log.d("debug", "Processed new photo");
-                            }
-                        }
-                        sock.close();
+                    if (messageType.equals(SEND_USERNAME)) {
+                        String username = sockIn.readLine();
+                        String ipAddress = sockIn.readLine();
+                        processUsername(username, ipAddress);
+                        sock.getOutputStream().write(("\n").getBytes());
+                        android.util.Log.d("debug", "Processed username");
                     }
+                    else if (messageType.equals(PHOTO)) {
+                        String albumName = sockIn.readLine();
+                        String photoNames = sockIn.readLine();
+                        sock.getOutputStream().write((getLocalPhotoConfirmation(albumName, photoNames) + "\n").getBytes());
+
+                        int numPhotos = Integer.parseInt(sockIn.readLine());
+                        android.util.Log.d("debug", "Confirming " + numPhotos + " photos");
+
+                        HashMap<String, String> photoStrings = new HashMap<>();
+                        for (int i = 0; i < numPhotos; i++) {
+                            photoStrings.put(sockIn.readLine(), sockIn.readLine());
+                        }
+                        sock.getOutputStream().write(("\n").getBytes());
+                        android.util.Log.d("debug", "Receiving " + photoStrings.size() + " photos");
+
+                        for (Map.Entry<String, String> photoString : photoStrings.entrySet()) {
+                            byte[] bytes = new Gson().fromJson(photoString.getValue(), byte[].class);
+                            processPhoto(bytes, albumName, photoString.getKey());
+                            android.util.Log.d("debug", "Processed new photo");
+                        }
+                        //TODO: Update photos locally!
+                    }
+                    sock.close();
                     //publishProgress();
                 } catch (IOException e) {
                     Log.d("Error socket:", e.getMessage());
@@ -372,7 +390,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                     photoNames += (splitPath[splitPath.length-1] + ",");
                 }
 
-                android.util.Log.d("debug", "Sending photo");
+                android.util.Log.d("debug", "Sending photos");
                 mCliSocket.getOutputStream().write((PHOTO + "\n").getBytes());
                 mCliSocket.getOutputStream().write((albumName + "\n").getBytes());
                 mCliSocket.getOutputStream().write((photoNames + "\n").getBytes());
@@ -401,7 +419,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                     mCliSocket.getOutputStream().write((serialized.getValue() + "\n").getBytes());
                 }
                 sockIn.readLine();
-                android.util.Log.d("debug", "Photo Sent");
+                android.util.Log.d("debug", "Photos Sent");
                 mCliSocket.close();
             } catch (UnknownHostException e) {
                 return "Unknown Host:" + e.getMessage();

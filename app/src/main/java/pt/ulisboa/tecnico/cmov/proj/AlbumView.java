@@ -318,6 +318,7 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
     private void loadLocalPhotos(){
         File localPhotoPaths = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName + "/" + albumName + "_LOCAL.txt");
 
+        //TODO: Check local photo files!
         if(localPhotoPaths.isFile()){
             try{
                 BufferedReader br = new BufferedReader(new FileReader(localPhotoPaths));
