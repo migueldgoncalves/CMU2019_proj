@@ -14,6 +14,7 @@ import android.os.Messenger;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 
@@ -331,6 +332,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                             Intent intent = new Intent(context, HomePage_Wifi.class);
                             intent.putExtra("AlbumId", albumId);
                             intent.putExtra("AlbumName", albumName);
+                            intent.putExtra("NumPhotos", photoStrings.size());
                             activity.startActivity(intent);
                         }
 

@@ -37,7 +37,10 @@ public class HomePage_Wifi extends HomePage {
         setIntent(intent);
         String albumId = intent.getExtras().getString("AlbumId");
         String albumName = intent.getExtras().getString("AlbumName");
+        int numPhotos = intent.getExtras().getInt("NumPhotos");
         processNewAlbum(albumName, albumId);
+        Toast.makeText(getApplicationContext(), "Received " + numPhotos + " new photos for " + albumName, Toast.LENGTH_SHORT).show();
+
     }
 
     @Override
