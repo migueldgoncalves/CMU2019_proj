@@ -2,6 +2,7 @@ package pt.ulisboa.tecnico.cmov.proj;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -25,6 +26,9 @@ public class HomePage_Wifi extends HomePage {
         termite = new TermiteComponent(this, getApplication(), getMainLooper());
 
         super.onCreate(bundle);
+
+        FloatingActionButton updateFab = findViewById(R.id.updateFab);
+        updateFab.setOnClickListener(view -> updateAlbums());
     }
 
     @Override
@@ -37,6 +41,11 @@ public class HomePage_Wifi extends HomePage {
     protected void onDestroy() {
         termite.destroy();
         super.onDestroy();
+    }
+
+    public void updateAlbums() {
+        termite.clearData();
+        termite.requestPeers();
     }
 
     @Override

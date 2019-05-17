@@ -53,7 +53,7 @@ public class SimWifiP2pBroadcastReceiver extends BroadcastReceiver {
             ginfo.print();
             //Toast.makeText(mActivity, "Network membership changed", Toast.LENGTH_SHORT).show();
 
-            termiteComponent.requestPeers();
+            //termiteComponent.requestPeers();
             termiteComponent.updateApplicationLogs("Updated network membership.", "success");
 
 

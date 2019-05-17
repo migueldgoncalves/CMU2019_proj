@@ -77,7 +77,6 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     private ServiceConnection mConnection = null;
     private AppCompatActivity activity = null;
     private HashMap<String, String> ip_Username_Map = new HashMap<>();
-    private HashMap<String, String[]> user_Photo_Map = new HashMap<String, String[]>();
     public HashMap<String, ArrayList<String>> albumName_User_Map = new HashMap<>();
     public HashMap<String, String> albumId_albumName_Map = new HashMap<>();
 
@@ -145,6 +144,10 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
 
     public void requestPeers() {
         mManager.requestGroupInfo(mChannel, this);
+    }
+
+    public void clearData() {
+        ip_Username_Map.clear();
     }
 
     private String getUsername() {
@@ -230,6 +233,9 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
 
     private void processUsername(String username, String ipAddress) {
         ip_Username_Map.put(ipAddress, username);
+    }
+
+    private void verifySendCatalogs() {
         boolean requestCompleted = true;
         for (String user : ip_Username_Map.values()) {
             if (user.equals("")) {
@@ -302,8 +308,10 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                         String username = sockIn.readLine();
                         String ipAddress = sockIn.readLine();
                         processUsername(username, ipAddress);
+                        if (!ip_Username_Map.containsKey(ipAddress) || ip_Username_Map.get(ipAddress).equals("")) sendUsername(ipAddress);
+                        verifySendCatalogs();
                         sock.getOutputStream().write(("\n").getBytes());
-                        android.util.Log.d("debug", "Processed username");
+                        android.util.Log.d("debug", "Processed username " + username);
                     }
                     else if (messageType.equals(PHOTO)) {
                         String albumId = sockIn.readLine();
@@ -462,7 +470,6 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                     }
                 }
             }
-            //clearData();
             for (SimWifiP2pDevice device : devices.getDeviceList()) {
                 if (!device.deviceName.equals(groupInfo.getDeviceName())) {
                     if (!ip_Username_Map.containsKey(device.getVirtIp())) ip_Username_Map.put(device.getVirtIp(), "");
