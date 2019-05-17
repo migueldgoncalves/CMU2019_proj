@@ -49,10 +49,6 @@ public class ModeChoosing extends DropboxActivity {
             Intent intent = new Intent(ctx, HomePage_Wifi.class);
             startActivity(intent);
         });
-
-        //TODO: Remove! Testing only
-        Intent intent = new Intent(ctx, HomePage_Wifi.class);
-        startActivity(intent);
     }
 
     @Override

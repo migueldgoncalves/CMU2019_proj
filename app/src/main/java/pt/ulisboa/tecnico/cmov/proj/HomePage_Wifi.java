@@ -32,6 +32,7 @@ public class HomePage_Wifi extends HomePage {
     }
 
     protected void onNewIntent(Intent intent) {
+        //Process album from termite
         super.onNewIntent(intent);
         setIntent(intent);
         String albumId = intent.getExtras().getString("AlbumId");

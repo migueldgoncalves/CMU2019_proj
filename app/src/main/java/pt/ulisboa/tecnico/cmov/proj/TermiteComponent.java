@@ -71,6 +71,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     private SimWifiP2pManager mManager = null;
     private SimWifiP2pManager.Channel mChannel = null;
     private Context context = null;
+    private boolean isBound = false;
     private Messenger mService = null;
     private SimWifiP2pSocketServer mSrvSocket = null;
     private SimWifiP2pBroadcastReceiver mReceiver = null;
@@ -86,6 +87,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         createConnection(context, looper);
         initTermite(context);
         beginService(context);
+        isBound = true;
     }
 
     private void createConnection(Context context, Looper looper) {
@@ -131,11 +133,14 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     }
 
     public void destroy() {
+        if (!isBound) return;
+
         try {
             if (mSrvSocket != null) mSrvSocket.close();
             mSrvSocket = null;
             activity.unbindService(mConnection);
             activity.unregisterReceiver(mReceiver);
+            isBound = false;
         }
         catch (IOException e) {
             Log.d("debug", "Failed to close socket");

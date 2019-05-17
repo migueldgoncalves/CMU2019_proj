@@ -168,6 +168,11 @@ public class HomePage extends DropboxActivity implements
         HttpRequestDeleteSession.httpRequest(sessionId, URL_SIGNOUT);
     }
 
+    public void confirmSignOut() {
+        startActivity(new Intent(this, MainActivity.class));
+        finish();
+    }
+
     @Override
     public void onResume(){
         super.onResume();
