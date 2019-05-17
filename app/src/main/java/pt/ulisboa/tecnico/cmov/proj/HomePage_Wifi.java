@@ -35,12 +35,21 @@ public class HomePage_Wifi extends HomePage {
         //Process album from termite
         super.onNewIntent(intent);
         setIntent(intent);
-        String albumId = intent.getExtras().getString("AlbumId");
-        String albumName = intent.getExtras().getString("AlbumName");
-        int numPhotos = intent.getExtras().getInt("NumPhotos");
-        processNewAlbum(albumName, albumId);
-        Toast.makeText(getApplicationContext(), "Received " + numPhotos + " new photos for " + albumName, Toast.LENGTH_SHORT).show();
-
+        int code = intent.getExtras().getInt("Code");
+        if (code == 0) {
+            String albumId = intent.getExtras().getString("AlbumId");
+            String albumName = intent.getExtras().getString("AlbumName");
+            int numPhotos = intent.getExtras().getInt("NumPhotos");
+            processNewAlbum(albumName, albumId);
+            Toast.makeText(getApplicationContext(), "Received " + numPhotos + " new photos for " + albumName, Toast.LENGTH_SHORT).show();
+        }
+        else if (code == 1) {
+            String albumId = intent.getExtras().getString("AlbumId");
+            String albumName = intent.getExtras().getString("AlbumName");
+            int numPhotos = intent.getExtras().getInt("NumPhotos");
+            processNewAlbum(albumName, albumId);
+            Toast.makeText(getApplicationContext(), "Sent " + numPhotos + " new photos for " + albumName, Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override

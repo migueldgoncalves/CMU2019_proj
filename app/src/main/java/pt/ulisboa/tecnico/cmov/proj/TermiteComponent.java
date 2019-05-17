@@ -330,6 +330,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
 
                         if (!hasLocalAlbum(albumName)) {
                             Intent intent = new Intent(context, HomePage_Wifi.class);
+                            intent.putExtra("Code", 0);
                             intent.putExtra("AlbumId", albumId);
                             intent.putExtra("AlbumName", albumName);
                             intent.putExtra("NumPhotos", photoStrings.size());
@@ -415,7 +416,6 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                 mCliSocket.getOutputStream().write((PHOTO + "\n").getBytes());
                 mCliSocket.getOutputStream().write((albumId + "\n").getBytes());
                 mCliSocket.getOutputStream().write((albumName + "\n").getBytes());
-                //TODO: Send users list
                 mCliSocket.getOutputStream().write((photoNames + "\n").getBytes());
 
                 BufferedReader sockIn = new BufferedReader(
@@ -443,6 +443,14 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                 }
                 sockIn.readLine();
                 android.util.Log.d("debug", "Photos Sent");
+
+                Intent intent = new Intent(context, HomePage_Wifi.class);
+                intent.putExtra("Code", 1);
+                intent.putExtra("AlbumId", albumId);
+                intent.putExtra("AlbumName", albumName);
+                intent.putExtra("NumPhotos", photoPaths.size());
+
+                activity.startActivity(intent);
                 mCliSocket.close();
             } catch (UnknownHostException e) {
                 return "Unknown Host:" + e.getMessage();
