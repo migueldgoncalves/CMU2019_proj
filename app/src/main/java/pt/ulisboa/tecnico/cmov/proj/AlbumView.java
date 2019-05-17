@@ -36,7 +36,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Random;
 
 import pt.ulisboa.tecnico.cmov.proj.Adapters.PhotoAdapter;
@@ -84,7 +83,7 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
         albumId = getIntent().getStringExtra("AlbumId");
         toolbar.setTitle(albumName);
 
-        photos.clear(); //Não eliminar esta linha
+        photos.clear();
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(view -> {
@@ -304,7 +303,7 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
             startActivity(new Intent(this, LogView.class));
         } else if (id == R.id.nav_signOut) {
             processExit(true);
-        } else if (id == R.id.nav_settings) {
+        } else if (id == R.id.nav_clean) {
 
         }
 

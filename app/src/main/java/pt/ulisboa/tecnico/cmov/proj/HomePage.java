@@ -150,8 +150,6 @@ public class HomePage extends DropboxActivity implements
             startActivity(new Intent(this, LogView.class));
         } else if (id == R.id.nav_signOut) {
             signOut();
-        } else if (id == R.id.nav_settings){
-            //TODO: Isto serve para alguma coisa???
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);

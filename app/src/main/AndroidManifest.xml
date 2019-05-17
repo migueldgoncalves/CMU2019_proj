@@ -36,6 +36,10 @@
             android:label="@string/title_activity_find_users"
             android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity
+            android:name=".CacheSize"
+            android:label="@string/title_activity_find_users"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity
             android:name=".HomePage"
             android:label="@string/title_activity_home_page"
             android:launchMode="singleTask"

@@ -2,22 +2,32 @@ package pt.ulisboa.tecnico.cmov.proj;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
+import android.view.MenuItem;
 import android.widget.Toast;
 
+import org.apache.commons.io.FileUtils;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
+import pt.ulisboa.tecnico.cmov.proj.Data.Album;
 import pt.ulisboa.tecnico.cmov.proj.Data.Peer2PhotoApp;
 
 public class HomePage_Wifi extends HomePage {
 
     private TermiteComponent termite = null;
+
+    private static final int CACHE_SIZE = 333;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +97,25 @@ public class HomePage_Wifi extends HomePage {
     }
 
     @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+
+        if (id == R.id.nav_logs) {
+            startActivity(new Intent(this, LogView.class));
+        } else if (id == R.id.nav_signOut) {
+            signOut();
+        } else if (id == R.id.nav_clean){
+            Intent intent = new Intent(this, CacheSize.class);
+            startActivityForResult(intent, CACHE_SIZE);
+        }
+
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
@@ -100,9 +129,61 @@ public class HomePage_Wifi extends HomePage {
                         termite.albumName_User_Map.get(albumName).add(user);
                     }
                 }
-
                 if (data.getExtras().getBoolean("shouldSignOut")) signOut();
             }
+        }
+        else if (requestCode == CACHE_SIZE) {
+            int cacheSize = data.getExtras().getInt("cacheSize");
+            cleanPhotos(cacheSize);
+        }
+    }
+
+
+    private void cleanPhotos(int maxSize) {
+        try {
+            long totalSize = 0;
+            ArrayList<File> deleteCandidate = new ArrayList<>();
+            for (Album album : albums) {
+                String albumName = album.getAlbumName();
+                File localAlbumDir = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName);
+                if (localAlbumDir.exists()) {
+                    File[] localFiles = localAlbumDir.listFiles();
+                    File localPhotosFile = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName + "/" + albumName + "_LOCAL.txt");
+                    for (File file : localFiles) {
+                        String filename = file.getName();
+                        if (filename.equals(albumName + ".txt") || filename.equals(albumName + "_LOCAL.txt"))
+                            continue;
+                        boolean shouldAdd = true;
+                        List<String> localPhotos = FileUtils.readLines(localPhotosFile);
+                        for (String path : localPhotos) {
+                            String localPhotoName = path.substring(path.lastIndexOf('/')+1);
+                            if (localPhotoName.equals(file.getName())) {
+                                shouldAdd = false;
+                                break;
+                            }
+                        }
+                        if (!shouldAdd) continue;
+
+                        totalSize += file.length() / 1000;
+                        deleteCandidate.add(file);
+                    }
+                }
+            }
+            if (totalSize > maxSize) {
+                int numDeletedFiles = 0;
+                for (File candidate : deleteCandidate) {
+                    totalSize -= candidate.length() / 1000;
+                    candidate.delete();
+                    numDeletedFiles++;
+                    if (totalSize <= maxSize) {
+                        Toast.makeText(getApplicationContext(), "Deleted " + numDeletedFiles + " remote photos", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                }
+            }
+        }
+        catch (IOException e) {
+            Log.d("debug", "Failed to read file while cleaning!");
         }
     }
 
