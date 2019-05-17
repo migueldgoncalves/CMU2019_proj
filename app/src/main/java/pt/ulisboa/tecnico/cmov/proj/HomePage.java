@@ -1,15 +1,10 @@
 package pt.ulisboa.tecnico.cmov.proj;
 
 import android.Manifest;
-import android.content.ComponentName;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.IBinder;
-import android.os.Messenger;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -22,35 +17,20 @@ import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
-import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
-import pt.inesc.termite.wifidirect.SimWifiP2pInfo;
-import pt.inesc.termite.wifidirect.SimWifiP2pManager;
-import pt.inesc.termite.wifidirect.SimWifiP2pManager.Channel;
-import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
-import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
-import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketManager;
-import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
-import pt.inesc.termite.wifidirect.SimWifiP2pDeviceList;
-import pt.inesc.termite.wifidirect.SimWifiP2pManager.PeerListListener;
-import pt.inesc.termite.wifidirect.SimWifiP2pManager.GroupInfoListener;
-
 import com.dropbox.core.android.Auth;
 import com.dropbox.core.v2.files.FileMetadata;
 
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -70,23 +50,25 @@ public class HomePage extends DropboxActivity implements
     private final static String ACCESS_KEY = "ktxcdvzt610l2ao";
     private final static String ACCESS_SECRET = "wurqteptiyuh9s2";
 
+    public final static int ALBUM_VIEW_REQUEST = 3234;
+
     //public static final String URL_BASE = "http://localhost:8080";
     public String URL_BASE;
     public String URL_CREATE_ALBUM;
     public String URL_LOAD_ALBUMS;
     public String URL_SIGNOUT;
 
-    private TermiteComponent termite = null;
+    protected boolean usingWifiDirect = false;
 
-    private static ArrayList<Album> albums = new ArrayList<>();
-    private static ArrayAdapter<Album> albumAdapter = null;
+    protected static ArrayList<Album> albums = new ArrayList<>();
+    protected static ArrayAdapter<Album> albumAdapter = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home_page);
+        usingWifiDirect = savedInstanceState != null && savedInstanceState.getBoolean("isWifi");
 
-        termite = new TermiteComponent(this, getApplication(), getMainLooper());
+        setContentView(usingWifiDirect ? R.layout.activity_home_page_wifi : R.layout.activity_home_page);
 
         URL_BASE = getString(R.string.serverIP);
         URL_CREATE_ALBUM = URL_BASE + "/createalbum";
@@ -108,8 +90,6 @@ public class HomePage extends DropboxActivity implements
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        populateAlbumArray();
-
         albumAdapter = new AlbumAdapter(this, 0, albums);
         GridView albumTable = findViewById(R.id.album_grid);
         albumTable.setAdapter(albumAdapter);
@@ -117,12 +97,7 @@ public class HomePage extends DropboxActivity implements
         loadAlbums();
 
         albumTable.setOnItemClickListener((parent, view, position, id) -> {
-            Intent intent = new Intent(HomePage.this, AlbumView.class);
-            Bundle b = new Bundle();
-            b.putString("AlbumName", albums.get(position).getAlbumName()); //Your id
-            intent.putExtras(b); //Put your id to your next Intent
-            startActivity(intent);
-            finish();
+            enterAlbum(position);
         });
 
         NavigationView navigationView = findViewById(R.id.nav_view);
@@ -139,34 +114,13 @@ public class HomePage extends DropboxActivity implements
         }
     }
 
-    void populateAlbumArray() {
-        //TODO: Replace with fetching dropbox folder for all albums
-
-        /*
-        albums = new ArrayList<>(Arrays.asList(
-                new Album("Fotos 2019", R.drawable.empty_thumbnail),
-                new Album("Fotos 2018", R.drawable.empty_thumbnail),
-                new Album("Fotos 2017", R.drawable.empty_thumbnail),
-                new Album("Fotos 2016", R.drawable.empty_thumbnail),
-                new Album("Fotos 2015", R.drawable.empty_thumbnail),
-                new Album("Fotos 2014", R.drawable.empty_thumbnail),
-                new Album("Fotos 2013", R.drawable.empty_thumbnail)
-        ));
-        */
-    }
-
-    void updateAlbumAdapter() {
-        albumAdapter.notifyDataSetChanged();
-
-        GridView albumTable = findViewById(R.id.album_grid);
-        albumTable.setOnItemClickListener((parent, view, position, id) -> {
-            Intent intent = new Intent(HomePage.this, AlbumView.class);
-            Bundle b = new Bundle();
-            b.putString("AlbumName", albums.get(position).getAlbumName()); //Your id
-            intent.putExtras(b); //Put your id to your next Intent
-            startActivity(intent);
-            finish();
-        });
+    protected void enterAlbum(int position) {
+        Intent intent = new Intent(this, AlbumView.class);
+        Bundle b = new Bundle();
+        b.putString("AlbumId", albums.get(position).getAlbumId());
+        b.putString("AlbumName", albums.get(position).getAlbumName());
+        intent.putExtras(b);
+        startActivityForResult(intent, ALBUM_VIEW_REQUEST);
     }
 
     @Override
@@ -189,21 +143,6 @@ public class HomePage extends DropboxActivity implements
         }
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -212,27 +151,21 @@ public class HomePage extends DropboxActivity implements
 
         if (id == R.id.nav_home) {
             startActivity(new Intent(HomePage.this, HomePage.class));
-        } else if (id == R.id.nav_createAlbum) {
-            createAlbumByUser();
-        }else if (id == R.id.nav_findUsers){
-            startActivity(new Intent(HomePage.this, FindUsers.class));
         } else if (id == R.id.nav_logs) {
             startActivity(new Intent(HomePage.this, LogView.class));
         } else if (id == R.id.nav_dropbox) {
-
             if(!hasToken()){
                 Auth.startOAuth2Authentication(HomePage.this, ACCESS_KEY);
             }else {
                 Toast.makeText(HomePage.this, "You Are Already Logged In To Your Dropbox",
                         Toast.LENGTH_LONG).show();
             }
-
         } else if (id == R.id.nav_signOut) {
             String sessionId = ((Peer2PhotoApp) this.getApplication()).getSessionId();
             new HttpRequestDeleteSession(this);
             HttpRequestDeleteSession.httpRequest(sessionId, URL_SIGNOUT);
         } else if (id == R.id.nav_settings){
-
+            //TODO: Isto serve para alguma coisa???
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -262,8 +195,8 @@ public class HomePage extends DropboxActivity implements
 
     }
 
-    public void addNewAlbum(String albumName) {
-        albums.add(new Album(albumName, R.drawable.empty_thumbnail));
+    public void addNewAlbum(String albumId, String albumName) {
+        albums.add(new Album(albumId, albumName, R.drawable.empty_thumbnail));
         albumAdapter.notifyDataSetChanged();
     }
 
@@ -299,20 +232,58 @@ public class HomePage extends DropboxActivity implements
         builder.show();
     }
 
+    public void processNewAlbum(String albumName, String albumId) {
+        createAlbumInCloud(albumName, albumId);
+        addNewAlbum(albumId, albumName);
+    }
+
     public void createAlbumInCloud(String albumName, String albumId){
-        new UploadFileTask(HomePage.this, DropboxClientFactory.getClient(), new UploadFileTask.Callback(){
+        if (!usingWifiDirect) {
+            new UploadFileTask(HomePage.this, DropboxClientFactory.getClient(), new UploadFileTask.Callback() {
 
-            @Override
-            public void onUploadComplete(FileMetadata result) {
-                Toast.makeText(HomePage.this, "Upload Complete!", Toast.LENGTH_SHORT).show();
-                ((Peer2PhotoApp) getApplication()).addAlbum(albumId, albumName, getApplicationContext().getFilesDir().getPath() + "/albums.txt");
-            }
+                @Override
+                public void onUploadComplete(FileMetadata result) {
+                    Toast.makeText(HomePage.this, "Upload Complete!", Toast.LENGTH_SHORT).show();
+                    ((Peer2PhotoApp) getApplication()).addAlbum(albumId, albumName, getApplicationContext().getFilesDir().getPath() + "/albums.txt");
+                }
 
-            @Override
-            public void onError(Exception e) {
-                //TODO: Remove Album From Local Storage and From Server Storage
+                @Override
+                public void onError(Exception e) {
+                    //TODO: Remove Album From Local Storage and From Server Storage
+                }
+            }).execute( albumName,
+                        "/Peer2Photo",
+                        "NEW_ALBUM",
+                        ((Peer2PhotoApp) getApplication()).getSessionId(),
+                        ((Peer2PhotoApp) getApplication()).getUsername(),
+                        albumId);
+        }
+        else {
+            File localFile = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName);
+            File file = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName + "/" + albumName + ".txt");
+            File localPhotosFile = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName+ "/" + albumName + "_LOCAL.txt");
+            try{
+                if(localFile.mkdir()){
+                    System.out.println("Folder Created Successfuly!");
+                    if(file.createNewFile()){
+                        System.out.println("Album File Created Successfully!");
+                    }else {
+                        System.out.println("Failed To Create Album File!");
+                    }
+
+                    if (localPhotosFile.createNewFile()){
+                        System.out.println("The Local Photos File Was Created Successfuly!");
+                    }else{
+                        System.out.println("The Local Photos File Already Exists!");
+                    }
+                }
+                else {
+                    System.out.println("The File Already Exists in Local Storage. Perfoming Update...");
+                }
+            }catch (Exception e){
+                e.printStackTrace();
             }
-        }).execute(albumName, "/Peer2Photo", "NEW_ALBUM", ((Peer2PhotoApp) getApplication()).getSessionId(), ((Peer2PhotoApp) getApplication()).getUsername(), albumId);
+        }
     }
 
     private void loadAlbums() {
@@ -320,7 +291,7 @@ public class HomePage extends DropboxActivity implements
 
         if(!(directories.length == 0)){
             for (File i : directories){
-                addNewAlbum(i.getName());
+                addNewAlbum(((Peer2PhotoApp) getApplication()).getAlbumId(i.getName()), i.getName());
             }
         }
 
@@ -330,6 +301,7 @@ public class HomePage extends DropboxActivity implements
         HttpRequestGetUserAlbums.httpRequest(((Peer2PhotoApp)getApplication()).getUsername(), ((Peer2PhotoApp)getApplication()).getSessionId(), URL_LOAD_ALBUMS);
     }
 
+
     public void parseAlbumNames(String[] albumIds, JSONObject httpResponse) {
         // 3\\ cases - User was not added to third party albums;
         // User was added to album with same name as another album user already has;
@@ -338,15 +310,16 @@ public class HomePage extends DropboxActivity implements
             for (String albumId : albumIds) {
                 String albumName = httpResponse.getString(albumId);
                 if (((Peer2PhotoApp) getApplication()).getAlbumId(albumName) == null) {
+                    //TODO: Simplify?
                     if (!(new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName).exists())) {
                         createAlbumInCloud(albumName, albumId);
-                        addNewAlbum(albumName);
+                        addNewAlbum(albumId, albumName);
                         Log.d("debug", "User has been added to album of other user and its name does not exist in user's albums");
                     } else {
                         File fileToDelete = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName);
                         if (fileToDelete.delete()) {
                             createAlbumInCloud(albumName, albumId);
-                            addNewAlbum(albumName);
+                            addNewAlbum(albumId, albumName);
                             Log.d("debug", "User has been added to album of other user and its name does not exist in user's albums");
                         }
                     }
@@ -354,12 +327,12 @@ public class HomePage extends DropboxActivity implements
                     if (!((Peer2PhotoApp) getApplication()).getAlbumId(albumName).equals(albumId)) {
                         String newName = albumName + "_" + albumId;
                         createAlbumInCloud(newName, albumId);
-                        addNewAlbum(newName);
+                        addNewAlbum(albumId, newName);
                         Log.d("debug", "User has been added to album of other user with name equal to one of user's albums");
                     } else {
                         if(!new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName).exists()){
                             createAlbumInCloud(albumName, albumId);
-                            addNewAlbum(albumName);
+                            addNewAlbum(albumId, albumName);
                         }
                     }
                 }

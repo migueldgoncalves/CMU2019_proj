@@ -361,6 +361,7 @@ public class Operations {
             if(iterator.hasNext())
                 albums+=",";
             response.put(String.valueOf(albumId), getAlbumById(albumId).getName());
+            response.put("Users_"+albumId, getAlbumHashMap(username, albumId).get("users"));
         }
         response.put("size", String.valueOf(getUserByUsername(username).getUserAlbumNumber()));
         response.put("albums", albums);

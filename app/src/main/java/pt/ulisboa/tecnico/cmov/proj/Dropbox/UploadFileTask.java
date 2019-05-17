@@ -79,7 +79,6 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
             File localFile = new File(mContext.getFilesDir().getPath() + "/" + params[0]);
             File file = new File(mContext.getFilesDir().getPath() + "/" + params[0] + "/" + params[0] + ".txt");
             File localPhotosFile = new File(mContext.getFilesDir().getPath() + "/" + params[0] + "/" + params[0] + "_LOCAL.txt");
-            File albumId = new File(mContext.getFilesDir().getPath() + "/" + params[0] + "/" + params[5] + "_" + params[0] + ".txt");
             try{
                 if(localFile.mkdir()){
                     System.out.println("Folder Created Successfuly!");
@@ -89,7 +88,7 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
                         System.out.println("Failed To Create Album File!");
                     }
 
-                    if (localFile.createNewFile()){
+                    if (localPhotosFile.createNewFile()){
                         System.out.println("The Local Photos File Was Created Successfuly!");
                     }else{
                         System.out.println("The Local Photos File Already Exists!");
@@ -159,7 +158,8 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
                         out.flush();
                         out.close();
 
-                        out = new BufferedWriter(new FileWriter(new File(mContext.getFilesDir().getPath() + "/" + params[4] + "/" + params[4] + "_LOCAL.txt"), true));
+                        File photosFile = new File(mContext.getFilesDir().getPath() + "/" + params[4] + "/" + params[4] + "_LOCAL.txt");
+                        out = new BufferedWriter(new FileWriter(photosFile, true));
                         out.write(params[3] + "\n");
                         out.flush();
                         out.close();

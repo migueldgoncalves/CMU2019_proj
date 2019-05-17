@@ -71,6 +71,7 @@ public class ServiceListUserAlbumsTest {
             Assert.assertNull(mapResponse.get("error"));
             Assert.assertEquals("0", mapResponse.get("size"));
             Assert.assertEquals("", mapResponse.get("albums"));
+            Assert.assertNull(mapResponse.get("Users_10"));
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -91,6 +92,7 @@ public class ServiceListUserAlbumsTest {
             Assert.assertEquals("1", mapResponse.get("size"));
             Assert.assertEquals("10", mapResponse.get("albums"));
             Assert.assertEquals("album", mapResponse.get("10"));
+            Assert.assertEquals("username", mapResponse.get("Users_10"));
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -115,6 +117,26 @@ public class ServiceListUserAlbumsTest {
             Assert.assertEquals("10,11", mapResponse.get("albums"));
             Assert.assertEquals("album", mapResponse.get("10"));
             Assert.assertEquals("album2", mapResponse.get("11"));
+            Assert.assertEquals("username", mapResponse.get("Users_10"));
+            Assert.assertEquals("username", mapResponse.get("Users_11"));
+
+            operations.addUser(new User("username2", "password"));
+            Session session2 = new Session("username2", Operations.SESSION_DURATION);
+            operations.addSession(session2);
+            operations.addUserToAlbum(10, "username", "username2");
+
+            URL = URL_USER_ALBUMS + "/" + session2.getSessionId() + "/username2";
+            request = new Request.Builder().url(URL).get().build();
+            response = client.newCall(request).execute();
+
+            Assert.assertEquals(OK, response.code());
+            mapResponse = new Gson().fromJson(response.body().string(), HashMap.class);
+            Assert.assertEquals("User albums successfully obtained", mapResponse.get("success"));
+            Assert.assertNull(mapResponse.get("error"));
+            Assert.assertEquals("1", mapResponse.get("size"));
+            Assert.assertEquals("10", mapResponse.get("albums"));
+            Assert.assertEquals("album", mapResponse.get("10"));
+            Assert.assertEquals("username2,username", mapResponse.get("Users_10"));
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();

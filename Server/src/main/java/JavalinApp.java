@@ -64,6 +64,7 @@ public class JavalinApp {
                 for (int i = 0; i < albums.length; i++) {
                     System.out.println("HTTP album" + i + " has id: " + albums[i]);
                     System.out.println("HTTP album" + i + " has name: " + mapResponse.get(String.valueOf(albums[i])));
+                    System.out.println("HTTP album" + i + " has users: " + mapResponse.get("Users_"+albums[i]));
                 }
             }
             ctx.json(mapResponse);
