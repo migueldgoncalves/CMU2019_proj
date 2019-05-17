@@ -161,7 +161,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                 if (photoNames.contains(filename)) continue;
                 if (filename.equals(albumName + ".txt") || filename.equals(albumName + "_LOCAL.txt"))
                     continue;
-                paths.add(file.getName());
+                paths.add(file.getPath());
                 photoNames.add(filename);
             }
         }
