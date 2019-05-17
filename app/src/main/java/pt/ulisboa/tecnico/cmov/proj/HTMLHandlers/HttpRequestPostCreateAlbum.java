@@ -46,8 +46,7 @@ public class HttpRequestPostCreateAlbum extends HttpRequest {
                             android.util.Log.d("debug", success);
                             Toast.makeText(ctx, success, Toast.LENGTH_SHORT).show();
 
-                            ((HomePage) ctx).createAlbumInCloud(albumName, albumId);
-                            ((HomePage) ctx).addNewAlbum(albumName);
+                            ((HomePage) ctx).processNewAlbum(albumName, albumId);
                         }
                         else {
                             Toast.makeText(ctx, "No adequate response received", Toast.LENGTH_SHORT).show();

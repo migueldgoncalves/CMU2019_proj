@@ -28,13 +28,30 @@
             android:label="@string/title_activity_album_view"
             android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity
+            android:name=".AlbumView_Wifi"
+            android:label="@string/title_activity_album_view"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity
             android:name=".FindUsers"
+            android:label="@string/title_activity_find_users"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity
+            android:name=".CacheSize"
             android:label="@string/title_activity_find_users"
             android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity
             android:name=".HomePage"
             android:label="@string/title_activity_home_page"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:launchMode="singleTask"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity
+            android:name=".HomePage_Wifi"
+            android:label="@string/title_activity_home_page"
+            android:launchMode="singleTask"
+            android:theme="@style/AppTheme.NoActionBar">
+
+        </activity>
         <activity android:name=".SignUp" />
         <activity android:name=".SignIn" />
         <activity android:name=".MainActivity">
@@ -48,6 +65,7 @@
             android:name="com.dropbox.core.android.AuthActivity"
             android:configChanges="orientation|keyboard"
             android:launchMode="singleTask">
+
             <intent-filter>
 
                 <!-- Change this to be db- followed by your app key -->
@@ -59,6 +77,8 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+        <service android:name="pt.inesc.termite.wifidirect.service.SimWifiP2pService" />
     </application>
 
 </manifest>

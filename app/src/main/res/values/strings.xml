@@ -29,10 +29,11 @@
     <string name="title_activity_log_view">LogView</string>
     <string name="title_activity_find_users">Find Users</string>
     <string name="app_directory_name" tools:ignore="ExtraTranslation">P2Photo</string>
-    <string name="serverIP">http://193.136.167.88:8080</string>
+    <string name="serverIP">http://192.168.1.6:8080</string>
     <string name="mode_choosing_title">Select an operation mode</string>
     <string name="wifi_direct_mode">WiFi Direct Mode</string>
     <string name="cloud_mode">Cloud Mode</string>
     <string name="logs_default_text">No logs to display</string>
     <string name="app_refresh">Refresh</string>
+    <string name="port">10001</string>
 </resources>

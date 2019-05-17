@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.cmov.proj;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -14,14 +15,12 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.InputType;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.GridView;
 
 import com.dropbox.core.v2.files.FileMetadata;
@@ -29,8 +28,12 @@ import com.dropbox.core.v2.files.FileMetadata;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
@@ -49,14 +52,26 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
     private static ArrayList<Photo> photos = new ArrayList<>();
     private static ArrayAdapter<Photo> photoAdapter = null;
 
+    static final int FIND_USER_REQUEST = 420;
+    static final int SELECT_IMAGE_REQUEST = 1234;
     public String URL_BASE;
     public String URL_ALBUM;
     public String URL_ADD_USER_TO_ALBUM;
+
+    protected String albumId = "";
+    protected String albumName = "";
+    protected ArrayList<String> albumUsers = new ArrayList<String>();
+    protected ArrayList<String> addedUsers = new ArrayList<>();
+
+    private boolean usingWifiDirect = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_album_view);
+
+        usingWifiDirect = savedInstanceState != null && savedInstanceState.getBoolean("isWifi");
+        albumUsers = getIntent().getStringArrayListExtra("AlbumUsers");
 
         URL_BASE = getString(R.string.serverIP);
         URL_ALBUM = URL_BASE + "/album";
@@ -64,9 +79,11 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        toolbar.setTitle(getIntent().getStringExtra("AlbumName"));
+        albumName = getIntent().getStringExtra("AlbumName");
+        albumId = getIntent().getStringExtra("AlbumId");
+        toolbar.setTitle(albumName);
 
-        photos.clear(); //Não eliminar esta linha
+        photos.clear();
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(view -> {
@@ -81,8 +98,6 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        populatePhotoArray();
-
         photoAdapter = new PhotoAdapter(this, 0, photos);
         GridView photoTable = findViewById(R.id.photo_grid);
         photoTable.setAdapter(photoAdapter);
@@ -93,36 +108,57 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
         navigationView.setNavigationItemSelectedListener(this);
 
         loadLocalPhotos();
-        getRemotePhotos();
+        if (!usingWifiDirect) getRemotePhotos();
     }
 
-    protected void populatePhotoArray() {
-        //TODO: Replace with fetching all photos from album
-
-        /*
-        photos   = new ArrayList<>(Arrays.asList(
-                new Photo(BitmapFactory.decodeResource(getApplicationContext().getResources(),
-                        R.drawable.empty_thumbnail)),
-                new Photo(BitmapFactory.decodeResource(getApplicationContext().getResources(),
-                        R.drawable.empty_thumbnail)),
-                new Photo(BitmapFactory.decodeResource(getApplicationContext().getResources(),
-                        R.drawable.empty_thumbnail)),
-                new Photo(BitmapFactory.decodeResource(getApplicationContext().getResources(),
-                        R.drawable.empty_thumbnail)),
-                new Photo(BitmapFactory.decodeResource(getApplicationContext().getResources(),
-                        R.drawable.empty_thumbnail)),
-                new Photo(BitmapFactory.decodeResource(getApplicationContext().getResources(),
-                        R.drawable.empty_thumbnail)),
-                new Photo(BitmapFactory.decodeResource(getApplicationContext().getResources(),
-                        R.drawable.empty_thumbnail))
-        ));
-        */
-    }
-
-    private void addNewPhoto(Bitmap photoBitmap) {
+    private void addNewPhoto(Bitmap photoBitmap, String photoName) {
+        try {
+            File photoDir = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName);
+            if (!photoDir.exists()) photoDir.mkdir();
+            File newPhoto = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName + "/" + photoName);
+            if (!newPhoto.exists()) {
+                if (!newPhoto.createNewFile()) {
+                    Log.d("debug", "Failed to create new photo file!");
+                }
+                FileOutputStream out = new FileOutputStream(getApplicationContext().getFilesDir().getPath() + "/" + albumName + "/" + photoName);
+                photoBitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+            }
+        }
+        catch (IOException e) {
+            Log.d("debug", "Failed to add local photo file!");
+        }
         photos.add(new Photo(photoBitmap));
         photoAdapter.notifyDataSetChanged();
         updateApplicationLogs("Photo Successfully Added to Album", "Add Photo To Album");
+    }
+
+    protected void addUserToAlbum(String username) {
+        String sessionId = ((Peer2PhotoApp) this.getApplication()).getSessionId();
+        new HttpRequestPutAddUserToAlbum(this);
+        HttpRequestPutAddUserToAlbum.httpRequest(albumId, ((Peer2PhotoApp) this.getApplication()).getUsername(), sessionId, username, URL_ADD_USER_TO_ALBUM);
+    }
+
+    protected void beginAddUser() {
+        Intent intent = new Intent(this, FindUsers.class);
+        intent.putExtra("AlbumUsers", albumUsers);
+        intent.putExtra("AddedUsers", addedUsers);
+        startActivityForResult(intent, FIND_USER_REQUEST);
+    }
+
+    protected void beginAddPhoto() {
+        Intent i = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
+        startActivityForResult(i, SELECT_IMAGE_REQUEST);
+    }
+
+    protected void processExit(boolean shouldSignOut) {
+        String userResult = "";
+        for (String user : addedUsers) userResult += (user + ",");
+        Intent intent = new Intent();
+        intent.putExtra("Users", userResult);
+        intent.putExtra("AlbumName", albumName);
+        intent.putExtra("shouldSignOut", shouldSignOut);
+        setResult(Activity.RESULT_OK, intent);
+        super.onBackPressed();
     }
 
     @Override
@@ -130,39 +166,67 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
     {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if(resultCode == RESULT_OK){
-            Uri selectedImage = data.getData();
-            String[] filePathColumn = {MediaStore.Images.Media.DATA};
+        if (requestCode == FIND_USER_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                String username = data.getExtras().getString("userName");
+                addUserToAlbum(username);
+            }
+        }
+        else if (requestCode == SELECT_IMAGE_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                Uri selectedImage = data.getData();
+                String[] filePathColumn = {MediaStore.Images.Media.DATA};
 
-            assert selectedImage != null;
-            Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
-            assert cursor != null;
-            cursor.moveToFirst();
-            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-            String filePath = cursor.getString(columnIndex);
-            cursor.close();
+                assert selectedImage != null;
+                Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
+                assert cursor != null;
+                cursor.moveToFirst();
+                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                String filePath = cursor.getString(columnIndex);
+                cursor.close();
 
-            Bundle b = getIntent().getExtras();
-            String value = "ERROR"; // or other values
-            if(b != null)
-                value = b.getString("AlbumName");
+                Bundle b = getIntent().getExtras();
+                String name = "ERROR"; // or other values
+                if (b != null)
+                    name = b.getString("AlbumName");
 
-            String PhotoName = value + "_Photo_" + new Random().nextInt();
+                String PhotoName = name + "_Photo_" + new Random().nextInt();
 
-            new UploadFileTask(AlbumView.this, DropboxClientFactory.getClient(), new UploadFileTask.Callback(){
-                 @Override
-                 public void onUploadComplete(FileMetadata result) {
+                if (!usingWifiDirect) {
+                    new UploadFileTask(AlbumView.this, DropboxClientFactory.getClient(), new UploadFileTask.Callback() {
+                        @Override
+                        public void onUploadComplete(FileMetadata result) {
 
-                  }
+                        }
 
-                  @Override
-                  public void onError(Exception e) {
+                        @Override
+                        public void onError(Exception e) {
 
-                 }
-            }).execute(PhotoName, "/Peer2Photo", "NEW_PHOTO", filePath, value, ((Peer2PhotoApp) getApplication()).getSessionId(), ((Peer2PhotoApp) getApplication()).getUsername(), ((Peer2PhotoApp) getApplication()).getAlbumId(value));
-
-            imageScalingAndPosting(filePath);
-
+                        }
+                    }).execute( PhotoName,
+                                "/Peer2Photo",
+                                "NEW_PHOTO",
+                                filePath,
+                                name,
+                                ((Peer2PhotoApp) getApplication()).getSessionId(),
+                                ((Peer2PhotoApp) getApplication()).getUsername(),
+                                albumId);
+                }
+                else {
+                    try {
+                        //File localSlice = new File(getApplicationContext().getFilesDir().getPath() + "/" + name + "/" + name + ".txt");
+                        File photosFile = new File(getApplicationContext().getFilesDir().getPath() + "/" + name + "/" + name + "_LOCAL.txt");
+                        BufferedWriter out = new BufferedWriter(new FileWriter(photosFile, true));
+                        out.write(filePath + "\n");
+                        out.flush();
+                        out.close();
+                    }
+                    catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                imageScalingAndPosting(filePath);
+            }
         }
     }
 
@@ -184,7 +248,8 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
 
         Bitmap scaled = Bitmap.createScaledBitmap(yourSelectedImage, outWidth, outHeight, false);
 
-        addNewPhoto(scaled);
+        String[] splitPath = filePath.split("/");
+        addNewPhoto(scaled, splitPath[splitPath.length-1]);
     }
 
     @Override
@@ -193,6 +258,7 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
+            setResult(Activity.RESULT_CANCELED);
             super.onBackPressed();
         }
     }
@@ -214,37 +280,11 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
 
         //noinspection SimplifiableIfStatement
         if (option.equals("Add User")) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(AlbumView.this);
-            builder.setTitle("Username To Add");
-
-            final EditText input = new EditText(AlbumView.this);
-            input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL);
-            builder.setView(input);
-
-            // Set up the buttons
-            builder.setPositiveButton("OK", (dialog, which) -> {
-                String usernameToAdd = input.getText().toString();
-                String sessionId = ((Peer2PhotoApp) getApplication()).getSessionId();
-                String username = ((Peer2PhotoApp) getApplication()).getUsername();
-
-                Bundle b = getIntent().getExtras();
-                String value = "ERROR"; // or other values
-                if(b != null)
-                    value = b.getString("AlbumName");
-
-                String albumId = ((Peer2PhotoApp) getApplication()).getAlbumId(value);
-
-                new HttpRequestPutAddUserToAlbum(this);
-                HttpRequestPutAddUserToAlbum.httpRequest(albumId, username, sessionId, usernameToAdd, URL_ADD_USER_TO_ALBUM);
-
-            });
-
-            builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
-
-            builder.show();
+            beginAddUser();
+            return true;
         }
-        else if (id == R.id.add_photo) {
-            //TODO: Adicionar
+        else if (option.equals("Add Photo")) {
+            beginAddPhoto();
             return true;
         }
 
@@ -257,17 +297,13 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
+        if (id == R.id.nav_home) {
+            super.onBackPressed();
+        } else if (id == R.id.nav_logs) {
+            startActivity(new Intent(this, LogView.class));
+        } else if (id == R.id.nav_signOut) {
+            processExit(true);
+        } else if (id == R.id.nav_clean) {
 
         }
 
@@ -277,19 +313,15 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
     }
 
     private void loadLocalPhotos(){
+        File localPhotoPaths = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName + "/" + albumName + "_LOCAL.txt");
 
-        Bundle b = getIntent().getExtras();
-        String value = "ERROR"; // or other values
-        if(b != null)
-            value = b.getString("AlbumName");
-
-        File localPhotoPaths = new File(getApplicationContext().getFilesDir().getPath() + "/" + value + "/" + value + "_LOCAL.txt");
-
+        ArrayList<String> photoNames = new ArrayList<>();
         if(localPhotoPaths.isFile()){
             try{
                 BufferedReader br = new BufferedReader(new FileReader(localPhotoPaths));
                 String line;
                 while ((line = br.readLine()) != null) {
+                    photoNames.add(line.substring(line.lastIndexOf('/')+1));
                     imageScalingAndPosting(line);
                 }
             }catch (Exception e){
@@ -300,19 +332,26 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
             android.util.Log.d("debug", "IT IS NOT A FILE!!");
         }
 
+        //Check local photo files
+        File localAlbumDir = new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName);
+        if (localAlbumDir.exists()) {
+            File[] localFiles = localAlbumDir.listFiles();
+            for (File file : localFiles) {
+                String filename = file.getName();
+                if (photoNames.contains(filename)) continue;
+                if (filename.equals(albumName + ".txt") || filename.equals(albumName + "_LOCAL.txt"))
+                    continue;
+                photoNames.add(filename);
+                imageScalingAndPosting(file.getPath());
+            }
+        }
     }
 
     private void getRemotePhotos(){
-        Bundle b = getIntent().getExtras();
-        String value = "ERROR"; // or other values
-        if(b != null)
-            value = b.getString("AlbumName");
-
-        String AlbumId = ((Peer2PhotoApp) (getApplication())).getAlbumId(value);
         String SessionId = ((Peer2PhotoApp) (getApplication())).getSessionId();
         String Username = ((Peer2PhotoApp) (getApplication())).getUsername();
 
-        File imageRoot = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), getString(R.string.app_directory_name) + "/" + value);
+        File imageRoot = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), getString(R.string.app_directory_name) + "/" + albumName);
 
         if(imageRoot.exists() && imageRoot.isDirectory()){
             try{
@@ -326,7 +365,7 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
         }
 
         new HttpRequestGetAlbumPhotos(this);
-        HttpRequestGetAlbumPhotos.httpRequest(AlbumId, Username, SessionId, URL_ALBUM);
+        HttpRequestGetAlbumPhotos.httpRequest(albumId, Username, SessionId, URL_ALBUM);
 
     }
 

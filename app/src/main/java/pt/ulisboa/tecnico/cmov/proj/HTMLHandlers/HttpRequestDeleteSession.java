@@ -38,7 +38,7 @@ public class HttpRequestDeleteSession extends HttpRequest {
                             android.util.Log.d("debug", success);
                             Toast.makeText(ctx, "Sign out successful", Toast.LENGTH_SHORT).show();
                             ((HomePage) ctx).updateApplicationLogs("Sign Out", success);
-                            ctx.startActivity(new Intent(ctx, MainActivity.class));
+                            ((HomePage) ctx).confirmSignOut();
                         }
                         else {
                             Toast.makeText(ctx, "No adequate response received", Toast.LENGTH_SHORT).show();
