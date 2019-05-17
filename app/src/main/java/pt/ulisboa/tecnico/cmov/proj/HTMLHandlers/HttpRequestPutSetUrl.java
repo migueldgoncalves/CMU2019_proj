@@ -9,8 +9,11 @@ import com.android.volley.toolbox.JsonObjectRequest;
 
 import org.json.JSONObject;
 
+import java.security.PublicKey;
 import java.util.HashMap;
 
+import pt.ulisboa.tecnico.cmov.proj.Cryptography;
+import pt.ulisboa.tecnico.cmov.proj.Data.Peer2PhotoApp;
 import pt.ulisboa.tecnico.cmov.proj.HomePage;
 
 public class HttpRequestPutSetUrl extends HttpRequest {
@@ -22,10 +25,13 @@ public class HttpRequestPutSetUrl extends HttpRequest {
     public static void httpRequest(@NonNull String sessionId,@NonNull String username,@NonNull String Sliceurl,@NonNull String albumId, @NonNull Context mContext, @NonNull String url){
         android.util.Log.d("debug", "Starting PUT request to URL " + url);
         createHTTPQueue();
+
+        String cipheredSliceURL = HttpRequestPutSetUrl.cipherURL(sessionId, username, Sliceurl, albumId, mContext);
+
         HashMap<String, String> mapRequest = new HashMap<>();
         mapRequest.put("sessionId", sessionId);
         mapRequest.put("username", username);
-        mapRequest.put("URL", Sliceurl);
+        mapRequest.put("URL", cipheredSliceURL);
         mapRequest.put("albumId", albumId);
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.PUT, url, new JSONObject(mapRequest),
                 httpResponse -> {
@@ -59,5 +65,15 @@ public class HttpRequestPutSetUrl extends HttpRequest {
             android.util.Log.d("debug", "PUT error");
         });
         queue.add(request);
+    }
+
+    private static String cipherURL(String sessionId, String username, String sliceurl, String albumId, Context mContext) {
+        PublicKey publicKey = ((Peer2PhotoApp)((HomePage) mContext).getApplication()).getAlbumPublicKey(Integer.valueOf(albumId));
+        if(publicKey==null) {
+            HttpRequestGetPublicAlbumKey.httpRequest("http://localhost:9090", username, sessionId, albumId);
+            publicKey = ((Peer2PhotoApp)((HomePage) mContext).getApplication()).getAlbumPublicKey(Integer.valueOf(albumId));
+        }
+        assert publicKey!=null;
+        return Cryptography.cipher(publicKey, sliceurl);
     }
 }

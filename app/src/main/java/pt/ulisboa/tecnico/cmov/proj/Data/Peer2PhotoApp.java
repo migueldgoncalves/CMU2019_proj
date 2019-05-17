@@ -9,6 +9,8 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -21,6 +23,8 @@ public class Peer2PhotoApp extends Application {
     private String sessionId;
     private String mode;
     private HashMap<String, String> albums = new HashMap<>();
+    private HashMap<Integer, PublicKey> albumsPublicKeys = new HashMap<>();
+    private HashMap<Integer, PrivateKey> albumsPrivateKeys = new HashMap<>();
 
     public void updateLog(@NonNull String log){
         logs.add(log);
@@ -121,6 +125,28 @@ public class Peer2PhotoApp extends Application {
             e.printStackTrace();
             android.util.Log.d("debug", "Could not set albums file");
         }
+    }
+
+    public void addAlbumPublicKey(int albumId, PublicKey publicKey) {
+        if(albumId > 0 && publicKey!=null)
+            albumsPublicKeys.put(albumId, publicKey);
+    }
+
+    public void addAlbumPrivateKey(int albumId, PrivateKey privateKey) {
+        if(albumId > 0 && privateKey!=null)
+            albumsPrivateKeys.put(albumId, privateKey);
+    }
+
+    public PublicKey getAlbumPublicKey(int albumId) {
+        if(albumsPublicKeys.containsKey(albumId))
+            return albumsPublicKeys.get(albumId);
+        return null;
+    }
+
+    public PrivateKey getAlbumPrivateKey(int albumId) {
+        if(albumsPrivateKeys.containsKey(albumId))
+            return albumsPrivateKeys.get(albumId);
+        return null;
     }
 
     public enum MODE {
