@@ -50,7 +50,8 @@ public class HomePage_Wifi extends HomePage {
             String albumId = intent.getExtras().getString("AlbumId");
             String albumName = intent.getExtras().getString("AlbumName");
             int numPhotos = intent.getExtras().getInt("NumPhotos");
-            processNewAlbum(albumName, albumId);
+            boolean isNew = intent.getExtras().getBoolean("IsNew");
+            if (!isNew) processNewAlbum(albumName, albumId);
             Toast.makeText(getApplicationContext(), "Received " + numPhotos + " new photos for " + albumName, Toast.LENGTH_SHORT).show();
         }
         else if (code == 1) {
@@ -165,7 +166,10 @@ public class HomePage_Wifi extends HomePage {
                         if (!shouldAdd) continue;
 
                         totalSize += file.length() / 1000;
-                        deleteCandidate.add(file);
+                        boolean deleted = deleteCandidate.add(file);
+                        if (deleted) {
+                            deleted = true;
+                        }
                     }
                 }
             }

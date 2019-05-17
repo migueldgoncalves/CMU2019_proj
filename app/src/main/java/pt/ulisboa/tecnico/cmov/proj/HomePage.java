@@ -187,7 +187,6 @@ public class HomePage extends DropboxActivity implements
 
     @Override
     protected void loadData() {
-        //TODO: Isto serve para alguma coisa??
     }
 
     public void addNewAlbum(String albumId, String albumName) {
@@ -246,7 +245,6 @@ public class HomePage extends DropboxActivity implements
 
                 @Override
                 public void onError(Exception e) {
-                    //TODO: Remove Album From Local Storage and From Server Storage
                 }
             }).execute( albumName,
                         "/Peer2Photo",
@@ -314,7 +312,6 @@ public class HomePage extends DropboxActivity implements
             for (String albumId : albumIds) {
                 String albumName = httpResponse.getString(albumId);
                 if (((Peer2PhotoApp) getApplication()).getAlbumId(albumName) == null) {
-                    //TODO: Simplify?
                     if (!(new File(getApplicationContext().getFilesDir().getPath() + "/" + albumName).exists())) {
                         createAlbumInCloud(albumName, albumId);
                         addNewAlbum(albumId, albumName);
