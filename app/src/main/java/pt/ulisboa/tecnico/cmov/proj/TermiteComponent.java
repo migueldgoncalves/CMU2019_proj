@@ -341,7 +341,6 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                             processPhoto(bytes, albumName, photoString.getKey());
                             android.util.Log.d("debug", "Processed new photo");
                         }
-                        //TODO: Update album and photos locally!
                     }
                     sock.close();
                     //publishProgress();

@@ -56,16 +56,12 @@ public class AlbumView_Wifi extends AlbumView {
                     while ((fileLine = bufferedReader.readLine()) != null) {
                         userPhotos.add(fileLine);
                     }
-
                     inputStream.close();
-                    //String username = files[i].getName().substring(6, files[i].getName().length()-3);
-                    //username_photos_Map.put(username, userPhotos);
                 }
                 catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }
-        //TODO: Como mostrar as fotos dos outros aos utilizadores antes de as sacar???
     }
 }
