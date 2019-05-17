@@ -177,13 +177,10 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
 
     private void sendCatalogs() {
         try {
-            //TODO: CHECK IF ALBUM OWNER
-            //TODO: Send message if no photos sent!
-            //TODO: Check if first for can go deeper
-            for (Map.Entry<String, String> userEntry : ip_Username_Map.entrySet()) {
-                for (Map.Entry<String, ArrayList<String>> albumEntry : albumName_User_Map.entrySet()) {
-                    String albumName = albumEntry.getKey();
-                    List<String> contents = getLocalPhotosPath(albumName);
+            for (Map.Entry<String, ArrayList<String>> albumEntry : albumName_User_Map.entrySet()) {
+                String albumName = albumEntry.getKey();
+                List<String> contents = getLocalPhotosPath(albumName);
+                for (Map.Entry<String, String> userEntry : ip_Username_Map.entrySet()) {
                     if (albumEntry.getValue().contains(userEntry.getValue())) {
                         sendPhotos(contents, albumName, userEntry.getKey());
                     }
@@ -210,6 +207,10 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
         catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private boolean hasLocalAlbum(String albumName) {
+        return (new File(context.getFilesDir().getPath() + "/" + albumName).exists());
     }
 
     private boolean hasLocalPhoto(String albumName, String photoName) {
@@ -305,6 +306,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                         android.util.Log.d("debug", "Processed username");
                     }
                     else if (messageType.equals(PHOTO)) {
+                        String albumId = sockIn.readLine();
                         String albumName = sockIn.readLine();
                         String photoNames = sockIn.readLine();
                         sock.getOutputStream().write((getLocalPhotoConfirmation(albumName, photoNames) + "\n").getBytes());
@@ -319,12 +321,19 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
                         sock.getOutputStream().write(("\n").getBytes());
                         android.util.Log.d("debug", "Receiving " + photoStrings.size() + " photos");
 
+                        if (!hasLocalAlbum(albumName)) {
+                            HomePage homePage = (HomePage)activity;
+                            if (homePage != null) {
+                                homePage.processNewAlbum(albumName, albumId);
+                            }
+                        }
+
                         for (Map.Entry<String, String> photoString : photoStrings.entrySet()) {
                             byte[] bytes = new Gson().fromJson(photoString.getValue(), byte[].class);
                             processPhoto(bytes, albumName, photoString.getKey());
                             android.util.Log.d("debug", "Processed new photo");
                         }
-                        //TODO: Update photos locally!
+                        //TODO: Update album and photos locally!
                     }
                     sock.close();
                     //publishProgress();
@@ -380,6 +389,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
             try {
                 List<String> photoPaths = (List<String>)params[0];
                 String albumName = (String)params[1];
+                String albumId = ((Peer2PhotoApp) context).getAlbumId(albumName);
                 String ipAddress = (String)params[2];
                 SimWifiP2pSocket mCliSocket = new SimWifiP2pSocket(ipAddress, 10001);
 
@@ -392,6 +402,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
 
                 android.util.Log.d("debug", "Sending photos");
                 mCliSocket.getOutputStream().write((PHOTO + "\n").getBytes());
+                mCliSocket.getOutputStream().write((albumId + "\n").getBytes());
                 mCliSocket.getOutputStream().write((albumName + "\n").getBytes());
                 mCliSocket.getOutputStream().write((photoNames + "\n").getBytes());
 
