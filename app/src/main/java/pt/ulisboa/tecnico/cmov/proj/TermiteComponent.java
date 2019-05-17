@@ -64,7 +64,6 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     private AppCompatActivity activity = null;
     private HashMap<String, String> ip_Username_Map = new HashMap<>();
     public HashMap<String, ArrayList<String>> albumName_User_Map = new HashMap<>();
-    public HashMap<String, String> albumId_albumName_Map = new HashMap<>();
 
     public TermiteComponent(AppCompatActivity activity, Context context, Looper looper) {
         this.activity = activity;
@@ -186,8 +185,7 @@ public class TermiteComponent implements SimWifiP2pManager.PeerListListener, Sim
     }
 
     public void addNewAlbum(String albumId, String albumName) {
-        if (!albumId_albumName_Map.containsKey(albumId)) {
-            albumId_albumName_Map.put(albumId, albumName);
+        if (!albumName_User_Map.containsKey(albumName)) {
             ArrayList<String> Users = new ArrayList<>();
             Users.add(((Peer2PhotoApp) activity.getApplication()).getUsername());
             albumName_User_Map.put(albumName, Users);
