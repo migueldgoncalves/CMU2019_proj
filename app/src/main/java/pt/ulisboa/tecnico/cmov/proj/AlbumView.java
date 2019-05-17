@@ -34,6 +34,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.security.PrivateKey;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
@@ -392,6 +393,10 @@ public class AlbumView extends AppCompatActivity implements NavigationView.OnNav
 
         ((Peer2PhotoApp)getApplication()).updateLog(Operation + timeStamp + result);
 
+    }
+
+    public PrivateKey getPrivateKey(int albumId) {
+        return ((Peer2PhotoApp)getApplication()).getAlbumPrivateKey(albumId);
     }
 
 }

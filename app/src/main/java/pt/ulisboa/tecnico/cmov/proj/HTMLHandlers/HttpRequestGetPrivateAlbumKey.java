@@ -1,4 +1,5 @@
-package pt.ulisboa.tecnico.cmov.proj.HTMLHandlers;
+
+/*package pt.ulisboa.tecnico.cmov.proj.HTMLHandlers;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -63,4 +64,4 @@ public class HttpRequestGetPrivateAlbumKey extends HttpRequest {
         );
         queue.add(request);
     }
-}
+}*/
