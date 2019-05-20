@@ -21,7 +21,6 @@ public class Peer2PhotoApp extends Application {
     private String username;
     private String password;
     private String sessionId;
-    private String mode;
     private HashMap<String, String> albums = new HashMap<>();
     private HashMap<Integer, PublicKey> albumsPublicKeys = new HashMap<>();
     private HashMap<Integer, PrivateKey> albumsPrivateKeys = new HashMap<>();
@@ -52,14 +51,6 @@ public class Peer2PhotoApp extends Application {
 
     public void setSessionId(String sessionId) {
         this.sessionId = sessionId;
-    }
-
-    public String getMode() {
-        return mode;
-    }
-
-    public void setMode(String mode) {
-        this.mode = mode;
     }
 
     public String getAlbumId(String albumName){
