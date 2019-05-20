@@ -15,7 +15,10 @@
    version="1.1"
    id="svg8"
    inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
-   sodipodi:docname="Album 2.svg">
+   sodipodi:docname="Album 2.svg"
+   inkscape:export-filename="D:\GitHub\CMU2019_proj\sketches\Album 2.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96">
   <defs
      id="defs2" />
   <sodipodi:namedview
@@ -25,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.49497475"
-     inkscape:cx="324.60954"
-     inkscape:cy="704.43026"
+     inkscape:zoom="0.9899495"
+     inkscape:cx="402.61523"
+     inkscape:cy="755.43025"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -96,7 +99,7 @@
        xml:space="preserve"
        id="flowRoot43"
        style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
-       transform="matrix(0.26458333,0,0,0.26458333,-0.94494048,-2.078869)"
+       transform="matrix(0.26458333,0,0,0.26458333,16.165873,-2.078869)"
        inkscape:export-xdpi="96"
        inkscape:export-ydpi="96"><flowRegion
          id="flowRegion45"><rect
@@ -218,5 +221,52 @@
            height="61.62315"
            x="488.10675"
            y="163.42856" /></flowRegion><flowPara
-         id="flowPara70">Add User</flowPara></flowRoot>  </g>
+         id="flowPara70">Add User</flowPara></flowRoot>    <circle
+       style="display:inline;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1.46500003;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path3739"
+       cx="184.19853"
+       cy="270.47403"
+       r="9.4494047" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot866-4"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:1;stroke:none"
+       transform="matrix(0.50455285,0,0,0.50455285,-133.11455,220.01256)"><flowRegion
+         id="flowRegion868-5"><rect
+           id="rect870-4"
+           width="159.28572"
+           height="155"
+           x="612.14288"
+           y="76.09111" /></flowRegion><flowPara
+         id="flowPara872-7">+</flowPara></flowRoot>    <rect
+       style="display:inline;fill:none;fill-opacity:0.64676621;stroke:#000000;stroke-width:0.66499996;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect856-9"
+       width="12.473214"
+       height="9.8273811"
+       x="16.536459"
+       y="17.297621"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96" />
+    <path
+       style="display:inline;fill:none;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 17.820037,19.577108 9.5439,-0.04725"
+       id="path64"
+       inkscape:connector-curvature="0"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96" />
+    <path
+       style="display:inline;fill:none;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 17.914531,21.892212 9.449406,-0.04725"
+       id="path66"
+       inkscape:connector-curvature="0"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96" />
+    <path
+       style="display:inline;fill:none;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 18.009025,24.30181 9.213169,-0.04725"
+       id="path68"
+       inkscape:connector-curvature="0"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96" />
+  </g>
 </svg>
