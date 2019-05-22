@@ -101,6 +101,10 @@ public class FindUsers extends AppCompatActivity {
         users.clear();
         String[] parsedUsers = allUsers.split(",");
         for (String user : parsedUsers) {
+            if (albumUsers == null || addedUsers == null) {
+                users.add(new User(0, user));
+                continue;
+            }
             if (!albumUsers.contains(user) && !addedUsers.contains(user)) users.add(new User(0, user));
         }
         userAdapter.notifyDataSetChanged();

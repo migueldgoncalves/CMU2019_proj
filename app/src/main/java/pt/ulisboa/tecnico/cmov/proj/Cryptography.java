@@ -8,6 +8,8 @@ import javax.crypto.Cipher;
 public class Cryptography {
 
     public static String cipher(PublicKey publicKey, String data) {
+        return data;
+        /*
         try {
             Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
             cipher.init(Cipher.ENCRYPT_MODE, publicKey);
@@ -24,9 +26,12 @@ public class Cryptography {
             android.util.Log.d("debug", "Could not cipher data");
             return null;
         }
+        */
     }
 
     public static String decipher(PrivateKey privateKey, String cipheredData) {
+        return cipheredData;
+        /*
         try {
             Cipher decipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
             decipher.init(Cipher.DECRYPT_MODE, privateKey);
@@ -41,5 +46,6 @@ public class Cryptography {
             android.util.Log.d("debug", "Could not decipher data");
             return null;
         }
+        */
     }
 }
