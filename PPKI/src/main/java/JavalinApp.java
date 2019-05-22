@@ -36,6 +36,7 @@ public class JavalinApp {
             System.out.println("HTTP success: " + mapResponse.get("success"));
             System.out.println("HTTP error: " + mapResponse.get("error"));
             System.out.println("HTTP public key: " + mapResponse.get("publicKey"));
+            System.out.println("HTTP private key: " + mapResponse.get("privateKey"));
             ctx.json(mapResponse);
         });
 

@@ -34,12 +34,16 @@ public class KeyStoreInterface {
                 return response;
             }
             byte[] keyBytes = Files.readAllBytes(Paths.get("Album" + albumId + ".pub"));
-
             X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
             PublicKey publicKey = KeyFactory.getInstance("RSA").generatePublic(spec);
 
+            keyBytes = Files.readAllBytes(Paths.get("Album" + albumId + ".key"));
+            PKCS8EncodedKeySpec spec2 = new PKCS8EncodedKeySpec(keyBytes);
+            PrivateKey privateKey = KeyFactory.getInstance("RSA").generatePrivate(spec2);
+
             response.put("success", "Public key obtained successfully");
             response.put("publicKey", new Gson().toJson(publicKey.getEncoded()));
+            response.put("privateKey", new Gson().toJson(privateKey.getEncoded()));
             return response;
         } catch (Exception e) {
             e.printStackTrace();
@@ -79,7 +83,7 @@ public class KeyStoreInterface {
     private void addKeyPairToKeyStore(int albumId) {
         try {
             KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
-            kpg.initialize(2048);
+            kpg.initialize(4096);
             KeyPair pair = kpg.generateKeyPair();
 
             FileOutputStream out = new FileOutputStream("Album" + albumId + ".key");

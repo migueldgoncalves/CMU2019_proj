@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.cmov.proj;
 
+import java.nio.charset.Charset;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
@@ -36,11 +37,11 @@ public class Cryptography {
             Cipher decipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
             decipher.init(Cipher.DECRYPT_MODE, privateKey);
 
-            byte[] decipheredText = decipher.doFinal(cipheredData.getBytes());
+            String decipheredText = new String(decipher.doFinal(cipheredData.getBytes()), Charset.forName("UTF-8"));
 
             android.util.Log.d("debug", "Deciphered URL is: " + new String(decipheredText));
 
-            return new String(decipheredText);
+            return decipheredText;
         } catch (Exception e) {
             e.printStackTrace();
             android.util.Log.d("debug", "Could not decipher data");

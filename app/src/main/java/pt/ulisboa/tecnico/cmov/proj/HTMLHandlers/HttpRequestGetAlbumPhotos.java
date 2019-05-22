@@ -13,8 +13,6 @@ import java.security.PrivateKey;
 
 import pt.ulisboa.tecnico.cmov.proj.AlbumView;
 import pt.ulisboa.tecnico.cmov.proj.Cryptography;
-import pt.ulisboa.tecnico.cmov.proj.Data.Peer2PhotoApp;
-import pt.ulisboa.tecnico.cmov.proj.HomePage;
 
 public class HttpRequestGetAlbumPhotos extends HttpRequest {
 
@@ -80,13 +78,13 @@ public class HttpRequestGetAlbumPhotos extends HttpRequest {
     }
 
     private static String decipherURL(String sessionId, String username, String cipheredSliceURL, String albumId, Context mContext) {
-        PrivateKey privateKey = ((Peer2PhotoApp)((HomePage) mContext).getApplication()).getAlbumPrivateKey(Integer.valueOf(albumId));
+        PrivateKey privateKey = ((AlbumView)mContext).getPrivateKey(Integer.valueOf(albumId));
         if(privateKey==null) {
-            HttpRequestGetPrivateAlbumKey.httpRequest("http://localhost:9090", username, sessionId, albumId);
-            privateKey = ((Peer2PhotoApp)((HomePage) mContext).getApplication()).getAlbumPrivateKey(Integer.valueOf(albumId));
+            //HttpRequestGetPrivateAlbumKey.httpRequest("http://localhost:9090", username, sessionId, albumId);
+        } else {
+            return Cryptography.decipher(privateKey, cipheredSliceURL);
         }
-        assert privateKey!=null;
-        return Cryptography.decipher(privateKey, cipheredSliceURL);
+        return null;
     }
 
 }

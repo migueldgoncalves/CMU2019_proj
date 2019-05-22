@@ -176,12 +176,6 @@ public class HomePage extends DropboxActivity implements
             Toast.makeText(this, "You Are Now Logged In To Your Dropbox", Toast.LENGTH_LONG).show();
             TextView username = findViewById(R.id.UsernameDisplay);
             TextView mail = findViewById(R.id.MailDisplay);
-            try{
-                username.setText(DropboxClientFactory.getClient().users().getCurrentAccount().getAccountId());
-                mail.setText(DropboxClientFactory.getClient().users().getCurrentAccount().getEmail());
-            }catch (Exception e){
-                e.printStackTrace();
-            }
         }
     }
 
